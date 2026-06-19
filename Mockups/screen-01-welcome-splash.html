@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=390px, initial-scale=1.0" />
+  <title>PaperBrush — Welcome Splash</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800&family=Nunito+Sans:wght@400;600&display=swap" rel="stylesheet" />
+  <style>
+    /* ─── Reset ─────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    /* ─── Design tokens ──────────────────────────────────── */
+    :root {
+      --cream:     #FFF8F0;
+      --canvas:    #FFFDF9;
+      --teal:      #0EA5A0;
+      --navy:      #1B2A4A;
+      --coral:     #F06449;
+      --gold:      #F5A623;
+      --sage:      #7CB686;
+      --sky:       #6BB8E8;
+      --peach:     #FCBFA0;
+      --lavender:  #B8A9E8;
+      --secondary: #666666;
+      --border:    #E8E0D8;
+    }
+
+    /* ─── Page / shell ───────────────────────────────────── */
+    html, body {
+      width: 100%;
+      min-height: 100%;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 48px;
+      padding: 48px;
+      align-items: flex-start;
+      justify-content: center;
+      background: #D4CCB8;
+      font-family: 'Nunito Sans', sans-serif;
+    }
+
+    /* ─── Device wrapper ─────────────────────────────────── */
+    .device-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+    }
+    .device-label {
+      font-family: 'Nunito Sans', sans-serif;
+      font-size: 13px;
+      color: #888;
+      letter-spacing: 0.04em;
+    }
+
+    /* ─── iPhone shell ───────────────────────────────────── */
+    .iphone {
+      width: 390px;
+      height: 844px;
+      border-radius: 50px;
+      background: #1a1a1a;
+      box-shadow: 0 24px 80px rgba(0,0,0,0.45), inset 0 0 0 2px #3a3a3a;
+      position: relative;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+
+    /* Dynamic island */
+    .iphone::before {
+      content: '';
+      position: absolute;
+      top: 12px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 120px;
+      height: 34px;
+      background: #1a1a1a;
+      border-radius: 20px;
+      z-index: 30;
+    }
+
+    /* ─── Screen ─────────────────────────────────────────── */
+    .screen {
+      position: absolute;
+      inset: 0;
+      border-radius: 48px;
+      overflow: hidden;
+      background: var(--cream);
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ─── Status bar (hidden — invisible spacer only) ────── */
+    .status-bar-spacer {
+      height: 54px;
+      flex-shrink: 0;
+    }
+
+    /* ─── Splash content ────────────────────────────────── */
+    .splash-body {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 0 16px 0;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* ─── Decorative crayon strokes ──────────────────────── */
+    .deco {
+      position: absolute;
+      pointer-events: none;
+      opacity: 0.18;
+    }
+    @keyframes drift {
+      0%, 100% { transform: translateY(0); }
+      50%      { transform: translateY(-5px); }
+    }
+
+    /* Peach wavy stroke — upper-left */
+    .deco-1 {
+      top: 8%;
+      left: 5%;
+      width: 60px;
+      height: 24px;
+      animation: drift 7s ease-in-out infinite;
+    }
+
+    /* Sky blue zigzag — upper-right */
+    .deco-2 {
+      top: 12%;
+      right: 8%;
+      width: 48px;
+      height: 28px;
+      animation: drift 8s ease-in-out infinite 1s;
+    }
+
+    /* Gold diagonal dash — lower-left */
+    .deco-3 {
+      bottom: 22%;
+      left: 7%;
+      width: 36px;
+      height: 36px;
+      animation: drift 9s ease-in-out infinite 0.5s;
+    }
+
+    /* Peach small curl — lower-right */
+    .deco-4 {
+      bottom: 28%;
+      right: 10%;
+      width: 32px;
+      height: 32px;
+      animation: drift 7.5s ease-in-out infinite 1.5s;
+    }
+
+    /* ─── Hero content (vertically centered) ─────────────── */
+    .hero {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+    }
+
+    /* App icon */
+    .app-icon {
+      width: 120px;
+      height: 120px;
+      border-radius: 32px;
+      background: var(--teal);
+      box-shadow: 0 4px 16px rgba(14,165,160,0.30);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      animation: iconPop 0.6s cubic-bezier(0.34,1.56,0.64,1) 0.15s both;
+    }
+    @keyframes iconPop {
+      from { opacity: 0; transform: scale(0); }
+      to   { opacity: 1; transform: scale(1); }
+    }
+    .app-icon svg {
+      width: 72px;
+      height: 72px;
+    }
+
+    /* App name */
+    .app-name {
+      font-family: 'Nunito', sans-serif;
+      font-weight: 800;
+      font-size: 36px;
+      line-height: 1.2;
+      color: var(--navy);
+      text-align: center;
+      letter-spacing: -0.4px;
+      margin-top: 24px;
+      animation: fadeUp 0.4s ease 0.35s both;
+    }
+
+    /* Tagline */
+    .tagline {
+      font-family: 'Nunito Sans', sans-serif;
+      font-weight: 400;
+      font-size: 17px;
+      line-height: 1.5;
+      color: var(--secondary);
+      text-align: center;
+      margin-top: 8px;
+      animation: fadeUp 0.4s ease 0.5s both;
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(10px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ─── Bottom CTA area ───────────────────────────────── */
+    .cta-area {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding-bottom: 0;
+    }
+
+    /* 48pt gap above button — per spec */
+    .cta-gap { height: 48px; flex-shrink: 0; }
+
+    .btn-start {
+      width: calc(100% - 32px);
+      height: 56px;
+      border-radius: 10px;
+      background: var(--teal);
+      border: none;
+      color: white;
+      font-family: 'Nunito', sans-serif;
+      font-weight: 700;
+      font-size: 18px;
+      cursor: pointer;
+      box-shadow: 0 4px 16px rgba(14,165,160,0.30);
+      transition: transform 0.16s cubic-bezier(0.34,1.56,0.64,1),
+                  box-shadow 0.16s ease;
+      -webkit-tap-highlight-color: transparent;
+      animation: fadeUp 0.4s ease 0.65s both;
+    }
+    .btn-start:active {
+      transform: scale(0.97);
+      box-shadow: 0 2px 8px rgba(14,165,160,0.18);
+    }
+    .btn-start:hover {
+      transform: scale(1.015);
+      box-shadow: 0 6px 20px rgba(14,165,160,0.35);
+    }
+
+    .skip-link {
+      margin-top: 16px;
+      font-family: 'Nunito Sans', sans-serif;
+      font-weight: 600;
+      font-size: 15px;
+      color: var(--secondary);
+      text-decoration: none;
+      cursor: pointer;
+      animation: fadeIn 0.4s ease 0.8s both;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to   { opacity: 1; }
+    }
+
+    /* ─── Safe area bottom ───────────────────────────────── */
+    .safe-area {
+      height: 34px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .home-bar {
+      width: 120px;
+      height: 5px;
+      background: var(--navy);
+      border-radius: 9999px;
+      opacity: 0.18;
+    }
+
+    /* ─── iPad landscape ─────────────────────────────────── */
+    .ipad {
+      width: 1024px;
+      height: 768px;
+      border-radius: 24px;
+      background: #1a1a1a;
+      box-shadow: 0 24px 80px rgba(0,0,0,0.45), inset 0 0 0 2px #3a3a3a;
+      position: relative;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+    .ipad .screen {
+      border-radius: 22px;
+    }
+    .ipad .status-bar-spacer {
+      height: 24px;
+    }
+    .ipad .splash-body {
+      flex-direction: row;
+      padding: 0 64px;
+      gap: 64px;
+    }
+    .ipad .hero {
+      flex: 1;
+      align-items: center;
+      justify-content: center;
+    }
+    .ipad .splash-left {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .ipad .splash-left svg {
+      width: 320px;
+      height: 280px;
+    }
+    .ipad .cta-area {
+      padding-bottom: 0;
+    }
+    .ipad .app-name {
+      font-size: 52px;
+    }
+    .ipad .tagline {
+      font-size: 19px;
+    }
+    .ipad .safe-area {
+      height: 20px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ═══════════════════════════════ iPhone ═══════════════════════════════ -->
+  <div class="device-wrap">
+    <div class="iphone">
+      <div class="screen">
+
+        <!-- Status bar — hidden on splash, spacer only -->
+        <div class="status-bar-spacer"></div>
+
+        <!-- Splash body -->
+        <div class="splash-body">
+
+          <!-- Decorative crayon strokes — faint, floating, ~20% opacity -->
+          <!-- Stroke 1: Peach wavy line -->
+          <svg class="deco deco-1" viewBox="0 0 60 24" fill="none">
+            <path d="M4 16 Q10 4 20 12 Q30 20 40 10 Q50 2 56 14" stroke="#FCBFA0" stroke-width="4.5" stroke-linecap="round" fill="none"/>
+          </svg>
+
+          <!-- Stroke 2: Sky blue squiggle -->
+          <svg class="deco deco-2" viewBox="0 0 48 28" fill="none">
+            <path d="M4 22 Q12 6 20 16 Q28 26 36 10 Q40 4 44 8" stroke="#6BB8E8" stroke-width="3.5" stroke-linecap="round" fill="none"/>
+          </svg>
+
+          <!-- Stroke 3: Gold diagonal -->
+          <svg class="deco deco-3" viewBox="0 0 36 36" fill="none">
+            <path d="M6 30 L30 6" stroke="#F5A623" stroke-width="5" stroke-linecap="round"/>
+          </svg>
+
+          <!-- Stroke 4: Peach curl -->
+          <svg class="deco deco-4" viewBox="0 0 32 32" fill="none">
+            <path d="M8 24 Q4 16 10 10 Q16 4 24 8" stroke="#FCBFA0" stroke-width="3" stroke-linecap="round" fill="none"/>
+          </svg>
+
+          <!-- Hero (centered vertically) -->
+          <div class="hero">
+
+            <!-- App icon: 120×120pt teal rounded-square with paintbrush + palette illustration -->
+            <div class="app-icon">
+              <svg viewBox="0 0 72 72" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <!-- Palette blob (behind brush) -->
+                <path d="M14 34C14 24.6 21.6 17 31 17C40.4 17 48 24.6 48 34C48 39 45 41 42 41C39 41 38 43 38 45C38 47.2 36.2 49 34 49C24.6 49 14 43.4 14 34Z" fill="white" opacity="0.25"/>
+                <!-- Color dots on palette -->
+                <circle cx="22" cy="30" r="3.5" fill="#F06449" opacity="0.9"/>
+                <circle cx="30" cy="24" r="3.5" fill="#F5A623" opacity="0.9"/>
+                <circle cx="38" cy="30" r="3.5" fill="#7CB686" opacity="0.9"/>
+                <circle cx="36" cy="40" r="3" fill="#6BB8E8" opacity="0.9"/>
+                <circle cx="26" cy="42" r="3" fill="#B8A9E8" opacity="0.7"/>
+                <!-- Paintbrush — angled, crossing the palette -->
+                <g transform="rotate(-35 50 20)">
+                  <!-- Handle -->
+                  <rect x="46" y="6" width="6" height="30" rx="1.5" fill="#D4956A"/>
+                  <rect x="47.5" y="6" width="2" height="30" rx="1" fill="#E8C89A" opacity="0.55"/>
+                  <!-- Ferrule -->
+                  <rect x="45" y="34" width="8" height="5" rx="1" fill="#B8C5D0"/>
+                  <rect x="45" y="34" width="8" height="2" rx="0.5" fill="#D0DCE8"/>
+                  <!-- Bristles -->
+                  <path d="M46 39 Q43 43 45 50 Q49 52 53 50 Q55 43 52 39Z" fill="white" opacity="0.85"/>
+                  <ellipse cx="49" cy="45" rx="3.5" ry="4" fill="white" opacity="0.3"/>
+                </g>
+                <!-- Tiny sparkle details -->
+                <circle cx="58" cy="14" r="1.8" fill="white" opacity="0.6"/>
+                <circle cx="12" cy="52" r="1.3" fill="white" opacity="0.4"/>
+              </svg>
+            </div>
+
+            <!-- App name -->
+            <h1 class="app-name">PaperBrush</h1>
+
+            <!-- Tagline -->
+            <p class="tagline">Where your art comes alive</p>
+          </div>
+
+          <!-- CTA area -->
+          <div class="cta-area">
+            <div class="cta-gap"></div>
+            <button class="btn-start">Get Started</button>
+            <a class="skip-link">Skip ›</a>
+          </div>
+
+        </div>
+
+        <!-- Safe area -->
+        <div class="safe-area">
+          <div class="home-bar"></div>
+        </div>
+
+      </div><!-- /screen -->
+    </div><!-- /iphone -->
+    <div class="device-label">iPhone 15 Pro — 390 × 844 pt</div>
+  </div>
+
+  <!-- ═══════════════════════════════ iPad ═══════════════════════════════ -->
+  <div class="device-wrap">
+    <div class="ipad">
+      <div class="screen">
+
+        <!-- Status bar spacer -->
+        <div class="status-bar-spacer"></div>
+
+        <!-- Splash body (iPad: side-by-side layout) -->
+        <div class="splash-body">
+
+          <!-- Left side: illustration of kids coloring -->
+          <div class="splash-left">
+            <svg viewBox="0 0 320 280" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <!-- Table surface -->
+              <rect x="20" y="160" width="280" height="8" rx="4" fill="#E8E0D8"/>
+
+              <!-- Paper sheet on table -->
+              <rect x="80" y="80" width="160" height="120" rx="6" fill="white" opacity="0.9"/>
+              <rect x="80" y="80" width="160" height="120" rx="6" fill="none" stroke="#E8E0D8" stroke-width="1.5"/>
+              <!-- Artwork on paper (simple sun and hills) -->
+              <circle cx="130" cy="110" r="16" fill="#F5A623" opacity="0.6"/>
+              <path d="M80 155 Q120 120 160 140 Q200 160 240 130 L240 200 L80 200Z" fill="#7CB686" opacity="0.3"/>
+              <path d="M80 170 Q130 145 180 160 Q220 170 240 155 L240 200 L80 200Z" fill="#7CB686" opacity="0.2"/>
+
+              <!-- Scattered crayons on table -->
+              <!-- Red crayon -->
+              <g transform="rotate(-15 60 180)">
+                <rect x="30" y="170" width="8" height="28" rx="2" fill="#F06449"/>
+                <path d="M31 198 L34 206 L37 198Z" fill="#D94532"/>
+                <rect x="30" y="168" width="8" height="4" rx="2" fill="#D94532"/>
+              </g>
+              <!-- Teal crayon -->
+              <g transform="rotate(8 260 175)">
+                <rect x="248" y="168" width="7" height="24" rx="2" fill="#0EA5A0"/>
+                <path d="M249 192 L251.5 198 L254 192Z" fill="#0B8A86"/>
+                <rect x="248" y="166" width="7" height="3.5" rx="1.5" fill="#0B8A86"/>
+              </g>
+              <!-- Gold crayon -->
+              <g transform="rotate(-5 170 178)">
+                <rect x="200" y="170" width="7" height="22" rx="2" fill="#F5A623"/>
+                <path d="M201 192 L203.5 198 L206 192Z" fill="#D4811A"/>
+                <rect x="200" y="168" width="7" height="3.5" rx="1.5" fill="#D4811A"/>
+              </g>
+
+              <!-- Child's hand (simplified) -->
+              <ellipse cx="150" cy="145" rx="18" ry="12" fill="#FCBFA0" opacity="0.7"/>
+              <!-- Hand holding crayon -->
+              <g transform="rotate(-25 150 130)">
+                <rect x="142" y="110" width="6" height="32" rx="2" fill="#6BB8E8"/>
+                <path d="M143 142 L145 148 L147 142Z" fill="#4A9CD4"/>
+                <rect x="142" y="108" width="6" height="3" rx="1.5" fill="#4A9CD4"/>
+              </g>
+
+              <!-- Sparkle decorations -->
+              <circle cx="48" cy="100" r="4" fill="#F5A623" opacity="0.25"/>
+              <circle cx="272" cy="90"  r="3" fill="#B8A9E8" opacity="0.2"/>
+              <circle cx="60"  cy="140" r="2.5" fill="#F06449" opacity="0.15"/>
+              <circle cx="265" cy="130" r="2" fill="#6BB8E8" opacity="0.2"/>
+
+              <!-- Small floating stars -->
+              <path d="M285 70 L287 75 L292 75 L288 78 L290 83 L285 80 L280 83 L282 78 L278 75 L283 75Z" fill="#F5A623" opacity="0.3"/>
+              <path d="M40 75 L41.5 79 L45.5 79 L42.5 81.5 L43.5 85.5 L40 83 L36.5 85.5 L37.5 81.5 L34.5 79 L38.5 79Z" fill="#F06449" opacity="0.2"/>
+            </svg>
+          </div>
+
+          <!-- Right side: text + CTA -->
+          <div class="hero" style="align-items: flex-start;">
+
+            <div class="app-icon">
+              <svg viewBox="0 0 72 72" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M14 34C14 24.6 21.6 17 31 17C40.4 17 48 24.6 48 34C48 39 45 41 42 41C39 41 38 43 38 45C38 47.2 36.2 49 34 49C24.6 49 14 43.4 14 34Z" fill="white" opacity="0.25"/>
+                <circle cx="22" cy="30" r="3.5" fill="#F06449" opacity="0.9"/>
+                <circle cx="30" cy="24" r="3.5" fill="#F5A623" opacity="0.9"/>
+                <circle cx="38" cy="30" r="3.5" fill="#7CB686" opacity="0.9"/>
+                <circle cx="36" cy="40" r="3" fill="#6BB8E8" opacity="0.9"/>
+                <circle cx="26" cy="42" r="3" fill="#B8A9E8" opacity="0.7"/>
+                <g transform="rotate(-35 50 20)">
+                  <rect x="46" y="6" width="6" height="30" rx="1.5" fill="#D4956A"/>
+                  <rect x="47.5" y="6" width="2" height="30" rx="1" fill="#E8C89A" opacity="0.55"/>
+                  <rect x="45" y="34" width="8" height="5" rx="1" fill="#B8C5D0"/>
+                  <rect x="45" y="34" width="8" height="2" rx="0.5" fill="#D0DCE8"/>
+                  <path d="M46 39 Q43 43 45 50 Q49 52 53 50 Q55 43 52 39Z" fill="white" opacity="0.85"/>
+                  <ellipse cx="49" cy="45" rx="3.5" ry="4" fill="white" opacity="0.3"/>
+                </g>
+                <circle cx="58" cy="14" r="1.8" fill="white" opacity="0.6"/>
+                <circle cx="12" cy="52" r="1.3" fill="white" opacity="0.4"/>
+              </svg>
+            </div>
+
+            <h1 class="app-name">PaperBrush</h1>
+            <p class="tagline">Where your art comes alive</p>
+
+            <div class="cta-area">
+              <div class="cta-gap"></div>
+              <button class="btn-start">Get Started</button>
+              <a class="skip-link">Skip ›</a>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Safe area -->
+        <div class="safe-area">
+          <div class="home-bar"></div>
+        </div>
+
+      </div><!-- /screen -->
+    </div><!-- /ipad -->
+    <div class="device-label">iPad — 1024 × 768 pt landscape</div>
+  </div>
+
+</body>
+</html>

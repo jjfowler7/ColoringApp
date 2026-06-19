@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=390px, initial-scale=1.0" />
+  <title>PaperBrush — Pack Store</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800&family=Nunito+Sans:wght@400;600&display=swap" rel="stylesheet" />
+  <style>
+    /* ─── Reset ─────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --cream:     #FFF8F0;
+      --canvas-bg: #FFFDF9;
+      --teal:      #0EA5A0;
+      --navy:      #1B2A4A;
+      --coral:     #F06449;
+      --gold:      #F5A623;
+      --sage:      #7CB686;
+      --secondary: #666666;
+      --divider:   #E8E0D8;
+    }
+
+    html, body {
+      width: 100%;
+      min-height: 100%;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 48px;
+      padding: 48px;
+      align-items: flex-start;
+      justify-content: center;
+      background: #C8C0AE;
+      font-family: 'Nunito Sans', sans-serif;
+    }
+
+    .device-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+    }
+    .device-label {
+      font-family: 'Nunito Sans', sans-serif;
+      font-size: 13px;
+      color: #888;
+      letter-spacing: 0.04em;
+    }
+
+    /* ─── iPhone shell ───────────────────────────────────── */
+    .iphone {
+      width: 390px;
+      height: 844px;
+      border-radius: 50px;
+      background: #1a1a1a;
+      box-shadow: 0 24px 80px rgba(0,0,0,0.45), inset 0 0 0 2px #3a3a3a;
+      position: relative;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+    .iphone::before {
+      content: '';
+      position: absolute;
+      top: 12px; left: 50%;
+      transform: translateX(-50%);
+      width: 120px; height: 34px;
+      background: #1a1a1a;
+      border-radius: 20px;
+      z-index: 50;
+    }
+
+    /* ─── Screen ─────────────────────────────────────────── */
+    .screen {
+      position: absolute;
+      inset: 0;
+      border-radius: 48px;
+      overflow: hidden;
+      background: var(--cream);
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Status bar */
+    .status-bar {
+      height: 54px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      padding: 0 28px 8px;
+      background: var(--canvas-bg);
+      z-index: 2;
+    }
+    .status-time {
+      font-family: 'Nunito', sans-serif;
+      font-weight: 700;
+      font-size: 15px;
+      color: var(--navy);
+    }
+    .status-icons { display: flex; align-items: center; gap: 5px; }
+    .status-icons svg { fill: var(--navy); }
+
+    /* Top bar */
+    .top-bar {
+      height: 44px;
+      flex-shrink: 0;
+      background: var(--canvas-bg);
+      border-bottom: 1px solid var(--divider);
+      display: flex;
+      align-items: center;
+      position: relative;
+      z-index: 2;
+    }
+    .bar-back {
+      width: 44px; height: 44px;
+      display: flex; align-items: center; justify-content: center;
+      margin-left: 8px; flex-shrink: 0;
+    }
+    .bar-back svg {
+      width: 18px; height: 18px;
+      stroke: var(--teal); stroke-width: 2.5;
+      stroke-linecap: round; stroke-linejoin: round; fill: none;
+    }
+    .bar-title {
+      position: absolute; left: 0; right: 0;
+      text-align: center;
+      font-family: 'Nunito', sans-serif;
+      font-weight: 700; font-size: 18px;
+      color: var(--navy); pointer-events: none;
+    }
+
+    /* Body area */
+    .body-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 0 32px;
+      text-align: center;
+    }
+
+    /* Illustration */
+    .gift-box-illustration {
+      width: 160px;
+      height: 160px;
+      margin-bottom: 20px;
+    }
+
+    /* Coming soon title */
+    .coming-soon-title {
+      font-family: 'Nunito', sans-serif;
+      font-weight: 700;
+      font-size: 22px;
+      color: var(--navy);
+      margin-bottom: 8px;
+      letter-spacing: -0.3px;
+    }
+
+    /* Subtitle */
+    .coming-soon-subtitle {
+      font-family: 'Nunito Sans', sans-serif;
+      font-weight: 400;
+      font-size: 15px;
+      color: var(--secondary);
+      line-height: 1.55;
+      margin-bottom: 32px;
+      max-width: 280px;
+    }
+
+    /* Notify Me button */
+    .btn-notify {
+      width: 100%;
+      max-width: 262px;
+      height: 48px;
+      border: 2px solid var(--teal);
+      background: transparent;
+      border-radius: 10px;
+      font-family: 'Nunito', sans-serif;
+      font-weight: 700;
+      font-size: 16px;
+      color: var(--teal);
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: none;
+    }
+    .btn-notify:active {
+      transform: scale(0.97);
+    }
+
+    /* Toggled state */
+    .btn-notify.toggled {
+      background: var(--sage);
+      border-color: var(--sage);
+      color: #ffffff;
+      box-shadow: 0 0 0 12px rgba(124, 182, 134, 0.15);
+    }
+
+    /* Bottom safe area */
+    .safe-area {
+      height: 34px; flex-shrink: 0;
+      background: var(--cream);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .home-indicator {
+      width: 120px; height: 5px;
+      background: var(--navy);
+      border-radius: 9999px;
+      opacity: 0.18;
+    }
+  </style>
+</head>
+<body>
+
+<!-- ════════════════════════════════════════════════════════
+     IPHONE 1: COMING SOON STATE
+     ════════════════════════════════════════════════════════ -->
+<div class="device-wrap">
+  <div class="iphone">
+    <div class="screen">
+
+      <!-- Status bar -->
+      <div class="status-bar">
+        <span class="status-time">9:41</span>
+        <div class="status-icons">
+          <svg width="17" height="12" viewBox="0 0 17 12"><rect x="0" y="8" width="3" height="4" rx="0.8"/><rect x="4.5" y="5.5" width="3" height="6.5" rx="0.8"/><rect x="9" y="3" width="3" height="9" rx="0.8"/><rect x="13.5" y="0" width="3" height="12" rx="0.8"/></svg>
+          <svg width="16" height="12" viewBox="0 0 16 12" fill="none" stroke="#1B2A4A" stroke-width="1.8" stroke-linecap="round"><path d="M1 4.5C3.8 1.8 8 1.8 10.5 4" opacity="0.3"/><path d="M2.8 6.2C4.8 4.3 7.4 4 9.2 5.5"/><path d="M4.8 7.8C5.8 6.9 7.2 6.9 8.2 7.8"/><circle cx="6.5" cy="10" r="1.2" fill="#1B2A4A" stroke="none"/></svg>
+          <svg width="25" height="12" viewBox="0 0 25 12" fill="#1B2A4A"><rect x="0" y="1" width="21" height="10" rx="2.5" stroke="#1B2A4A" stroke-width="1.2" fill="none"/><rect x="1.5" y="2.5" width="16" height="7" rx="1.5"/><path d="M22.5 4v4a2 2 0 0 0 0-4z"/></svg>
+        </div>
+      </div>
+
+      <!-- Top bar -->
+      <div class="top-bar">
+        <div class="bar-back"><svg viewBox="0 0 18 18"><polyline points="12,3 5,9 12,15"/></svg></div>
+        <span class="bar-title">Pack Store</span>
+      </div>
+
+      <!-- Body content -->
+      <div class="body-content">
+        <!-- Gift box with paintbrush SVG -->
+        <svg class="gift-box-illustration" viewBox="0 0 160 160" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Box (teal) -->
+          <rect x="40" y="70" width="80" height="60" fill="var(--teal)" rx="4"/>
+          <!-- Box lid highlight -->
+          <rect x="40" y="68" width="80" height="8" fill="var(--teal)" opacity="0.8" rx="4"/>
+          <!-- Box front -->
+          <rect x="40" y="75" width="80" height="55" fill="#0A8B86" rx="3"/>
+
+          <!-- Ribbon cross (coral) -->
+          <!-- Vertical ribbon -->
+          <rect x="76" y="65" width="8" height="75" fill="var(--coral)" rx="2"/>
+          <!-- Horizontal ribbon -->
+          <rect x="35" y="100" width="90" height="8" fill="var(--coral)" rx="2"/>
+
+          <!-- Ribbon bow center (gold) -->
+          <circle cx="80" cy="100" r="9" fill="var(--gold)"/>
+
+          <!-- Paintbrush handle (brown) -->
+          <rect x="76" y="35" width="8" height="32" fill="#8B6F47" rx="2"/>
+
+          <!-- Paintbrush bristles (cream/light) -->
+          <ellipse cx="80" cy="30" rx="12" ry="8" fill="#F5E6D3"/>
+
+          <!-- Paintbrush bristle detail -->
+          <ellipse cx="80" cy="28" rx="8" ry="5" fill="#E8D5C0" opacity="0.7"/>
+
+          <!-- Paintbrush ferrule (gold) -->
+          <rect x="74" y="32" width="12" height="4" fill="var(--gold)" rx="1"/>
+
+          <!-- Gold highlights on ribbon -->
+          <rect x="78" y="68" width="4" height="6" fill="var(--gold)" opacity="0.6"/>
+          <rect x="48" y="98" width="6" height="4" fill="var(--gold)" opacity="0.6"/>
+        </svg>
+
+        <!-- Title -->
+        <div class="coming-soon-title">New packs coming soon!</div>
+
+        <!-- Subtitle -->
+        <div class="coming-soon-subtitle">We're creating more amazing coloring pages for you.</div>
+
+        <!-- Notify Me button -->
+        <button class="btn-notify">[Notify Me]</button>
+      </div>
+
+      <!-- Bottom safe area -->
+      <div class="safe-area"><div class="home-indicator"></div></div>
+
+    </div>
+  </div>
+  <div class="device-label">Coming Soon state (v1 launch)</div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════
+     IPHONE 2: NOTIFY ME TOGGLED ON
+     ════════════════════════════════════════════════════════ -->
+<div class="device-wrap">
+  <div class="iphone">
+    <div class="screen">
+
+      <!-- Status bar -->
+      <div class="status-bar">
+        <span class="status-time">9:41</span>
+        <div class="status-icons">
+          <svg width="17" height="12" viewBox="0 0 17 12"><rect x="0" y="8" width="3" height="4" rx="0.8"/><rect x="4.5" y="5.5" width="3" height="6.5" rx="0.8"/><rect x="9" y="3" width="3" height="9" rx="0.8"/><rect x="13.5" y="0" width="3" height="12" rx="0.8"/></svg>
+          <svg width="16" height="12" viewBox="0 0 16 12" fill="none" stroke="#1B2A4A" stroke-width="1.8" stroke-linecap="round"><path d="M1 4.5C3.8 1.8 8 1.8 10.5 4" opacity="0.3"/><path d="M2.8 6.2C4.8 4.3 7.4 4 9.2 5.5"/><path d="M4.8 7.8C5.8 6.9 7.2 6.9 8.2 7.8"/><circle cx="6.5" cy="10" r="1.2" fill="#1B2A4A" stroke="none"/></svg>
+          <svg width="25" height="12" viewBox="0 0 25 12" fill="#1B2A4A"><rect x="0" y="1" width="21" height="10" rx="2.5" stroke="#1B2A4A" stroke-width="1.2" fill="none"/><rect x="1.5" y="2.5" width="16" height="7" rx="1.5"/><path d="M22.5 4v4a2 2 0 0 0 0-4z"/></svg>
+        </div>
+      </div>
+
+      <!-- Top bar -->
+      <div class="top-bar">
+        <div class="bar-back"><svg viewBox="0 0 18 18"><polyline points="12,3 5,9 12,15"/></svg></div>
+        <span class="bar-title">Pack Store</span>
+      </div>
+
+      <!-- Body content -->
+      <div class="body-content">
+        <!-- Gift box with paintbrush SVG -->
+        <svg class="gift-box-illustration" viewBox="0 0 160 160" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Box (teal) -->
+          <rect x="40" y="70" width="80" height="60" fill="var(--teal)" rx="4"/>
+          <!-- Box lid highlight -->
+          <rect x="40" y="68" width="80" height="8" fill="var(--teal)" opacity="0.8" rx="4"/>
+          <!-- Box front -->
+          <rect x="40" y="75" width="80" height="55" fill="#0A8B86" rx="3"/>
+
+          <!-- Ribbon cross (coral) -->
+          <!-- Vertical ribbon -->
+          <rect x="76" y="65" width="8" height="75" fill="var(--coral)" rx="2"/>
+          <!-- Horizontal ribbon -->
+          <rect x="35" y="100" width="90" height="8" fill="var(--coral)" rx="2"/>
+
+          <!-- Ribbon bow center (gold) -->
+          <circle cx="80" cy="100" r="9" fill="var(--gold)"/>
+
+          <!-- Paintbrush handle (brown) -->
+          <rect x="76" y="35" width="8" height="32" fill="#8B6F47" rx="2"/>
+
+          <!-- Paintbrush bristles (cream/light) -->
+          <ellipse cx="80" cy="30" rx="12" ry="8" fill="#F5E6D3"/>
+
+          <!-- Paintbrush bristle detail -->
+          <ellipse cx="80" cy="28" rx="8" ry="5" fill="#E8D5C0" opacity="0.7"/>
+
+          <!-- Paintbrush ferrule (gold) -->
+          <rect x="74" y="32" width="12" height="4" fill="var(--gold)" rx="1"/>
+
+          <!-- Gold highlights on ribbon -->
+          <rect x="78" y="68" width="4" height="6" fill="var(--gold)" opacity="0.6"/>
+          <rect x="48" y="98" width="6" height="4" fill="var(--gold)" opacity="0.6"/>
+        </svg>
+
+        <!-- Title -->
+        <div class="coming-soon-title">New packs coming soon!</div>
+
+        <!-- Subtitle -->
+        <div class="coming-soon-subtitle">We're creating more amazing coloring pages for you.</div>
+
+        <!-- Notify Me button — toggled state -->
+        <button class="btn-notify toggled">You'll be notified ✓</button>
+      </div>
+
+      <!-- Bottom safe area -->
+      <div class="safe-area"><div class="home-indicator"></div></div>
+
+    </div>
+  </div>
+  <div class="device-label">Notify Me activated</div>
+</div>
+
+</body>
+</html>

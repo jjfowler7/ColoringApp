@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=390px, initial-scale=1.0" />
+  <title>PaperBrush — Gallery Full-Screen</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800&family=Nunito+Sans:wght@400;600&display=swap" rel="stylesheet" />
+  <style>
+    /* ─── Reset ─────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --navy:    #1B2A4A;
+      --teal:    #0EA5A0;
+      --cream:   #FFF8F0;
+      --sage:    #7CB686;
+      --secondary: #666666;
+    }
+
+    html, body {
+      width: 100%;
+      min-height: 100%;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 48px;
+      padding: 48px;
+      align-items: flex-start;
+      justify-content: center;
+      background: #1A1714;
+      font-family: 'Nunito Sans', sans-serif;
+    }
+
+    .device-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+    }
+    .device-label {
+      font-family: 'Nunito Sans', sans-serif;
+      font-size: 13px;
+      color: #666;
+      letter-spacing: 0.04em;
+    }
+
+    /* ─── iPhone shell ───────────────────────────────────── */
+    .iphone {
+      width: 390px;
+      height: 844px;
+      border-radius: 50px;
+      background: #111;
+      box-shadow: 0 24px 80px rgba(0,0,0,0.55), inset 0 0 0 2px #2a2a2a;
+      position: relative;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+    .iphone::before {
+      content: '';
+      position: absolute;
+      top: 12px; left: 50%;
+      transform: translateX(-50%);
+      width: 120px; height: 34px;
+      background: #111;
+      border-radius: 20px;
+      z-index: 40;
+    }
+
+    /* ─── Screen — pure white to let artwork breathe ─────── */
+    .screen {
+      position: absolute;
+      inset: 0;
+      border-radius: 48px;
+      overflow: hidden;
+      background: #ffffff;
+    }
+
+    /* ─── ARTWORK fills the full screen ─────────────────── */
+    .artwork-full {
+      position: absolute;
+      inset: 24px;
+      border-radius: 12px;
+      overflow: hidden;
+      background: #ffffff;
+    }
+    .artwork-full svg {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    /* ─── STATUS BAR (light text on dark-tinted bar) ─────── */
+    .status-bar {
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 54px;
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      padding: 0 28px 8px;
+      z-index: 20;
+      /* matches the top-bar tint below it */
+      background: rgba(27,42,74,0.40);
+    }
+    .status-time {
+      font-family: 'Nunito', sans-serif;
+      font-weight: 700;
+      font-size: 15px;
+      color: rgba(255,255,255,0.88);
+    }
+    .status-icons { display: flex; align-items: center; gap: 5px; }
+    .status-icons svg { fill: rgba(255,255,255,0.75); }
+
+    /* ─── TOP BAR — overlaid, 40% navy ──────────────────── */
+    .top-bar {
+      position: absolute;
+      top: 54px; left: 0; right: 0;
+      height: 44px;
+      background: rgba(27,42,74,0.40);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      display: flex;
+      align-items: center;
+      z-index: 20;
+      padding: 0;
+    }
+
+    /* Close button */
+    .btn-close {
+      width: 44px; height: 44px;
+      display: flex; align-items: center; justify-content: center;
+      margin-left: 8px;
+      flex-shrink: 0;
+      cursor: pointer;
+      border-radius: 9999px;
+    }
+    .btn-close svg {
+      width: 16px; height: 16px;
+      stroke: #ffffff;
+      stroke-width: 2.5;
+      stroke-linecap: round;
+      fill: none;
+    }
+
+    /* Right icon group */
+    .bar-right {
+      margin-left: auto;
+      display: flex;
+      align-items: center;
+      gap: 0;
+      margin-right: 4px;
+    }
+    .bar-icon {
+      width: 44px; height: 44px;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+      border-radius: 9999px;
+    }
+    .bar-icon svg {
+      fill: none;
+      stroke: #ffffff;
+      stroke-width: 1.9;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    /* ─── SWIPE HINT CHEVRONS ────────────────────────────── */
+    /* Sit on the .iphone shell, OUTSIDE .screen so border-radius clip doesn't hide them */
+    .swipe-left,
+    .swipe-right {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 36px; height: 64px;
+      display: flex; align-items: center; justify-content: center;
+      z-index: 35;
+      pointer-events: none;
+      /* pill background so they read against any artwork color */
+      background: rgba(27,42,74,0.38);
+      border-radius: 9999px;
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+    }
+    .swipe-left  { left: 10px; }
+    .swipe-right { right: 10px; }
+    .swipe-left svg,
+    .swipe-right svg {
+      width: 16px; height: 26px;
+      stroke: rgba(255,255,255,0.85);
+      stroke-width: 2.5;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      fill: none;
+    }
+
+    /* ─── BOTTOM INFO STRIP ──────────────────────────────── */
+    .info-strip {
+      position: absolute;
+      left: 0; right: 0; bottom: 0;
+      height: 120px;
+      /* gradient from transparent at top → cream at bottom */
+      background: linear-gradient(
+        to bottom,
+        transparent 0%,
+        rgba(255,248,240,0.70) 30%,
+        rgba(255,248,240,0.96) 60%,
+        #FFF8F0 100%
+      );
+      border-radius: 0 0 48px 48px;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      padding: 0 28px 28px;
+      z-index: 20;
+    }
+
+    .info-title {
+      font-family: 'Nunito', sans-serif;
+      font-weight: 700;
+      font-size: 18px;
+      color: var(--navy);
+      line-height: 1.2;
+      letter-spacing: -0.2px;
+    }
+    .info-meta {
+      margin-top: 3px;
+      font-family: 'Nunito Sans', sans-serif;
+      font-weight: 400;
+      font-size: 13px;
+      color: var(--secondary);
+    }
+    .info-status {
+      margin-top: 6px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .status-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--sage);
+      flex-shrink: 0;
+    }
+    .status-label {
+      font-family: 'Nunito Sans', sans-serif;
+      font-weight: 600;
+      font-size: 13px;
+      color: var(--secondary);
+    }
+
+    /* ─── Entrance animation ─────────────────────────────── */
+    @keyframes fadeIn  { from { opacity:0 }                     to { opacity:1 } }
+    @keyframes scaleIn { from { opacity:0; transform:scale(0.96) } to { opacity:1; transform:scale(1) } }
+    @keyframes slideDown { from { opacity:0; transform:translateY(-8px) } to { opacity:1; transform:translateY(0) } }
+    @keyframes slideUp   { from { opacity:0; transform:translateY(12px)  } to { opacity:1; transform:translateY(0) } }
+
+    .artwork-full  { animation: scaleIn   0.45s cubic-bezier(0.34,1.2,0.64,1) 0.05s both; }
+    .status-bar,
+    .top-bar       { animation: slideDown 0.35s ease 0.1s both; }
+    .swipe-left,
+    .swipe-right   { animation: fadeIn    0.5s ease 0.4s  both; }
+    .info-strip    { animation: slideUp   0.38s ease 0.2s  both; }
+  </style>
+</head>
+<body>
+
+<div class="device-wrap">
+  <div class="iphone">
+    <div class="screen">
+
+      <!-- ══ FULL-BLEED ARTWORK ══ -->
+      <div class="artwork-full">
+        <svg viewBox="0 0 342 742" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
+          <defs>
+            <radialGradient id="fsSky" cx="50%" cy="28%" r="75%">
+              <stop offset="0%" stop-color="#A8D4E8"/>
+              <stop offset="100%" stop-color="#6AAEC8"/>
+            </radialGradient>
+            <radialGradient id="fsSunGlow" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stop-color="#FFF8C0" stop-opacity="0.95"/>
+              <stop offset="100%" stop-color="#F5A623" stop-opacity="0"/>
+            </radialGradient>
+            <radialGradient id="fsMane" cx="50%" cy="42%" r="56%">
+              <stop offset="0%" stop-color="#D4811A"/>
+              <stop offset="100%" stop-color="#9A5408"/>
+            </radialGradient>
+            <radialGradient id="fsBody" cx="50%" cy="35%" r="60%">
+              <stop offset="0%" stop-color="#F5D060"/>
+              <stop offset="100%" stop-color="#E0A828"/>
+            </radialGradient>
+            <radialGradient id="fsHead" cx="50%" cy="38%" r="58%">
+              <stop offset="0%" stop-color="#F8DC6A"/>
+              <stop offset="100%" stop-color="#E8B832"/>
+            </radialGradient>
+          </defs>
+
+          <!-- ── SKY ── -->
+          <rect width="342" height="742" fill="url(#fsSky)"/>
+
+          <!-- Horizon haze -->
+          <ellipse cx="171" cy="440" rx="220" ry="80" fill="#C8E8D8" opacity="0.3"/>
+
+          <!-- ── SUN ── -->
+          <circle cx="171" cy="90" r="70"  fill="url(#fsSunGlow)"/>
+          <circle cx="171" cy="90" r="44"  fill="#FFF8B0" opacity="0.85"/>
+          <circle cx="171" cy="90" r="28"  fill="#FFDC40" opacity="0.9"/>
+          <!-- Sun rays -->
+          <g stroke="#FFDC40" stroke-width="3" stroke-linecap="round" opacity="0.5">
+            <line x1="171" y1="48" x2="171" y2="30"/>
+            <line x1="171" y1="132" x2="171" y2="150"/>
+            <line x1="129" y1="90" x2="111" y2="90"/>
+            <line x1="213" y1="90" x2="231" y2="90"/>
+            <line x1="141" y1="60" x2="127" y2="46"/>
+            <line x1="201" y1="120" x2="215" y2="134"/>
+            <line x1="201" y1="60" x2="215" y2="46"/>
+            <line x1="141" y1="120" x2="127" y2="134"/>
+          </g>
+
+          <!-- ── CLOUDS ── -->
+          <g fill="#FFFEF8" opacity="0.82">
+            <ellipse cx="60"  cy="160" rx="38" ry="22"/>
+            <ellipse cx="40"  cy="168" rx="26" ry="18"/>
+            <ellipse cx="82"  cy="168" rx="24" ry="16"/>
+            <ellipse cx="268" cy="145" rx="44" ry="24"/>
+            <ellipse cx="248" cy="154" rx="28" ry="20"/>
+            <ellipse cx="292" cy="153" rx="26" ry="18"/>
+          </g>
+
+          <!-- ── FAR BACKGROUND HILLS ── -->
+          <ellipse cx="80"  cy="440" rx="140" ry="55" fill="#7CB686" opacity="0.45"/>
+          <ellipse cx="262" cy="435" rx="130" ry="50" fill="#6AAE76" opacity="0.45"/>
+
+          <!-- ── GROUND ── -->
+          <ellipse cx="171" cy="680" rx="230" ry="100" fill="#5A9E48"/>
+          <rect x="0" y="620" width="342" height="122" fill="#4A8E38"/>
+
+          <!-- Ground details — grass tufts -->
+          <g fill="none" stroke="#3E7830" stroke-width="2" stroke-linecap="round">
+            <path d="M18 620 Q20 602 22 620 Q24 602 26 620"/>
+            <path d="M44 624 Q46 608 48 624 Q50 608 52 624"/>
+            <path d="M278 620 Q280 604 282 620 Q284 604 286 620"/>
+            <path d="M308 622 Q310 607 312 622 Q314 607 316 622"/>
+            <path d="M10 632 Q12 618 14 632"/>
+            <path d="M325 628 Q327 615 329 628"/>
+            <path d="M136 626 Q138 614 140 626"/>
+            <path d="M194 628 Q196 616 198 628"/>
+          </g>
+
+          <!-- Ground flowers -->
+          <circle cx="74"  cy="624" r="5"   fill="#F06449"/>
+          <circle cx="76"  cy="624" r="2.5" fill="#F5A623"/>
+          <circle cx="252" cy="626" r="4.5" fill="#B8A9E8"/>
+          <circle cx="254" cy="626" r="2.2" fill="#F5A623"/>
+          <circle cx="162" cy="632" r="4"   fill="#6BB8E8"/>
+          <circle cx="164" cy="632" r="2"   fill="#ffffff"/>
+
+          <!-- ── ACACIA TREES ── -->
+          <!-- Right acacia -->
+          <rect x="292" y="480" width="10" height="150" rx="5" fill="#8B6040"/>
+          <ellipse cx="297" cy="466" rx="46" ry="28" fill="#5A9E48"/>
+          <ellipse cx="276" cy="478" rx="32" ry="20" fill="#4E8E3C"/>
+          <ellipse cx="318" cy="474" rx="30" ry="18" fill="#4E8E3C"/>
+          <!-- Left acacia -->
+          <rect x="40"  y="510" width="9"  height="120" rx="4.5" fill="#8B6040"/>
+          <ellipse cx="44"  cy="498" rx="40" ry="24" fill="#5A9E48"/>
+          <ellipse cx="26"  cy="508" rx="28" ry="18" fill="#4E8E3C"/>
+          <ellipse cx="64"  cy="505" rx="28" ry="17" fill="#4E8E3C"/>
+
+          <!-- ── DISTANT ZEBRA silhouette ── -->
+          <g opacity="0.25" fill="#2A4830">
+            <ellipse cx="48" cy="580" rx="18" ry="12"/>
+            <circle  cx="48" cy="566" r="10"/>
+            <line x1="40" y1="590" x2="38" y2="600" stroke="#2A4830" stroke-width="3" stroke-linecap="round"/>
+            <line x1="46" y1="592" x2="45" y2="602" stroke="#2A4830" stroke-width="3" stroke-linecap="round"/>
+            <line x1="54" y1="592" x2="55" y2="602" stroke="#2A4830" stroke-width="3" stroke-linecap="round"/>
+          </g>
+
+          <!-- ── DISTANT GIRAFFE silhouette ── -->
+          <g opacity="0.22" fill="#2A4830">
+            <rect x="290" y="530" width="7" height="50" rx="3.5"/>
+            <rect x="292" y="505" width="5" height="38" rx="2.5"/>
+            <ellipse cx="295" cy="500" rx="8" ry="6"/>
+            <line x1="286" y1="578" x2="284" y2="594" stroke="#2A4830" stroke-width="4" stroke-linecap="round"/>
+            <line x1="292" y1="580" x2="291" y2="596" stroke="#2A4830" stroke-width="4" stroke-linecap="round"/>
+            <line x1="298" y1="580" x2="299" y2="596" stroke="#2A4830" stroke-width="4" stroke-linecap="round"/>
+            <line x1="304" y1="578" x2="306" y2="594" stroke="#2A4830" stroke-width="4" stroke-linecap="round"/>
+          </g>
+
+          <!-- ════════════════════════════════
+               LION — center stage, large
+               Center: 171, 460
+               ════════════════════════════ -->
+
+          <!-- ── TAIL ── -->
+          <path d="M258 530 Q310 490 316 514 Q322 540 300 554 Q282 564 270 550" fill="none" stroke="#E8B030" stroke-width="20" stroke-linecap="round"/>
+          <!-- Tail center highlight -->
+          <path d="M260 532 Q306 496 310 516 Q316 536 296 548" fill="none" stroke="#F5C840" stroke-width="8" stroke-linecap="round" opacity="0.5"/>
+          <!-- Tail outline -->
+          <path d="M258 530 Q310 490 316 514 Q322 540 300 554 Q282 564 270 550" fill="none" stroke="#C88020" stroke-width="2.5" stroke-linecap="round" opacity="0.6"/>
+          <!-- Tail tuft -->
+          <ellipse cx="316" cy="514" rx="22" ry="28" fill="#D4721A" transform="rotate(-20 316 514)"/>
+          <ellipse cx="312" cy="510" rx="11" ry="16" fill="#A05C08" opacity="0.7" transform="rotate(-20 312 510)"/>
+          <path d="M308 498 Q316 486 320 498" fill="none" stroke="#B86010" stroke-width="2.5" stroke-linecap="round" opacity="0.6"/>
+
+          <!-- ── MANE ── -->
+          <ellipse cx="171" cy="388" rx="128" ry="124" fill="url(#fsMane)"/>
+          <!-- Mane depth layers -->
+          <path d="M58 340 Q52 375 56 410" fill="none" stroke="#7A3A08" stroke-width="5" stroke-linecap="round" opacity="0.35"/>
+          <path d="M284 340 Q290 375 286 410" fill="none" stroke="#7A3A08" stroke-width="5" stroke-linecap="round" opacity="0.35"/>
+          <path d="M100 256 Q120 238 140 246" fill="none" stroke="#7A3A08" stroke-width="4" stroke-linecap="round" opacity="0.3"/>
+          <path d="M202 256 Q220 238 242 246" fill="none" stroke="#7A3A08" stroke-width="4" stroke-linecap="round" opacity="0.3"/>
+          <path d="M136 248 Q155 230 171 226 Q187 230 206 248" fill="none" stroke="#7A3A08" stroke-width="4" stroke-linecap="round" opacity="0.3"/>
+          <!-- Inner mane ring -->
+          <ellipse cx="171" cy="388" rx="102" ry="100" fill="#C87818" opacity="0.35"/>
+
+          <!-- ── BODY ── -->
+          <ellipse cx="171" cy="568" rx="118" ry="88" fill="url(#fsBody)"/>
+          <!-- Body shading -->
+          <ellipse cx="171" cy="580" rx="80" ry="60" fill="#F8E080" opacity="0.45"/>
+          <!-- Belly patch -->
+          <ellipse cx="171" cy="590" rx="56" ry="44" fill="#FFF0A0" opacity="0.6"/>
+
+          <!-- ── HEAD ── -->
+          <ellipse cx="171" cy="362" rx="100" ry="96" fill="url(#fsHead)"/>
+          <!-- Cheek shading -->
+          <ellipse cx="130" cy="382" rx="28" ry="18" fill="#F0B840" opacity="0.42"/>
+          <ellipse cx="212" cy="382" rx="28" ry="18" fill="#F0B840" opacity="0.42"/>
+
+          <!-- ── EARS ── -->
+          <!-- Left -->
+          <path d="M88 292 L68 254 L108 274Z" fill="#E8A828"/>
+          <path d="M88 288 L74 260 L104 274Z" fill="#D47A18" opacity="0.65"/>
+          <!-- Right -->
+          <path d="M254 292 L274 254 L234 274Z" fill="#E8A828"/>
+          <path d="M254 288 L268 260 L238 274Z" fill="#D47A18" opacity="0.65"/>
+
+          <!-- ── EYES ── large, full-color ── -->
+          <!-- Whites -->
+          <ellipse cx="140" cy="352" rx="22" ry="20" fill="#FFFFF0"/>
+          <ellipse cx="202" cy="352" rx="22" ry="20" fill="#FFFFF0"/>
+          <!-- Irises — deep amber -->
+          <ellipse cx="140" cy="354" rx="15" ry="15" fill="#C87418"/>
+          <ellipse cx="202" cy="354" rx="15" ry="15" fill="#C87418"/>
+          <!-- Iris ring -->
+          <ellipse cx="140" cy="354" rx="15" ry="15" fill="none" stroke="#A05808" stroke-width="1.5" opacity="0.5"/>
+          <ellipse cx="202" cy="354" rx="15" ry="15" fill="none" stroke="#A05808" stroke-width="1.5" opacity="0.5"/>
+          <!-- Pupils -->
+          <ellipse cx="140" cy="355" rx="9" ry="10" fill="#120800"/>
+          <ellipse cx="202" cy="355" rx="9" ry="10" fill="#120800"/>
+          <!-- Main shine -->
+          <circle cx="145" cy="348" r="5" fill="white" opacity="0.88"/>
+          <circle cx="207" cy="348" r="5" fill="white" opacity="0.88"/>
+          <!-- Secondary shine -->
+          <circle cx="135" cy="360" r="2.5" fill="white" opacity="0.45"/>
+          <circle cx="197" cy="360" r="2.5" fill="white" opacity="0.45"/>
+          <!-- Upper lid line -->
+          <path d="M122 344 Q140 334 158 344" fill="none" stroke="#8B5800" stroke-width="2.5" stroke-linecap="round"/>
+          <path d="M184 344 Q202 334 220 344" fill="none" stroke="#8B5800" stroke-width="2.5" stroke-linecap="round"/>
+          <!-- Lower lid -->
+          <path d="M122 362 Q140 366 158 362" fill="none" stroke="#C89030" stroke-width="1.5" stroke-linecap="round" opacity="0.5"/>
+          <path d="M184 362 Q202 366 220 362" fill="none" stroke="#C89030" stroke-width="1.5" stroke-linecap="round" opacity="0.5"/>
+
+          <!-- ── NOSE ── -->
+          <!-- Nose bridge -->
+          <line x1="171" y1="362" x2="171" y2="380" stroke="#A84810" stroke-width="2.5" stroke-linecap="round"/>
+          <!-- Nose shape -->
+          <path d="M154 382 Q171 394 188 382 Q171 370 154 382Z" fill="#C84020"/>
+          <!-- Nose highlight -->
+          <ellipse cx="163" cy="377" rx="4" ry="2.5" fill="#E06040" opacity="0.6"/>
+
+          <!-- ── MOUTH ── -->
+          <!-- Philtrum -->
+          <path d="M171 394 L165 406 M171 394 L177 406" fill="none" stroke="#A03010" stroke-width="2" stroke-linecap="round"/>
+          <!-- Big smile -->
+          <path d="M144 410 Q171 434 198 410" fill="none" stroke="#A03010" stroke-width="3.5" stroke-linecap="round"/>
+          <!-- Teeth -->
+          <path d="M150 415 Q171 434 192 415 Q171 428 150 415Z" fill="white" opacity="0.82"/>
+          <!-- Tongue hint -->
+          <ellipse cx="171" cy="428" rx="10" ry="6" fill="#E86050" opacity="0.7"/>
+
+          <!-- ── WHISKER DOTS ── -->
+          <circle cx="134" cy="400" r="3.5" fill="#8B5800" opacity="0.5"/>
+          <circle cx="126" cy="408" r="3.5" fill="#8B5800" opacity="0.5"/>
+          <circle cx="118" cy="396" r="3"   fill="#8B5800" opacity="0.45"/>
+          <circle cx="208" cy="400" r="3.5" fill="#8B5800" opacity="0.5"/>
+          <circle cx="216" cy="408" r="3.5" fill="#8B5800" opacity="0.5"/>
+          <circle cx="224" cy="396" r="3"   fill="#8B5800" opacity="0.45"/>
+
+          <!-- ── WHISKERS ── -->
+          <line x1="128" y1="398" x2="84"  y2="390" stroke="#D0A850" stroke-width="2"   stroke-linecap="round" opacity="0.7"/>
+          <line x1="124" y1="406" x2="78"  y2="406" stroke="#D0A850" stroke-width="2"   stroke-linecap="round" opacity="0.7"/>
+          <line x1="128" y1="414" x2="86"  y2="422" stroke="#D0A850" stroke-width="1.8" stroke-linecap="round" opacity="0.65"/>
+          <line x1="214" y1="398" x2="258" y2="390" stroke="#D0A850" stroke-width="2"   stroke-linecap="round" opacity="0.7"/>
+          <line x1="218" y1="406" x2="264" y2="406" stroke="#D0A850" stroke-width="2"   stroke-linecap="round" opacity="0.7"/>
+          <line x1="214" y1="414" x2="256" y2="422" stroke="#D0A850" stroke-width="1.8" stroke-linecap="round" opacity="0.65"/>
+
+          <!-- ── FRONT PAWS ── -->
+          <ellipse cx="120" cy="636" rx="46" ry="28" fill="#E8B030"/>
+          <ellipse cx="222" cy="636" rx="46" ry="28" fill="#E8B030"/>
+          <!-- Paw shading -->
+          <ellipse cx="120" cy="638" rx="32" ry="18" fill="#F5C840" opacity="0.5"/>
+          <ellipse cx="222" cy="638" rx="32" ry="18" fill="#F5C840" opacity="0.5"/>
+          <!-- Toe lines — left paw -->
+          <path d="M98  638 Q104 650 110 638" fill="none" stroke="#C88020" stroke-width="2.2" stroke-linecap="round"/>
+          <path d="M116 638 Q122 652 128 638" fill="none" stroke="#C88020" stroke-width="2.2" stroke-linecap="round"/>
+          <path d="M134 638 Q140 650 146 638" fill="none" stroke="#C88020" stroke-width="2.2" stroke-linecap="round"/>
+          <!-- Toe lines — right paw -->
+          <path d="M200 638 Q206 650 212 638" fill="none" stroke="#C88020" stroke-width="2.2" stroke-linecap="round"/>
+          <path d="M218 638 Q224 652 230 638" fill="none" stroke="#C88020" stroke-width="2.2" stroke-linecap="round"/>
+          <path d="M236 638 Q242 650 248 638" fill="none" stroke="#C88020" stroke-width="2.2" stroke-linecap="round"/>
+
+          <!-- ── SUBTLE OUTLINES for definition ── -->
+          <ellipse cx="171" cy="388" rx="128" ry="124" fill="none" stroke="#8B4E0A" stroke-width="2.5" opacity="0.3"/>
+          <ellipse cx="171" cy="362" rx="100" ry="96"  fill="none" stroke="#B87820" stroke-width="2"   opacity="0.3"/>
+          <ellipse cx="171" cy="568" rx="118" ry="88"  fill="none" stroke="#B87820" stroke-width="2"   opacity="0.25"/>
+
+          <!-- ── STAR RATING ── -->
+          <g fill="#F5A623" opacity="0.92" transform="translate(171,716)">
+            <polygon points="-40,0 -37.5,-9 -29,-9 -36,-3.5 -33.5,5.5 -40,1 -46.5,5.5 -44,-3.5 -51,-9 -42.5,-9"/>
+            <polygon points="0,-2 2.5,-10.5 10,-10.5 4,-5 6.5,4.5 0,0.5 -6.5,4.5 -4,-5 -10,-10.5 -2.5,-10.5" transform="scale(1.2)"/>
+            <polygon points="40,0 37.5,-9 29,-9 36,-3.5 33.5,5.5 40,1 46.5,5.5 44,-3.5 51,-9 42.5,-9"/>
+          </g>
+
+        </svg>
+      </div>
+
+      <!-- ══ STATUS BAR ══ -->
+      <div class="status-bar">
+        <span class="status-time">9:41</span>
+        <div class="status-icons">
+          <svg width="17" height="12" viewBox="0 0 17 12"><rect x="0" y="8" width="3" height="4" rx="0.8"/><rect x="4.5" y="5.5" width="3" height="6.5" rx="0.8"/><rect x="9" y="3" width="3" height="9" rx="0.8"/><rect x="13.5" y="0" width="3" height="12" rx="0.8"/></svg>
+          <svg width="16" height="12" viewBox="0 0 16 12" fill="none" stroke="rgba(255,255,255,0.75)" stroke-width="1.8" stroke-linecap="round"><path d="M1 4.5C3.8 1.8 8 1.8 10.5 4" opacity="0.35"/><path d="M2.8 6.2C4.8 4.3 7.4 4 9.2 5.5"/><path d="M4.8 7.8C5.8 6.9 7.2 6.9 8.2 7.8"/><circle cx="6.5" cy="10" r="1.2" fill="rgba(255,255,255,0.75)" stroke="none"/></svg>
+          <svg width="25" height="12" viewBox="0 0 25 12" fill="rgba(255,255,255,0.75)"><rect x="0" y="1" width="21" height="10" rx="2.5" stroke="rgba(255,255,255,0.75)" stroke-width="1.2" fill="none"/><rect x="1.5" y="2.5" width="16" height="7" rx="1.5"/><path d="M22.5 4v4a2 2 0 0 0 0-4z"/></svg>
+        </div>
+      </div>
+
+      <!-- ══ TOP BAR ══ -->
+      <div class="top-bar">
+
+        <!-- ✕ Close -->
+        <div class="btn-close">
+          <svg viewBox="0 0 16 16">
+            <line x1="2" y1="2" x2="14" y2="14"/>
+            <line x1="14" y1="2" x2="2" y2="14"/>
+          </svg>
+        </div>
+
+        <div class="bar-right">
+          <!-- ↻ Replay -->
+          <div class="bar-icon" title="Replay">
+            <svg width="22" height="22" viewBox="0 0 22 22">
+              <path d="M18 11 A7 7 0 1 0 16.5 15.5"/>
+              <polyline points="14.5,9 18,11 16,14.5"/>
+            </svg>
+          </div>
+          <!-- 📤 Share -->
+          <div class="bar-icon" title="Share">
+            <svg width="20" height="22" viewBox="0 0 20 22">
+              <path d="M10 14 L10 2"/>
+              <polyline points="5,7 10,2 15,7"/>
+              <path d="M3 14 L3 19 a1 1 0 0 0 1 1 L16 20 a1 1 0 0 0 1-1 L17 14"/>
+            </svg>
+          </div>
+          <!-- 🖨 Print -->
+          <div class="bar-icon" title="Print">
+            <svg width="22" height="20" viewBox="0 0 22 20">
+              <rect x="4" y="8" width="14" height="10" rx="1.5"/>
+              <path d="M6 8 L6 3 a1 1 0 0 1 1-1 L15 2 a1 1 0 0 1 1 1 L16 8"/>
+              <rect x="7" y="13" width="8" height="1.5" rx="0.75" fill="white" stroke="none"/>
+              <rect x="7" y="16" width="5" height="1.5" rx="0.75" fill="white" stroke="none"/>
+              <circle cx="17" cy="11" r="1.2" fill="white" stroke="none"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ BOTTOM INFO STRIP ══ -->
+      <div class="info-strip">
+        <div class="info-title">Sleeping Lion</div>
+        <div class="info-meta">Explorer tier · March 15, 2026</div>
+        <div class="info-status">
+          <div class="status-dot"></div>
+          <span class="status-label">Completed</span>
+        </div>
+      </div>
+
+    </div><!-- /screen -->
+
+    <!-- ══ SWIPE HINT CHEVRONS — outside .screen to avoid border-radius clip ══ -->
+    <div class="swipe-left">
+      <svg viewBox="0 0 18 28"><polyline points="14,2 4,14 14,26"/></svg>
+    </div>
+    <div class="swipe-right">
+      <svg viewBox="0 0 18 28"><polyline points="4,2 14,14 4,26"/></svg>
+    </div>
+
+  </div><!-- /iphone -->
+  <div class="device-label">iPhone 15 Pro — 390 × 844 pt · Gallery Full-Screen</div>
+</div>
+
+</body>
+</html>

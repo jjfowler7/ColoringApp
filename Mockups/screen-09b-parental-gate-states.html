@@ -1,0 +1,778 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=390px, initial-scale=1.0" />
+  <title>PaperBrush — Parental Gate States</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800&family=Nunito+Sans:wght@400;600&display=swap" rel="stylesheet" />
+  <style>
+    /* ─── Reset ─────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --cream:     #FFF8F0;
+      --canvas-bg: #FFFDF9;
+      --teal:      #0EA5A0;
+      --navy:      #1B2A4A;
+      --coral:     #F06449;
+      --gold:      #F5A623;
+      --sage:      #7CB686;
+      --secondary: #666666;
+      --divider:   #E8E0D8;
+    }
+
+    html, body {
+      width: 100%;
+      min-height: 100%;
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 48px;
+      padding: 48px;
+      align-items: start;
+      justify-items: center;
+      background: #C8C0AE;
+      font-family: 'Nunito Sans', sans-serif;
+    }
+
+    .device-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+    }
+    .device-label {
+      font-family: 'Nunito Sans', sans-serif;
+      font-size: 13px;
+      color: #888;
+      letter-spacing: 0.04em;
+      text-align: center;
+      max-width: 200px;
+    }
+
+    /* ─── iPhone shell ───────────────────────────────────── */
+    .iphone {
+      width: 390px;
+      height: 844px;
+      border-radius: 50px;
+      background: #1a1a1a;
+      box-shadow: 0 24px 80px rgba(0,0,0,0.45), inset 0 0 0 2px #3a3a3a;
+      position: relative;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+    .iphone::before {
+      content: '';
+      position: absolute;
+      top: 12px; left: 50%;
+      transform: translateX(-50%);
+      width: 120px; height: 34px;
+      background: #1a1a1a;
+      border-radius: 20px;
+      z-index: 50;
+    }
+
+    /* ─── Screen ─────────────────────────────────────────── */
+    .screen {
+      position: absolute;
+      inset: 0;
+      border-radius: 48px;
+      overflow: hidden;
+      background: var(--cream);
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ════════════════════════════════════════════════════════
+       CONTENT BROWSER BACKDROP
+       ════════════════════════════════════════════════════════ */
+    .status-bar {
+      height: 54px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      padding: 0 28px 8px;
+      background: var(--canvas-bg);
+      z-index: 2;
+    }
+    .status-time {
+      font-family: 'Nunito', sans-serif;
+      font-weight: 700; font-size: 15px;
+      color: var(--navy);
+    }
+    .status-icons { display: flex; align-items: center; gap: 5px; }
+    .status-icons svg { fill: var(--navy); }
+
+    .top-bar {
+      height: 44px; flex-shrink: 0;
+      background: var(--canvas-bg);
+      border-bottom: 1px solid var(--divider);
+      display: flex; align-items: center;
+      position: relative; z-index: 2;
+    }
+    .bar-back {
+      width: 44px; height: 44px;
+      display: flex; align-items: center; justify-content: center;
+      margin-left: 8px; flex-shrink: 0;
+    }
+    .bar-back svg {
+      width: 18px; height: 18px;
+      stroke: var(--teal); stroke-width: 2.5;
+      stroke-linecap: round; stroke-linejoin: round; fill: none;
+    }
+    .bar-title {
+      position: absolute; left: 0; right: 0;
+      text-align: center;
+      font-family: 'Nunito', sans-serif;
+      font-weight: 700; font-size: 18px;
+      color: var(--navy); pointer-events: none;
+    }
+    .bar-right { margin-left: auto; display: flex; align-items: center; }
+    .bar-icon { width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; }
+    .bar-icon svg { fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+    .bar-icon.teal  svg { stroke: var(--teal); }
+    .bar-icon.muted svg { stroke: var(--secondary); }
+    .bar-icon.settings {
+      position: relative;
+    }
+    .bar-icon.settings svg { stroke: var(--secondary); }
+    .grace-badge {
+      position: absolute;
+      top: 4px; right: 4px;
+      width: 6px; height: 6px;
+      background: var(--teal);
+      border-radius: 50%;
+      box-shadow: 0 0 2px rgba(14,165,160,0.6);
+    }
+
+    .pills-row {
+      margin-top: 16px; padding-left: 16px;
+      display: flex; gap: 8px; overflow: hidden;
+    }
+    .pill {
+      height: 36px; padding: 0 14px;
+      border-radius: 9999px; flex-shrink: 0;
+      display: flex; align-items: center; gap: 5px;
+      font-family: 'Nunito', sans-serif;
+      font-weight: 600; font-size: 13px;
+      white-space: nowrap;
+      border: 1px solid var(--divider);
+      background: var(--canvas-bg); color: var(--navy);
+    }
+    .pill.selected {
+      background: var(--teal); color: #ffffff;
+      border-color: transparent;
+      box-shadow: 0 2px 8px rgba(14,165,160,0.22);
+    }
+
+    .section-header {
+      margin: 20px 16px 0;
+      font-family: 'Nunito', sans-serif;
+      font-weight: 700; font-size: 22px;
+      color: var(--navy);
+    }
+
+    .page-grid {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 12px; padding: 16px 16px 0;
+      flex: 1; overflow: hidden;
+    }
+    .g-card {
+      background: var(--canvas-bg);
+      border-radius: 16px;
+      box-shadow: 0 2px 8px rgba(27,42,74,0.06);
+      overflow: hidden; position: relative;
+      height: 190px;
+    }
+    .g-card svg { width: 100%; height: 100%; display: block; }
+
+    .card-overlay-b {
+      position: absolute; left: 0; right: 0; bottom: 0;
+      height: 58px;
+      background: linear-gradient(to bottom, transparent, rgba(27,42,74,0.72));
+      display: flex; flex-direction: column;
+      justify-content: flex-end;
+      padding: 0 10px 9px; z-index: 3;
+    }
+    .card-name {
+      font-family: 'Nunito', sans-serif;
+      font-weight: 600; font-size: 12px;
+      color: #ffffff; line-height: 1.2;
+    }
+
+    /* ════════════════════════════════════════════════════════
+       SCRIM
+       ════════════════════════════════════════════════════════ */
+    .scrim {
+      position: absolute; inset: 0;
+      background: rgba(27,42,74,0.50);
+      z-index: 10;
+      border-radius: 48px;
+    }
+
+    /* ════════════════════════════════════════════════════════
+       MODAL
+       ════════════════════════════════════════════════════════ */
+    .modal-wrap {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 20;
+      gap: 14px;
+      padding-bottom: 20px;
+    }
+
+    .modal {
+      width: 300px;
+      background: #ffffff;
+      border-radius: 24px;
+      box-shadow: 0 16px 48px rgba(27,42,74,0.18);
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      animation: modalIn 0.38s cubic-bezier(0.34,1.25,0.64,1) both;
+    }
+
+    @keyframes modalIn {
+      from { opacity: 0; transform: scale(0.88) translateY(16px); }
+      to   { opacity: 1; transform: scale(1)    translateY(0); }
+    }
+
+    @keyframes shake {
+      0%   { transform: translateX(0); }
+      10%  { transform: translateX(-6px); }
+      20%  { transform: translateX(6px); }
+      30%  { transform: translateX(-6px); }
+      40%  { transform: translateX(6px); }
+      50%  { transform: translateX(-3px); }
+      100% { transform: translateX(0); }
+    }
+
+    /* ── Lock icon ── */
+    .modal-lock {
+      width: 52px; height: 52px;
+      background: rgba(245,166,35,0.12);
+      border-radius: 9999px;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .modal-lock svg {
+      width: 28px; height: 34px;
+    }
+
+    /* ── Title ── */
+    .modal-title {
+      margin-top: 12px;
+      font-family: 'Nunito', sans-serif;
+      font-weight: 700; font-size: 22px;
+      color: var(--navy);
+      text-align: center;
+      line-height: 1.2;
+      letter-spacing: -0.25px;
+    }
+
+    /* ── Math question ── */
+    .modal-question {
+      margin-top: 12px;
+      font-family: 'Nunito Sans', sans-serif;
+      font-weight: 600; font-size: 18px;
+      color: var(--secondary);
+      text-align: center;
+      line-height: 1.3;
+    }
+
+    /* ── Answer input ── */
+    .input-wrap {
+      margin-top: 16px;
+      width: 120px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .answer-field {
+      width: 100%;
+      height: 48px;
+      border: 1.5px solid var(--divider);
+      border-radius: 10px;
+      background: #ffffff;
+      display: flex; align-items: center; justify-content: center;
+      position: relative;
+      box-shadow: 0 0 0 3px rgba(14,165,160,0.12);
+      font-family: 'Nunito', sans-serif;
+      font-weight: 700; font-size: 24px;
+      color: var(--teal);
+      min-height: 48px;
+      transition: border-color 0.2s ease;
+    }
+    .answer-field::after {
+      content: '|';
+      animation: blink 1s step-start infinite;
+    }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+
+    /* Wrong answer state */
+    .answer-field.error {
+      border-color: var(--coral);
+      animation: shake 0.4s ease-out;
+    }
+
+    .error-message {
+      margin-top: 8px;
+      font-family: 'Nunito Sans', sans-serif;
+      font-weight: 400; font-size: 13px;
+      color: var(--coral);
+      text-align: center;
+      animation: fadeIn 0.3s ease 0.2s both;
+    }
+
+    /* Rate limit message */
+    .lockout-message {
+      margin-top: 8px;
+      font-family: 'Nunito Sans', sans-serif;
+      font-weight: 400; font-size: 13px;
+      color: var(--secondary);
+      text-align: center;
+    }
+
+    .countdown {
+      margin-top: 6px;
+      font-family: 'Nunito', sans-serif;
+      font-weight: 700; font-size: 14px;
+      color: var(--navy);
+      text-align: center;
+    }
+
+    .countdown-large {
+      margin-top: 8px;
+      font-family: 'Nunito', sans-serif;
+      font-weight: 700; font-size: 18px;
+      color: var(--coral);
+      text-align: center;
+    }
+
+    @keyframes fadeIn { from { opacity:0 } to { opacity:1 } }
+
+    /* ── Continue button ── */
+    .btn-continue {
+      margin-top: 20px;
+      width: 100%;
+      height: 48px;
+      background: var(--teal);
+      opacity: 0.38;
+      border: none;
+      border-radius: 10px;
+      box-shadow: 0 4px 16px rgba(14,165,160,0.22);
+      cursor: not-allowed;
+      display: flex; align-items: center; justify-content: center;
+      transition: opacity 0.2s ease;
+    }
+    .btn-continue.enabled {
+      opacity: 1;
+      cursor: pointer;
+    }
+    .btn-continue.disabled {
+      opacity: 0.38;
+      cursor: not-allowed;
+    }
+    .btn-continue span {
+      font-family: 'Nunito', sans-serif;
+      font-weight: 700; font-size: 16px;
+      color: #ffffff;
+    }
+
+    /* ── Cancel ── */
+    .btn-cancel {
+      margin-top: 16px;
+      font-family: 'Nunito Sans', sans-serif;
+      font-weight: 600; font-size: 15px;
+      color: var(--secondary);
+      text-align: center;
+      cursor: pointer;
+      padding: 4px 16px;
+      align-self: center;
+    }
+
+    /* ── Context note below modal ── */
+    .modal-note {
+      font-family: 'Nunito Sans', sans-serif;
+      font-weight: 400; font-size: 12px;
+      color: rgba(255,255,255,0.60);
+      text-align: center;
+      letter-spacing: 0.01em;
+      animation: modalIn 0.38s cubic-bezier(0.34,1.25,0.64,1) 0.1s both;
+    }
+
+    /* ── Numeric keyboard hint (bottom of screen, iOS style) ── */
+    .keyboard-hint {
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      height: 220px;
+      background: #D1D5DB;
+      border-radius: 0 0 48px 48px;
+      z-index: 25;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      animation: slideKeyboard 0.3s ease 0.15s both;
+    }
+    @keyframes slideKeyboard {
+      from { transform: translateY(100%); }
+      to   { transform: translateY(0); }
+    }
+    .kb-row {
+      flex: 1;
+      display: flex;
+    }
+    .kb-key {
+      flex: 1;
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Nunito Sans', sans-serif;
+      font-weight: 400; font-size: 22px;
+      color: #111;
+      background: #ffffff;
+      border: 0.5px solid #C8C8D0;
+      cursor: pointer;
+      user-select: none;
+      transition: background 0.08s;
+    }
+    .kb-key:active { background: #C8C8D0; }
+    .kb-key.action {
+      background: #ADB5BD;
+      font-size: 17px;
+      color: #111;
+      font-weight: 600;
+    }
+    .kb-key.delete {
+      background: #ADB5BD;
+    }
+    .kb-key.delete::after {
+      content: '';
+      display: inline-block;
+      width: 22px; height: 16px;
+      background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 22 16'%3E%3Cpath d='M8 1 L2 8 L8 15 L21 15 L21 1 Z' stroke='%23111' stroke-width='1.5' stroke-linejoin='round' fill='none'/%3E%3Cline x1='12' y1='5' x2='18' y2='11' stroke='%23111' stroke-width='1.8' stroke-linecap='round'/%3E%3Cline x1='18' y1='5' x2='12' y2='11' stroke='%23111' stroke-width='1.8' stroke-linecap='round'/%3E%3C/svg%3E") center/contain no-repeat;
+    }
+    .kb-key.go {
+      background: var(--teal);
+      color: #ffffff;
+      font-size: 17px;
+      font-weight: 700;
+      opacity: 0.4;
+    }
+
+    /* Disabled keyboard state */
+    .keyboard-hint.disabled .kb-key {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+  </style>
+</head>
+<body>
+
+<!-- ════════════════════════════════════════════════════════
+     DEVICE 1 — Wrong Answer State
+     ════════════════════════════════════════════════════════ -->
+<div class="device-wrap">
+  <div class="iphone">
+    <div class="screen">
+      <div class="status-bar">
+        <span class="status-time">9:41</span>
+        <div class="status-icons">
+          <svg width="17" height="12" viewBox="0 0 17 12"><rect x="0" y="8" width="3" height="4" rx="0.8"/><rect x="4.5" y="5.5" width="3" height="6.5" rx="0.8"/><rect x="9" y="3" width="3" height="9" rx="0.8"/><rect x="13.5" y="0" width="3" height="12" rx="0.8"/></svg>
+          <svg width="16" height="12" viewBox="0 0 16 12" fill="none" stroke="#1B2A4A" stroke-width="1.8" stroke-linecap="round"><path d="M1 4.5C3.8 1.8 8 1.8 10.5 4" opacity="0.3"/><path d="M2.8 6.2C4.8 4.3 7.4 4 9.2 5.5"/><path d="M4.8 7.8C5.8 6.9 7.2 6.9 8.2 7.8"/><circle cx="6.5" cy="10" r="1.2" fill="#1B2A4A" stroke="none"/></svg>
+          <svg width="25" height="12" viewBox="0 0 25 12" fill="#1B2A4A"><rect x="0" y="1" width="21" height="10" rx="2.5" stroke="#1B2A4A" stroke-width="1.2" fill="none"/><rect x="1.5" y="2.5" width="16" height="7" rx="1.5"/><path d="M22.5 4v4a2 2 0 0 0 0-4z"/></svg>
+        </div>
+      </div>
+      <div class="top-bar">
+        <div class="bar-back"><svg viewBox="0 0 18 18"><polyline points="12,3 5,9 12,15"/></svg></div>
+        <span class="bar-title">PaperBrush</span>
+        <div class="bar-right">
+          <div class="bar-icon teal">
+            <svg width="22" height="20" viewBox="0 0 22 20">
+              <rect x="4" y="5" width="14" height="11" rx="2.5" stroke-width="1.7"/>
+              <rect x="2" y="3" width="14" height="11" rx="2.5" stroke-width="1.7" opacity="0.45"/>
+              <path d="M6 13 L9 8.5 L12 11.5 L14 9.5 L17 13Z" stroke-width="1.4" fill="none" opacity="0.7"/>
+              <circle cx="14.5" cy="8" r="1.2" fill="none" stroke-width="1.4" opacity="0.7"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+      <div class="pills-row">
+        <div class="pill selected">🐾 Animals</div>
+        <div class="pill">🚗 Vehicles</div>
+      </div>
+      <div class="section-header">Animals</div>
+      <div class="page-grid">
+        <div class="g-card" style="background:#D4EAF8;"></div>
+        <div class="g-card" style="background:#E8F0E0;"></div>
+        <div class="g-card" style="background:#FFF5DC;"></div>
+        <div class="g-card" style="background:#FFFAF4;"></div>
+      </div>
+    </div>
+    <div class="scrim"></div>
+    <div class="modal-wrap">
+      <div class="modal">
+        <div class="modal-lock">
+          <svg viewBox="0 0 28 34" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M6 16 V10 C6 5.58 9.58 2 14 2 C18.42 2 22 5.58 22 10 V16"
+                  stroke="#F5A623" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+            <rect x="2" y="15" width="24" height="17" rx="4" fill="#F5A623"/>
+            <circle cx="14" cy="22" r="3.5" fill="white" opacity="0.85"/>
+            <rect x="12.5" y="24" width="3" height="4" rx="1.5" fill="white" opacity="0.85"/>
+          </svg>
+        </div>
+        <div class="modal-title">Grown-ups only!</div>
+        <div class="modal-question">What is 24 × 7?</div>
+        <div class="input-wrap">
+          <div class="answer-field error"></div>
+          <div class="error-message">Try again</div>
+        </div>
+        <button class="btn-continue disabled" disabled>
+          <span>Continue</span>
+        </button>
+        <div class="btn-cancel">Cancel</div>
+      </div>
+      <div class="modal-note">This keeps purchases safe</div>
+    </div>
+    <div class="keyboard-hint">
+      <div class="kb-row">
+        <div class="kb-key">1</div>
+        <div class="kb-key">2</div>
+        <div class="kb-key">3</div>
+      </div>
+      <div class="kb-row">
+        <div class="kb-key">4</div>
+        <div class="kb-key">5</div>
+        <div class="kb-key">6</div>
+      </div>
+      <div class="kb-row">
+        <div class="kb-key">7</div>
+        <div class="kb-key">8</div>
+        <div class="kb-key">9</div>
+      </div>
+      <div class="kb-row">
+        <div class="kb-key action">⠀</div>
+        <div class="kb-key">0</div>
+        <div class="kb-key delete"></div>
+      </div>
+    </div>
+  </div>
+  <div class="device-label">Wrong answer — field clears + message appears</div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════
+     DEVICE 2 — 30-Second Lockout
+     ════════════════════════════════════════════════════════ -->
+<div class="device-wrap">
+  <div class="iphone">
+    <div class="screen">
+      <div class="status-bar">
+        <span class="status-time">9:41</span>
+        <div class="status-icons">
+          <svg width="17" height="12" viewBox="0 0 17 12"><rect x="0" y="8" width="3" height="4" rx="0.8"/><rect x="4.5" y="5.5" width="3" height="6.5" rx="0.8"/><rect x="9" y="3" width="3" height="9" rx="0.8"/><rect x="13.5" y="0" width="3" height="12" rx="0.8"/></svg>
+          <svg width="16" height="12" viewBox="0 0 16 12" fill="none" stroke="#1B2A4A" stroke-width="1.8" stroke-linecap="round"><path d="M1 4.5C3.8 1.8 8 1.8 10.5 4" opacity="0.3"/><path d="M2.8 6.2C4.8 4.3 7.4 4 9.2 5.5"/><path d="M4.8 7.8C5.8 6.9 7.2 6.9 8.2 7.8"/><circle cx="6.5" cy="10" r="1.2" fill="#1B2A4A" stroke="none"/></svg>
+          <svg width="25" height="12" viewBox="0 0 25 12" fill="#1B2A4A"><rect x="0" y="1" width="21" height="10" rx="2.5" stroke="#1B2A4A" stroke-width="1.2" fill="none"/><rect x="1.5" y="2.5" width="16" height="7" rx="1.5"/><path d="M22.5 4v4a2 2 0 0 0 0-4z"/></svg>
+        </div>
+      </div>
+      <div class="top-bar">
+        <div class="bar-back"><svg viewBox="0 0 18 18"><polyline points="12,3 5,9 12,15"/></svg></div>
+        <span class="bar-title">PaperBrush</span>
+      </div>
+      <div class="pills-row">
+        <div class="pill selected">🐾 Animals</div>
+      </div>
+      <div class="section-header">Animals</div>
+      <div class="page-grid">
+        <div class="g-card" style="background:#D4EAF8;"></div>
+        <div class="g-card" style="background:#E8F0E0;"></div>
+        <div class="g-card" style="background:#FFF5DC;"></div>
+        <div class="g-card" style="background:#FFFAF4;"></div>
+      </div>
+    </div>
+    <div class="scrim"></div>
+    <div class="modal-wrap">
+      <div class="modal">
+        <div class="modal-lock">
+          <svg viewBox="0 0 28 34" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M6 16 V10 C6 5.58 9.58 2 14 2 C18.42 2 22 5.58 22 10 V16"
+                  stroke="#F5A623" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+            <rect x="2" y="15" width="24" height="17" rx="4" fill="#F5A623"/>
+            <circle cx="14" cy="22" r="3.5" fill="white" opacity="0.85"/>
+            <rect x="12.5" y="24" width="3" height="4" rx="1.5" fill="white" opacity="0.85"/>
+          </svg>
+        </div>
+        <div class="modal-title">Grown-ups only!</div>
+        <div class="modal-question">What is 24 × 7?</div>
+        <div class="input-wrap">
+          <div class="answer-field" style="opacity:0.6;background:#f5f5f5;color:#ccc;"></div>
+          <div class="lockout-message">Wait 30s before trying again</div>
+          <div class="countdown">0:28</div>
+        </div>
+        <button class="btn-continue disabled" disabled style="opacity:0.38;">
+          <span>Continue</span>
+        </button>
+        <div class="btn-cancel">Cancel</div>
+      </div>
+      <div class="modal-note">This keeps purchases safe</div>
+    </div>
+    <div class="keyboard-hint disabled">
+      <div class="kb-row">
+        <div class="kb-key">1</div>
+        <div class="kb-key">2</div>
+        <div class="kb-key">3</div>
+      </div>
+      <div class="kb-row">
+        <div class="kb-key">4</div>
+        <div class="kb-key">5</div>
+        <div class="kb-key">6</div>
+      </div>
+      <div class="kb-row">
+        <div class="kb-key">7</div>
+        <div class="kb-key">8</div>
+        <div class="kb-key">9</div>
+      </div>
+      <div class="kb-row">
+        <div class="kb-key action">⠀</div>
+        <div class="kb-key">0</div>
+        <div class="kb-key delete"></div>
+      </div>
+    </div>
+  </div>
+  <div class="device-label">3 wrong answers — 30s lockout</div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════
+     DEVICE 3 — 5-Minute Lockout
+     ════════════════════════════════════════════════════════ -->
+<div class="device-wrap">
+  <div class="iphone">
+    <div class="screen">
+      <div class="status-bar">
+        <span class="status-time">9:41</span>
+        <div class="status-icons">
+          <svg width="17" height="12" viewBox="0 0 17 12"><rect x="0" y="8" width="3" height="4" rx="0.8"/><rect x="4.5" y="5.5" width="3" height="6.5" rx="0.8"/><rect x="9" y="3" width="3" height="9" rx="0.8"/><rect x="13.5" y="0" width="3" height="12" rx="0.8"/></svg>
+          <svg width="16" height="12" viewBox="0 0 16 12" fill="none" stroke="#1B2A4A" stroke-width="1.8" stroke-linecap="round"><path d="M1 4.5C3.8 1.8 8 1.8 10.5 4" opacity="0.3"/><path d="M2.8 6.2C4.8 4.3 7.4 4 9.2 5.5"/><path d="M4.8 7.8C5.8 6.9 7.2 6.9 8.2 7.8"/><circle cx="6.5" cy="10" r="1.2" fill="#1B2A4A" stroke="none"/></svg>
+          <svg width="25" height="12" viewBox="0 0 25 12" fill="#1B2A4A"><rect x="0" y="1" width="21" height="10" rx="2.5" stroke="#1B2A4A" stroke-width="1.2" fill="none"/><rect x="1.5" y="2.5" width="16" height="7" rx="1.5"/><path d="M22.5 4v4a2 2 0 0 0 0-4z"/></svg>
+        </div>
+      </div>
+      <div class="top-bar">
+        <div class="bar-back"><svg viewBox="0 0 18 18"><polyline points="12,3 5,9 12,15"/></svg></div>
+        <span class="bar-title">PaperBrush</span>
+      </div>
+      <div class="pills-row">
+        <div class="pill selected">🐾 Animals</div>
+      </div>
+      <div class="section-header">Animals</div>
+      <div class="page-grid">
+        <div class="g-card" style="background:#D4EAF8;"></div>
+        <div class="g-card" style="background:#E8F0E0;"></div>
+        <div class="g-card" style="background:#FFF5DC;"></div>
+        <div class="g-card" style="background:#FFFAF4;"></div>
+      </div>
+    </div>
+    <div class="scrim"></div>
+    <div class="modal-wrap">
+      <div class="modal">
+        <div class="modal-lock">
+          <svg viewBox="0 0 28 34" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M6 16 V10 C6 5.58 9.58 2 14 2 C18.42 2 22 5.58 22 10 V16"
+                  stroke="#F5A623" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+            <rect x="2" y="15" width="24" height="17" rx="4" fill="#F5A623"/>
+            <circle cx="14" cy="22" r="3.5" fill="white" opacity="0.85"/>
+            <rect x="12.5" y="24" width="3" height="4" rx="1.5" fill="white" opacity="0.85"/>
+          </svg>
+        </div>
+        <div class="modal-title">Grown-ups only!</div>
+        <div style="margin-top:12px;font-family:'Nunito Sans',sans-serif;font-weight:400;font-size:16px;color:var(--secondary);text-align:center;line-height:1.3;">Too many attempts.<br>Try again in 5 minutes.</div>
+        <div class="countdown-large">4:52</div>
+        <button class="btn-continue disabled" disabled style="opacity:0.25;">
+          <span>Continue</span>
+        </button>
+        <div class="btn-cancel" style="opacity:1;">Cancel</div>
+      </div>
+      <div class="modal-note">This keeps purchases safe</div>
+    </div>
+    <div class="keyboard-hint disabled">
+      <div class="kb-row">
+        <div class="kb-key">1</div>
+        <div class="kb-key">2</div>
+        <div class="kb-key">3</div>
+      </div>
+      <div class="kb-row">
+        <div class="kb-key">4</div>
+        <div class="kb-key">5</div>
+        <div class="kb-key">6</div>
+      </div>
+      <div class="kb-row">
+        <div class="kb-key">7</div>
+        <div class="kb-key">8</div>
+        <div class="kb-key">9</div>
+      </div>
+      <div class="kb-row">
+        <div class="kb-key action">⠀</div>
+        <div class="kb-key">0</div>
+        <div class="kb-key delete"></div>
+      </div>
+    </div>
+  </div>
+  <div class="device-label">6 wrong answers — 5 min lockout</div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════
+     DEVICE 4 — Grace Period Indicator
+     ════════════════════════════════════════════════════════ -->
+<div class="device-wrap">
+  <div class="iphone">
+    <div class="screen">
+      <div class="status-bar">
+        <span class="status-time">9:41</span>
+        <div class="status-icons">
+          <svg width="17" height="12" viewBox="0 0 17 12"><rect x="0" y="8" width="3" height="4" rx="0.8"/><rect x="4.5" y="5.5" width="3" height="6.5" rx="0.8"/><rect x="9" y="3" width="3" height="9" rx="0.8"/><rect x="13.5" y="0" width="3" height="12" rx="0.8"/></svg>
+          <svg width="16" height="12" viewBox="0 0 16 12" fill="none" stroke="#1B2A4A" stroke-width="1.8" stroke-linecap="round"><path d="M1 4.5C3.8 1.8 8 1.8 10.5 4" opacity="0.3"/><path d="M2.8 6.2C4.8 4.3 7.4 4 9.2 5.5"/><path d="M4.8 7.8C5.8 6.9 7.2 6.9 8.2 7.8"/><circle cx="6.5" cy="10" r="1.2" fill="#1B2A4A" stroke="none"/></svg>
+          <svg width="25" height="12" viewBox="0 0 25 12" fill="#1B2A4A"><rect x="0" y="1" width="21" height="10" rx="2.5" stroke="#1B2A4A" stroke-width="1.2" fill="none"/><rect x="1.5" y="2.5" width="16" height="7" rx="1.5"/><path d="M22.5 4v4a2 2 0 0 0 0-4z"/></svg>
+        </div>
+      </div>
+      <div class="top-bar">
+        <div class="bar-back"><svg viewBox="0 0 18 18"><polyline points="12,3 5,9 12,15"/></svg></div>
+        <span class="bar-title">PaperBrush</span>
+        <div class="bar-right">
+          <div class="bar-icon teal">
+            <svg width="22" height="20" viewBox="0 0 22 20">
+              <rect x="4" y="5" width="14" height="11" rx="2.5" stroke-width="1.7"/>
+              <rect x="2" y="3" width="14" height="11" rx="2.5" stroke-width="1.7" opacity="0.45"/>
+              <path d="M6 13 L9 8.5 L12 11.5 L14 9.5 L17 13Z" stroke-width="1.4" fill="none" opacity="0.7"/>
+              <circle cx="14.5" cy="8" r="1.2" fill="none" stroke-width="1.4" opacity="0.7"/>
+            </svg>
+          </div>
+          <div class="bar-icon settings">
+            <svg width="20" height="20" viewBox="0 0 20 20">
+              <circle cx="10" cy="10" r="3" stroke-width="1.7"/>
+              <path d="M10 1v2M10 17v2M1 10h2M17 10h2M3.22 3.22l1.42 1.42M15.36 15.36l1.42 1.42M3.22 16.78l1.42-1.42M15.36 4.64l1.42-1.42" stroke-width="1.7" stroke-linecap="round"/>
+            </svg>
+            <div class="grace-badge"></div>
+          </div>
+        </div>
+      </div>
+      <div class="pills-row">
+        <div class="pill selected">🐾 Animals</div>
+        <div class="pill">🚗 Vehicles</div>
+      </div>
+      <div class="section-header">Animals</div>
+      <div class="page-grid">
+        <div class="g-card" style="background:#D4EAF8;"></div>
+        <div class="g-card" style="background:#E8F0E0;"></div>
+        <div class="g-card" style="background:#FFF5DC;"></div>
+        <div class="g-card" style="background:#FFFAF4;"></div>
+      </div>
+    </div>
+  </div>
+  <div class="device-label">Teal dot = grace period active (parents know to look)<br>No gate required for 5 min after last verification</div>
+</div>
+
+</body>
+</html>

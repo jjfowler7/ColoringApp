@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=390px, initial-scale=1.0" />
+  <title>PaperBrush — Turn Handoff</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800&family=Nunito+Sans:wght@400;600&display=swap" rel="stylesheet" />
+  <style>
+    /* ─── Reset ─────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --cream:   #FFF8F0;
+      --teal:    #0EA5A0;
+      --navy:    #1B2A4A;
+      --sky:     #6BB8E8;
+      --peach:   #FCBFA0;
+      --gold:    #F5A623;
+      --secondary: #666666;
+    }
+
+    html, body {
+      width: 100%;
+      min-height: 100%;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 48px;
+      padding: 48px;
+      align-items: flex-start;
+      justify-content: center;
+      background: #C8C0AE;
+      font-family: 'Nunito Sans', sans-serif;
+    }
+
+    .device-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+    }
+    .device-label {
+      font-family: 'Nunito Sans', sans-serif;
+      font-size: 13px;
+      color: #888;
+      letter-spacing: 0.04em;
+    }
+
+    /* ─── iPhone shell ───────────────────────────────────── */
+    .iphone {
+      width: 390px;
+      height: 844px;
+      border-radius: 50px;
+      background: #1a1a1a;
+      box-shadow: 0 24px 80px rgba(0,0,0,0.45), inset 0 0 0 2px #3a3a3a;
+      position: relative;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+    .iphone::before {
+      content: '';
+      position: absolute;
+      top: 12px; left: 50%;
+      transform: translateX(-50%);
+      width: 120px; height: 34px;
+      background: #1a1a1a;
+      border-radius: 20px;
+      z-index: 30;
+    }
+
+    /* ─── Screen ─────────────────────────────────────────── */
+    .screen {
+      position: absolute;
+      inset: 0;
+      border-radius: 48px;
+      overflow: hidden;
+      /* Warm Cream base */
+      background: var(--cream);
+      /* Sky Blue 15% wash on top */
+      background: linear-gradient(
+        135deg,
+        rgba(107,184,232,0.12) 0%,
+        rgba(107,184,232,0.18) 100%
+      ),
+      var(--cream);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    /* ─── DECORATIVE STARS ───────────────────────────────── */
+    .star {
+      position: absolute;
+      font-size: 0; /* hide text — use SVG stars instead */
+      pointer-events: none;
+      z-index: 1;
+      opacity: 0.30;
+    }
+    .star svg { fill: var(--gold); }
+
+    /* ─── STATUS BAR (minimal, light) ───────────────────── */
+    .status-bar {
+      width: 100%;
+      height: 54px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      padding: 0 28px 8px;
+      z-index: 10;
+    }
+    .status-time {
+      font-family: 'Nunito', sans-serif;
+      font-weight: 700; font-size: 15px;
+      color: var(--navy);
+    }
+    .status-icons { display: flex; align-items: center; gap: 5px; }
+    .status-icons svg { fill: var(--navy); }
+
+    /* ─── CONTENT STACK ──────────────────────────────────── */
+    .content {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      /* push content down from actual top */
+      padding-top: 80px;
+      z-index: 5;
+    }
+
+    /* "Player 1 just colored for 60s" — very top note */
+    .prev-note {
+      position: absolute;
+      top: 62px; /* just below dynamic island */
+      left: 0; right: 0;
+      text-align: center;
+      font-family: 'Nunito Sans', sans-serif;
+      font-weight: 400; font-size: 12px;
+      color: var(--secondary);
+      opacity: 0.85;
+      letter-spacing: 0.01em;
+      animation: fadeIn 0.4s ease 0.1s both;
+    }
+
+    /* Turn counter */
+    .turn-counter {
+      font-family: 'Nunito Sans', sans-serif;
+      font-weight: 400; font-size: 14px;
+      color: var(--secondary);
+      letter-spacing: 0.02em;
+      animation: fadeDown 0.38s ease 0.15s both;
+    }
+
+    /* Avatar */
+    .avatar-wrap {
+      margin-top: 40px;
+      width: 80px; height: 80px;
+      border-radius: 9999px;
+      background: var(--sky);
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 8px 32px rgba(27,42,74,0.14);
+      flex-shrink: 0;
+      animation: popIn 0.5s cubic-bezier(0.34,1.56,0.64,1) 0.25s both;
+    }
+    .avatar-wrap svg { width: 58px; height: 58px; }
+
+    /* Player name */
+    .player-name {
+      margin-top: 16px;
+      font-family: 'Nunito', sans-serif;
+      font-weight: 700; font-size: 32px;
+      color: var(--navy);
+      text-align: center;
+      letter-spacing: -0.5px;
+      line-height: 1.15;
+      animation: fadeUp 0.38s ease 0.38s both;
+    }
+
+    /* Handoff illustration */
+    .handoff-art {
+      margin-top: 24px;
+      width: 200px; height: 120px;
+      flex-shrink: 0;
+      animation: fadeUp 0.38s ease 0.48s both;
+    }
+    .handoff-art svg { width: 100%; height: 100%; }
+
+    /* Tap to start button */
+    .btn-tap {
+      margin-top: 32px;
+      width: 280px; height: 56px;
+      background: var(--teal);
+      border: none; border-radius: 10px;
+      box-shadow: 0 4px 16px rgba(14,165,160,0.28);
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      animation: fadeUp 0.38s ease 0.58s both;
+      transition: transform 0.14s cubic-bezier(0.34,1.56,0.64,1);
+    }
+    .btn-tap:active { transform: scale(0.97); }
+    .btn-tap span {
+      font-family: 'Nunito', sans-serif;
+      font-weight: 700; font-size: 18px;
+      color: #ffffff; letter-spacing: -0.1px;
+    }
+
+    /* ─── Animations ─────────────────────────────────────── */
+    @keyframes fadeIn   { from{opacity:0}              to{opacity:0.85} }
+    @keyframes fadeDown { from{opacity:0;transform:translateY(-10px)} to{opacity:1;transform:translateY(0)} }
+    @keyframes fadeUp   { from{opacity:0;transform:translateY(12px)}  to{opacity:1;transform:translateY(0)} }
+    @keyframes popIn    { 0%{opacity:0;transform:scale(0.7)} 60%{transform:scale(1.08)} 100%{opacity:1;transform:scale(1)} }
+    @keyframes twinkle  {
+      0%,100%  { opacity:0.30; transform:scale(1)    rotate(0deg); }
+      50%      { opacity:0.55; transform:scale(1.18) rotate(20deg); }
+    }
+    .star { animation: twinkle var(--dur, 3s) ease-in-out var(--delay, 0s) infinite; }
+  </style>
+</head>
+<body>
+
+<div class="device-wrap">
+  <div class="iphone">
+    <div class="screen">
+
+      <!-- ─── Status bar ──────────────────────────────────── -->
+      <div class="status-bar">
+        <span class="status-time">9:41</span>
+        <div class="status-icons">
+          <svg width="17" height="12" viewBox="0 0 17 12"><rect x="0" y="8" width="3" height="4" rx="0.8"/><rect x="4.5" y="5.5" width="3" height="6.5" rx="0.8"/><rect x="9" y="3" width="3" height="9" rx="0.8"/><rect x="13.5" y="0" width="3" height="12" rx="0.8"/></svg>
+          <svg width="16" height="12" viewBox="0 0 16 12" fill="none" stroke="#1B2A4A" stroke-width="1.8" stroke-linecap="round"><path d="M1 4.5C3.8 1.8 8 1.8 10.5 4" opacity="0.3"/><path d="M2.8 6.2C4.8 4.3 7.4 4 9.2 5.5"/><path d="M4.8 7.8C5.8 6.9 7.2 6.9 8.2 7.8"/><circle cx="6.5" cy="10" r="1.2" fill="#1B2A4A" stroke="none"/></svg>
+          <svg width="25" height="12" viewBox="0 0 25 12" fill="#1B2A4A"><rect x="0" y="1" width="21" height="10" rx="2.5" stroke="#1B2A4A" stroke-width="1.2" fill="none"/><rect x="1.5" y="2.5" width="16" height="7" rx="1.5"/><path d="M22.5 4v4a2 2 0 0 0 0-4z"/></svg>
+        </div>
+      </div>
+
+      <!-- ─── Decorative stars ─────────────────────────────── -->
+
+      <!-- Star 1 — top-left -->
+      <div class="star" style="top:76px; left:28px; --dur:3.2s; --delay:0s;">
+        <svg width="22" height="22" viewBox="0 0 22 22">
+          <polygon points="11,1 13.5,7.8 20.8,7.8 15.2,12.2 17.4,19.2 11,15.2 4.6,19.2 6.8,12.2 1.2,7.8 8.5,7.8"/>
+        </svg>
+      </div>
+
+      <!-- Star 2 — top-right -->
+      <div class="star" style="top:100px; right:32px; --dur:2.8s; --delay:0.6s;">
+        <svg width="18" height="18" viewBox="0 0 22 22">
+          <polygon points="11,1 13.5,7.8 20.8,7.8 15.2,12.2 17.4,19.2 11,15.2 4.6,19.2 6.8,12.2 1.2,7.8 8.5,7.8"/>
+        </svg>
+      </div>
+
+      <!-- Star 3 — mid-left -->
+      <div class="star" style="top:360px; left:18px; --dur:3.6s; --delay:0.3s;">
+        <svg width="26" height="26" viewBox="0 0 22 22">
+          <polygon points="11,1 13.5,7.8 20.8,7.8 15.2,12.2 17.4,19.2 11,15.2 4.6,19.2 6.8,12.2 1.2,7.8 8.5,7.8"/>
+        </svg>
+      </div>
+
+      <!-- Star 4 — mid-right -->
+      <div class="star" style="top:420px; right:22px; --dur:2.6s; --delay:1.0s;">
+        <svg width="20" height="20" viewBox="0 0 22 22">
+          <polygon points="11,1 13.5,7.8 20.8,7.8 15.2,12.2 17.4,19.2 11,15.2 4.6,19.2 6.8,12.2 1.2,7.8 8.5,7.8"/>
+        </svg>
+      </div>
+
+      <!-- Star 5 — lower-left -->
+      <div class="star" style="bottom:170px; left:30px; --dur:3.0s; --delay:0.8s;">
+        <svg width="16" height="16" viewBox="0 0 22 22">
+          <polygon points="11,1 13.5,7.8 20.8,7.8 15.2,12.2 17.4,19.2 11,15.2 4.6,19.2 6.8,12.2 1.2,7.8 8.5,7.8"/>
+        </svg>
+      </div>
+
+      <!-- Star 6 — lower-right -->
+      <div class="star" style="bottom:210px; right:26px; --dur:3.4s; --delay:1.4s;">
+        <svg width="24" height="24" viewBox="0 0 22 22">
+          <polygon points="11,1 13.5,7.8 20.8,7.8 15.2,12.2 17.4,19.2 11,15.2 4.6,19.2 6.8,12.2 1.2,7.8 8.5,7.8"/>
+        </svg>
+      </div>
+
+      <!-- ─── Previous turn note ──────────────────────────── -->
+      <div class="prev-note">Player 1 just colored for 60s</div>
+
+      <!-- ─── Main content stack ─────────────────────────── -->
+      <div class="content">
+
+        <!-- Turn counter -->
+        <div class="turn-counter">Turn 2 of 6</div>
+
+        <!-- Player avatar — cat with Sky Blue bg -->
+        <div class="avatar-wrap">
+          <svg viewBox="0 0 58 58" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <!-- Cat face on sky blue circle bg (bg is the wrapper div) -->
+            <!-- Pointy ears -->
+            <polygon points="10,18 4,4 18,12" fill="rgba(255,255,255,0.9)"/>
+            <polygon points="48,18 54,4 40,12" fill="rgba(255,255,255,0.9)"/>
+            <!-- Ear inner -->
+            <polygon points="10,17 6,7 17,13" fill="rgba(107,184,232,0.6)"/>
+            <polygon points="48,17 52,7 41,13" fill="rgba(107,184,232,0.6)"/>
+            <!-- Head -->
+            <circle cx="29" cy="32" r="21" fill="rgba(255,255,255,0.95)"/>
+            <!-- Forehead stripe -->
+            <path d="M23 16 Q27 10 29 14" fill="none" stroke="rgba(107,184,232,0.5)" stroke-width="2" stroke-linecap="round"/>
+            <path d="M25 12 Q29 6 31 10" fill="none" stroke="rgba(107,184,232,0.4)" stroke-width="1.8" stroke-linecap="round"/>
+            <!-- Happy eyes (curved shut — content expression) -->
+            <path d="M19 28 Q23 23 27 28" fill="none" stroke="#1B2A4A" stroke-width="2.5" stroke-linecap="round"/>
+            <path d="M31 28 Q35 23 39 28" fill="none" stroke="#1B2A4A" stroke-width="2.5" stroke-linecap="round"/>
+            <!-- Small lash dots -->
+            <circle cx="20" cy="27" r="1" fill="#1B2A4A" opacity="0.4"/>
+            <circle cx="38" cy="27" r="1" fill="#1B2A4A" opacity="0.4"/>
+            <!-- Nose -->
+            <path d="M25.5 34 Q29 37.5 32.5 34 Q29 30.5 25.5 34Z" fill="#F06449" opacity="0.9"/>
+            <!-- Mouth -->
+            <path d="M24 38 Q29 43 34 38" fill="none" stroke="#C84820" stroke-width="2" stroke-linecap="round"/>
+            <!-- Tongue peek -->
+            <ellipse cx="29" cy="41" rx="3.5" ry="2.5" fill="#F06449" opacity="0.75"/>
+            <!-- Whiskers -->
+            <line x1="5"  y1="33" x2="20" y2="34" stroke="rgba(27,42,74,0.35)" stroke-width="1.2" stroke-linecap="round"/>
+            <line x1="5"  y1="37" x2="20" y2="37" stroke="rgba(27,42,74,0.35)" stroke-width="1.2" stroke-linecap="round"/>
+            <line x1="53" y1="33" x2="38" y2="34" stroke="rgba(27,42,74,0.35)" stroke-width="1.2" stroke-linecap="round"/>
+            <line x1="53" y1="37" x2="38" y2="37" stroke="rgba(27,42,74,0.35)" stroke-width="1.2" stroke-linecap="round"/>
+            <!-- Rosy cheeks -->
+            <circle cx="18" cy="34" r="5" fill="#F06449" opacity="0.12"/>
+            <circle cx="40" cy="34" r="5" fill="#F06449" opacity="0.12"/>
+          </svg>
+        </div>
+
+        <!-- Player name -->
+        <div class="player-name">Your turn, Sarah!</div>
+
+        <!-- ─── Handoff illustration ─────────────────────── -->
+        <div class="handoff-art">
+          <svg viewBox="0 0 200 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+
+            <!-- ── Device / tablet being passed ── -->
+            <!-- Tablet body -->
+            <rect x="74" y="28" width="52" height="64" rx="6" fill="#FFFDF9" stroke="#C8C0B0" stroke-width="2"/>
+            <!-- Screen area -->
+            <rect x="78" y="34" width="44" height="48" rx="3" fill="#E8F4FF"/>
+            <!-- Coloring page on screen — simple cat outline -->
+            <circle cx="100" cy="48" r="8"  fill="none" stroke="#C8C0B0" stroke-width="1.5"/>
+            <polygon points="94,42 91,36 97,40" fill="none" stroke="#C8C0B0" stroke-width="1.2" stroke-linejoin="round"/>
+            <polygon points="106,42 109,36 103,40" fill="none" stroke="#C8C0B0" stroke-width="1.2" stroke-linejoin="round"/>
+            <!-- Half-colored (left fill on tiny cat) -->
+            <path d="M92 44 Q96 40 100 44 Q100 52 92 52Z" fill="#F5A623" opacity="0.7"/>
+            <!-- Home button bottom -->
+            <circle cx="100" cy="85" r="3.5" fill="none" stroke="#C8C0B0" stroke-width="1.5"/>
+
+            <!-- ── LEFT HAND (Player 1 releasing) ── -->
+            <!-- Palm -->
+            <ellipse cx="56" cy="85" rx="20" ry="14" fill="#F5C896" transform="rotate(-20 56 85)"/>
+            <!-- Thumb -->
+            <path d="M40 80 Q32 72 36 64 Q40 60 46 66 Q48 74 44 80Z" fill="#F5C896"/>
+            <path d="M40 78 Q33 72 37 65 Q40 62 45 67" fill="none" stroke="#E8A870" stroke-width="1" stroke-linecap="round" opacity="0.5"/>
+            <!-- Index finger -->
+            <path d="M54 72 Q52 60 56 54 Q60 52 64 56 Q66 64 62 72Z" fill="#F5C896"/>
+            <path d="M55 70 Q53 62 57 55 Q60 53 63 57" fill="none" stroke="#E8A870" stroke-width="1" stroke-linecap="round" opacity="0.5"/>
+            <!-- Middle finger -->
+            <path d="M64 73 Q63 60 67 54 Q71 52 74 57 Q75 65 72 73Z" fill="#F5C896"/>
+            <!-- Ring finger (slightly bent) -->
+            <path d="M72 76 Q72 65 76 60 Q79 58 81 63 Q82 70 79 76Z" fill="#F5C896"/>
+            <!-- Pinky -->
+            <path d="M79 80 Q80 72 83 68 Q86 66 87 71 Q88 76 85 80Z" fill="#F5C896"/>
+            <!-- Knuckle lines -->
+            <path d="M42 74 Q50 70 58 73" fill="none" stroke="#E8A870" stroke-width="1.2" stroke-linecap="round" opacity="0.4"/>
+            <!-- Nail hints -->
+            <ellipse cx="60" cy="56" rx="2.5" ry="1.8" fill="#F0B880" opacity="0.6" transform="rotate(-5 60 56)"/>
+            <ellipse cx="70" cy="55" rx="2.5" ry="1.8" fill="#F0B880" opacity="0.6" transform="rotate(5 70 55)"/>
+
+            <!-- ── RIGHT HAND (Player 2 receiving) ── -->
+            <!-- Palm -->
+            <ellipse cx="144" cy="82" rx="20" ry="14" fill="#FCBFA0" transform="rotate(20 144 82)"/>
+            <!-- Thumb -->
+            <path d="M160 78 Q168 70 164 62 Q160 58 154 64 Q152 72 156 78Z" fill="#FCBFA0"/>
+            <path d="M160 76 Q167 70 163 63 Q160 60 155 65" fill="none" stroke="#EEA888" stroke-width="1" stroke-linecap="round" opacity="0.5"/>
+            <!-- Index finger -->
+            <path d="M146 70 Q148 58 144 52 Q140 50 136 54 Q134 62 138 70Z" fill="#FCBFA0"/>
+            <!-- Middle finger -->
+            <path d="M136 71 Q137 58 133 52 Q129 50 126 55 Q125 63 128 71Z" fill="#FCBFA0"/>
+            <!-- Ring finger -->
+            <path d="M128 74 Q128 63 124 58 Q121 56 119 61 Q118 68 121 74Z" fill="#FCBFA0"/>
+            <!-- Pinky -->
+            <path d="M121 78 Q120 70 117 66 Q114 64 113 69 Q112 74 115 78Z" fill="#FCBFA0"/>
+            <!-- Knuckle lines -->
+            <path d="M158 72 Q150 68 142 71" fill="none" stroke="#EEA888" stroke-width="1.2" stroke-linecap="round" opacity="0.4"/>
+            <!-- Nail hints -->
+            <ellipse cx="140" cy="54" rx="2.5" ry="1.8" fill="#F0C0A0" opacity="0.6" transform="rotate(5 140 54)"/>
+            <ellipse cx="130" cy="53" rx="2.5" ry="1.8" fill="#F0C0A0" opacity="0.6" transform="rotate(-5 130 53)"/>
+
+            <!-- Motion lines — device being passed left→right -->
+            <path d="M68 60 Q72 58 76 60" fill="none" stroke="#6BB8E8" stroke-width="1.5" stroke-linecap="round" stroke-dasharray="3 3" opacity="0.5"/>
+            <path d="M116 58 Q120 56 124 58" fill="none" stroke="#6BB8E8" stroke-width="1.5" stroke-linecap="round" stroke-dasharray="3 3" opacity="0.5"/>
+
+            <!-- Direction arrow -->
+            <path d="M84 14 Q100 8 116 14" fill="none" stroke="#6BB8E8" stroke-width="2" stroke-linecap="round" opacity="0.5"/>
+            <polyline points="112,10 116,14 112,18" stroke="#6BB8E8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" opacity="0.5"/>
+
+            <!-- Small sparkle above device -->
+            <path d="M100 22 V18 M100 22 L96 18 M100 22 L104 18 M100 22 H96 M100 22 H104" stroke="#F5A623" stroke-width="1.5" stroke-linecap="round" opacity="0.55"/>
+
+          </svg>
+        </div>
+
+        <!-- Tap to start button -->
+        <button class="btn-tap">
+          <span>Tap to start your turn</span>
+        </button>
+
+      </div><!-- /content -->
+
+    </div><!-- /screen -->
+  </div><!-- /iphone -->
+  <div class="device-label">iPhone 15 Pro — 390 × 844 pt · Pass &amp; Play · Turn Handoff</div>
+</div>
+
+</body>
+</html>

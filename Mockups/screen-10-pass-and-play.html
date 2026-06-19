@@ -1,0 +1,947 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=390px, initial-scale=1.0" />
+  <title>PaperBrush — Pass & Play Setup</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800&family=Nunito+Sans:wght@400;600&display=swap" rel="stylesheet" />
+  <style>
+    /* ─── Reset ─────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --cream:     #FFF8F0;
+      --canvas-bg: #FFFDF9;
+      --teal:      #0EA5A0;
+      --navy:      #1B2A4A;
+      --coral:     #F06449;
+      --gold:      #F5A623;
+      --sky:       #6BB8E8;
+      --sage:      #7CB686;
+      --secondary: #666666;
+      --divider:   #E8E0D8;
+    }
+
+    html, body {
+      width: 100%;
+      min-height: 100%;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 48px;
+      padding: 48px;
+      align-items: flex-start;
+      justify-content: center;
+      background: #C8C0AE;
+      font-family: 'Nunito Sans', sans-serif;
+    }
+
+    .device-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+    }
+    .device-label {
+      font-family: 'Nunito Sans', sans-serif;
+      font-size: 13px;
+      color: #888;
+      letter-spacing: 0.04em;
+    }
+
+    /* ─── iPhone shell ───────────────────────────────────── */
+    .iphone {
+      width: 390px;
+      height: 844px;
+      border-radius: 50px;
+      background: #1a1a1a;
+      box-shadow: 0 24px 80px rgba(0,0,0,0.45), inset 0 0 0 2px #3a3a3a;
+      position: relative;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+    .iphone::before {
+      content: '';
+      position: absolute;
+      top: 12px; left: 50%;
+      transform: translateX(-50%);
+      width: 120px; height: 34px;
+      background: #1a1a1a;
+      border-radius: 20px;
+      z-index: 50;
+    }
+
+    /* ─── Screen ─────────────────────────────────────────── */
+    .screen {
+      position: absolute;
+      inset: 0;
+      border-radius: 48px;
+      overflow: hidden;
+      background: var(--canvas-bg);
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ════════════════════════════════════════════════════════
+       CANVAS BACKDROP (Explorer canvas, screen 3)
+       ════════════════════════════════════════════════════════ */
+    .status-bar {
+      height: 54px; flex-shrink: 0;
+      display: flex; align-items: flex-end; justify-content: space-between;
+      padding: 0 28px 8px;
+      background: var(--canvas-bg); z-index: 2;
+    }
+    .status-time {
+      font-family: 'Nunito', sans-serif;
+      font-weight: 700; font-size: 15px; color: var(--navy);
+    }
+    .status-icons { display: flex; align-items: center; gap: 5px; }
+    .status-icons svg { fill: var(--navy); }
+
+    .top-toolbar {
+      height: 44px; flex-shrink: 0;
+      background: var(--canvas-bg);
+      border-bottom: 1px solid var(--divider);
+      display: flex; align-items: center;
+      position: relative; z-index: 2;
+    }
+    .toolbar-back {
+      width: 44px; height: 44px;
+      display: flex; align-items: center; justify-content: center;
+      margin-left: 8px; flex-shrink: 0;
+    }
+    .toolbar-back svg {
+      width: 18px; height: 18px;
+      stroke: var(--teal); stroke-width: 2.5;
+      stroke-linecap: round; stroke-linejoin: round; fill: none;
+    }
+    .toolbar-title {
+      position: absolute; left: 0; right: 0;
+      text-align: center;
+      font-family: 'Nunito', sans-serif;
+      font-weight: 600; font-size: 16px; color: var(--navy);
+      pointer-events: none;
+    }
+    .toolbar-right { margin-left: auto; display: flex; align-items: center; }
+    .toolbar-icon {
+      width: 44px; height: 44px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .toolbar-icon svg {
+      fill: none; stroke: var(--teal);
+      stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round;
+    }
+    .toolbar-dots { display: flex; gap: 3.5px; align-items: center; }
+    .toolbar-dots span { width: 4px; height: 4px; border-radius: 50%; background: var(--teal); display: block; }
+
+    /* Canvas area — shows the cat artwork behind everything */
+    .canvas-area {
+      flex: 1; background: #ffffff;
+      position: relative; overflow: hidden; min-height: 0;
+    }
+    .canvas-area svg { width: 100%; height: 100%; display: block; }
+
+    /* Brush toolbar (just the strip, icons simplified for backdrop) */
+    .brush-toolbar {
+      height: 56px; flex-shrink: 0;
+      background: var(--canvas-bg);
+      border-top: 1px solid var(--divider);
+      display: flex; align-items: center; justify-content: space-around;
+      padding: 0 4px;
+    }
+    .b-icon {
+      width: 48px; height: 48px;
+      display: flex; align-items: center; justify-content: center;
+      border-radius: 9999px;
+    }
+    .b-icon.selected::before {
+      content: '';
+      position: absolute;
+      width: 48px; height: 48px;
+      border-radius: 9999px;
+      background: rgba(14,165,160,0.15);
+    }
+    .b-icon svg { width: 30px; height: 30px; position: relative; z-index: 1; fill: none; }
+
+    /* Color tray */
+    .color-tray-wrap {
+      height: 48px; flex-shrink: 0;
+      background: var(--canvas-bg);
+      border-top: 1px solid var(--divider);
+      display: flex; align-items: center; position: relative;
+    }
+    .color-tray-wrap::before {
+      content: ''; position: absolute;
+      top: 0; bottom: 0; left: 0; width: 32px; z-index: 2;
+      pointer-events: none;
+      background: linear-gradient(to right, var(--canvas-bg), transparent);
+    }
+    .color-tray {
+      flex: 1; height: 100%;
+      display: flex; align-items: center;
+      gap: 8px; padding: 0 12px 0 16px;
+      overflow: hidden;
+    }
+    .sw {
+      width: 32px; height: 32px;
+      border-radius: 9999px; flex-shrink: 0;
+    }
+    .sw.sel {
+      width: 40px; height: 40px;
+      outline: 3px solid #ffffff; outline-offset: 1px;
+      box-shadow: 0 0 0 1.5px rgba(27,42,74,0.15);
+    }
+    .tray-add-wrap {
+      flex-shrink: 0; height: 100%;
+      display: flex; align-items: center;
+      padding: 0 12px 0 4px;
+      border-left: 1px solid var(--divider);
+      background: var(--canvas-bg);
+    }
+    .sw-add {
+      width: 32px; height: 32px;
+      border-radius: 9999px;
+      border: 2px dashed var(--secondary);
+      display: flex; align-items: center; justify-content: center;
+      background: transparent;
+    }
+    .sw-add svg { width: 14px; height: 14px; stroke: var(--secondary); stroke-width: 2; fill: none; stroke-linecap: round; }
+
+    /* Control bar */
+    .control-bar {
+      height: 40px; flex-shrink: 0;
+      background: var(--canvas-bg);
+      display: flex; align-items: center; padding: 0 8px;
+    }
+    .ctrl-btn {
+      width: 44px; height: 44px;
+      display: flex; align-items: center; justify-content: center;
+      border-radius: 9999px; border: none; background: transparent;
+    }
+    .ctrl-btn svg { width: 22px; height: 22px; stroke: var(--teal); stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; fill: none; }
+    .slider-wrap { flex: 1; display: flex; align-items: center; justify-content: center; }
+    .slider-track { width: 200px; height: 6px; border-radius: 9999px; background: var(--divider); position: relative; }
+    .slider-fill { position: absolute; left: 0; top: 0; bottom: 0; width: 55%; background: var(--teal); border-radius: 9999px; }
+    .slider-thumb { position: absolute; top: 50%; left: 55%; transform: translate(-50%,-50%); width: 24px; height: 24px; border-radius: 9999px; background: #ffffff; box-shadow: 0 4px 16px rgba(27,42,74,0.10); }
+
+    .safe-area { height: 34px; flex-shrink: 0; background: var(--canvas-bg); display: flex; align-items: center; justify-content: center; }
+    .home-indicator { width: 120px; height: 5px; background: var(--navy); border-radius: 9999px; opacity: 0.18; }
+
+    /* ════════════════════════════════════════════════════════
+       SCRIM
+       ════════════════════════════════════════════════════════ */
+    .scrim {
+      position: absolute; inset: 0;
+      background: rgba(27,42,74,0.40);
+      z-index: 10; border-radius: 48px;
+    }
+
+    /* ════════════════════════════════════════════════════════
+       BOTTOM SHEET
+       ════════════════════════════════════════════════════════ */
+    .sheet {
+      position: absolute;
+      left: 0; right: 0; bottom: 0;
+      background: #ffffff;
+      border-radius: 24px 24px 0 0;
+      box-shadow: 0 -16px 48px rgba(27,42,74,0.18);
+      z-index: 20;
+      overflow: hidden;
+      animation: sheetUp 0.42s cubic-bezier(0.34,1.15,0.64,1) both;
+    }
+    @keyframes sheetUp {
+      from { transform: translateY(100%); opacity: 0.75; }
+      to   { transform: translateY(0);    opacity: 1; }
+    }
+
+    /* Scrollable inner */
+    .sheet-scroll {
+      overflow-y: auto;
+      overflow-x: hidden;
+      scrollbar-width: none;
+      padding: 0 24px 34px; /* 34pt for home indicator */
+      max-height: 490px;
+    }
+    .sheet-scroll::-webkit-scrollbar { display: none; }
+
+    /* Drag handle */
+    .drag-handle {
+      width: 36px; height: 5px;
+      background: var(--divider);
+      border-radius: 9999px;
+      margin: 12px auto 0;
+    }
+
+    /* Sheet title */
+    .sheet-title {
+      font-family: 'Nunito', sans-serif;
+      font-weight: 700; font-size: 24px;
+      color: var(--navy);
+      margin-top: 20px;
+      letter-spacing: -0.3px;
+    }
+
+    /* Player section */
+    .player-section { margin-top: 24px; }
+    .player-section + .player-section { margin-top: 20px; }
+
+    .player-label {
+      font-family: 'Nunito', sans-serif;
+      font-weight: 600; font-size: 14px;
+      color: var(--secondary);
+    }
+
+    /* Avatar row */
+    .avatar-row {
+      display: flex;
+      gap: 8px;
+      margin-top: 8px;
+      align-items: center;
+    }
+
+    .avatar {
+      width: 40px; height: 40px;
+      border-radius: 9999px;
+      flex-shrink: 0;
+      overflow: hidden;
+      cursor: pointer;
+      position: relative;
+      transition: transform 0.14s cubic-bezier(0.34,1.56,0.64,1);
+    }
+    .avatar:active { transform: scale(0.9); }
+
+    /* Selected ring — P1: teal, P2: sky */
+    .avatar.sel-teal {
+      outline: 3px solid var(--teal);
+      outline-offset: 2px;
+      box-shadow: 0 0 0 1px rgba(14,165,160,0.12);
+    }
+    .avatar.sel-sky {
+      outline: 3px solid var(--sky);
+      outline-offset: 2px;
+      box-shadow: 0 0 0 1px rgba(107,184,232,0.12);
+    }
+
+    .avatar svg { width: 40px; height: 40px; display: block; }
+
+    /* Name input */
+    .name-input {
+      margin-top: 8px;
+      width: 100%; height: 48px;
+      border: 1.5px solid var(--divider);
+      border-radius: 10px;
+      background: #ffffff;
+      padding: 0 14px;
+      font-family: 'Nunito Sans', sans-serif;
+      font-weight: 400; font-size: 16px;
+      color: var(--secondary);
+      outline: none;
+      display: flex; align-items: center;
+      /* rendered as a visual mock — not interactive */
+    }
+
+    /* Add player */
+    .add-player {
+      margin-top: 12px;
+      font-family: 'Nunito', sans-serif;
+      font-weight: 600; font-size: 14px;
+      color: var(--teal);
+      cursor: pointer;
+      display: flex; align-items: center; gap: 4px;
+    }
+
+    /* Turn time section */
+    .turn-time-section { margin-top: 24px; }
+    .turn-label {
+      font-family: 'Nunito', sans-serif;
+      font-weight: 600; font-size: 14px;
+      color: var(--secondary);
+    }
+
+    /* Segmented control */
+    .seg-control {
+      margin-top: 8px;
+      width: 100%; height: 44px;
+      background: var(--canvas-bg);
+      border-radius: 10px;
+      border: 1px solid var(--divider);
+      display: flex;
+      overflow: hidden;
+    }
+    .seg {
+      flex: 1;
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Nunito', sans-serif;
+      font-weight: 600; font-size: 14px;
+      cursor: pointer;
+      transition: background 0.15s;
+      border-right: 1px solid var(--divider);
+    }
+    .seg:last-child { border-right: none; }
+    .seg.active {
+      background: var(--teal);
+      color: #ffffff;
+      border-color: transparent;
+    }
+    .seg:not(.active) { color: var(--navy); background: var(--canvas-bg); }
+
+    /* Start button */
+    .btn-start {
+      margin-top: 24px;
+      width: 100%; height: 56px;
+      background: var(--teal);
+      border: none; border-radius: 10px;
+      box-shadow: 0 4px 16px rgba(14,165,160,0.25);
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: transform 0.14s cubic-bezier(0.34,1.56,0.64,1);
+    }
+    .btn-start:active { transform: scale(0.97); }
+    .btn-start span {
+      font-family: 'Nunito', sans-serif;
+      font-weight: 700; font-size: 18px;
+      color: #ffffff; letter-spacing: -0.1px;
+    }
+
+    /* ─── Stagger animations on sheet content ────────────── */
+    @keyframes fadeUp {
+      from { opacity:0; transform:translateY(8px); }
+      to   { opacity:1; transform:translateY(0); }
+    }
+    .sheet-title        { animation: fadeUp 0.3s ease 0.28s both; }
+    .player-section:nth-child(1) { animation: fadeUp 0.3s ease 0.34s both; }
+    .player-section:nth-child(2) { animation: fadeUp 0.3s ease 0.40s both; }
+    .add-player         { animation: fadeUp 0.3s ease 0.46s both; }
+    .turn-time-section  { animation: fadeUp 0.3s ease 0.50s both; }
+    .btn-start          { animation: fadeUp 0.3s ease 0.55s both; }
+  </style>
+</head>
+<body>
+
+<div class="device-wrap">
+  <div class="iphone">
+    <div class="screen">
+
+      <!-- ════════════════════════
+           CANVAS BACKDROP
+           ════════════════════════ -->
+
+      <!-- Status bar -->
+      <div class="status-bar">
+        <span class="status-time">9:41</span>
+        <div class="status-icons">
+          <svg width="17" height="12" viewBox="0 0 17 12"><rect x="0" y="8" width="3" height="4" rx="0.8"/><rect x="4.5" y="5.5" width="3" height="6.5" rx="0.8"/><rect x="9" y="3" width="3" height="9" rx="0.8"/><rect x="13.5" y="0" width="3" height="12" rx="0.8"/></svg>
+          <svg width="16" height="12" viewBox="0 0 16 12" fill="none" stroke="#1B2A4A" stroke-width="1.8" stroke-linecap="round"><path d="M1 4.5C3.8 1.8 8 1.8 10.5 4" opacity="0.3"/><path d="M2.8 6.2C4.8 4.3 7.4 4 9.2 5.5"/><path d="M4.8 7.8C5.8 6.9 7.2 6.9 8.2 7.8"/><circle cx="6.5" cy="10" r="1.2" fill="#1B2A4A" stroke="none"/></svg>
+          <svg width="25" height="12" viewBox="0 0 25 12" fill="#1B2A4A"><rect x="0" y="1" width="21" height="10" rx="2.5" stroke="#1B2A4A" stroke-width="1.2" fill="none"/><rect x="1.5" y="2.5" width="16" height="7" rx="1.5"/><path d="M22.5 4v4a2 2 0 0 0 0-4z"/></svg>
+        </div>
+      </div>
+
+      <!-- Top toolbar -->
+      <div class="top-toolbar">
+        <div class="toolbar-back"><svg viewBox="0 0 18 18"><polyline points="12,3 5,9 12,15"/></svg></div>
+        <span class="toolbar-title">Sleeping Cat</span>
+        <div class="toolbar-right">
+          <div class="toolbar-icon">
+            <svg width="22" height="20" viewBox="0 0 22 20">
+              <path d="M3 7H1a1 1 0 0 0-1 1v4a1 1 0 0 0 1 1h2l5 4V3L3 7z"/>
+              <path d="M16 4.5A8 8 0 0 1 16 15.5"/><path d="M13 7a4 4 0 0 1 0 6"/>
+            </svg>
+          </div>
+          <div class="toolbar-icon">
+            <div class="toolbar-dots"><span></span><span></span><span></span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Canvas: cat line art (partial color) -->
+      <div class="canvas-area">
+        <svg viewBox="0 0 390 300" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
+          <rect width="390" height="300" fill="#ffffff"/>
+          <defs>
+            <clipPath id="lh10"><rect x="0" y="0" width="195" height="300"/></clipPath>
+            <clipPath id="rh10"><rect x="195" y="0" width="195" height="300"/></clipPath>
+          </defs>
+          <!-- Colored left half -->
+          <g clip-path="url(#lh10)">
+            <ellipse cx="195" cy="210" rx="120" ry="72" fill="#F5A623"/>
+            <ellipse cx="195" cy="220" rx="68" ry="50" fill="#FCBFA0"/>
+            <ellipse cx="195" cy="132" rx="75" ry="68" fill="#F5A623"/>
+            <polygon points="128,96 110,64 148,80" fill="#F5A623"/>
+            <polygon points="128,92 116,68 142,82" fill="#FCBFA0" opacity="0.7"/>
+            <ellipse cx="162" cy="136" rx="20" ry="14" fill="#0EA5A0" opacity="0.22"/>
+            <path d="M175 90 Q185 78 195 85" stroke="#D4811A" stroke-width="3" fill="none" stroke-linecap="round"/>
+            <ellipse cx="138" cy="268" rx="24" ry="14" fill="#F5A623"/>
+            <path d="M95 240 Q42 285 75 298 Q110 312 130 295" stroke="#F5A623" stroke-width="16" fill="none" stroke-linecap="round"/>
+            <path d="M95 240 Q42 285 75 298 Q110 312 130 295" stroke="#FCBFA0" stroke-width="7" fill="none" stroke-linecap="round" opacity="0.6"/>
+          </g>
+          <!-- White right half -->
+          <g clip-path="url(#rh10)">
+            <ellipse cx="195" cy="210" rx="120" ry="72" fill="#ffffff"/>
+            <ellipse cx="195" cy="220" rx="68" ry="50" fill="#ffffff"/>
+            <ellipse cx="195" cy="132" rx="75" ry="68" fill="#ffffff"/>
+            <polygon points="262,96 280,64 242,80" fill="#ffffff"/>
+          </g>
+          <!-- Outlines -->
+          <ellipse cx="195" cy="210" rx="120" ry="72" fill="none" stroke="#1B2A4A" stroke-width="3"/>
+          <ellipse cx="195" cy="220" rx="68" ry="50" fill="none" stroke="#1B2A4A" stroke-width="2.2"/>
+          <ellipse cx="195" cy="132" rx="75" ry="68" fill="none" stroke="#1B2A4A" stroke-width="3"/>
+          <polygon points="128,96 110,64 148,80" fill="none" stroke="#1B2A4A" stroke-width="2.5" stroke-linejoin="round"/>
+          <polygon points="262,96 280,64 242,80" fill="none" stroke="#1B2A4A" stroke-width="2.5" stroke-linejoin="round"/>
+          <path d="M148 136 Q162 124 176 136" fill="none" stroke="#1B2A4A" stroke-width="2.5" stroke-linecap="round"/>
+          <path d="M214 136 Q228 124 242 136" fill="none" stroke="#1B2A4A" stroke-width="2.5" stroke-linecap="round"/>
+          <path d="M188 156 Q195 162 202 156 Q195 150 188 156Z" fill="none" stroke="#1B2A4A" stroke-width="1.8" stroke-linejoin="round"/>
+          <path d="M180 168 Q195 178 210 168" fill="none" stroke="#1B2A4A" stroke-width="1.8" stroke-linecap="round"/>
+          <line x1="150" y1="158" x2="120" y2="152" stroke="#1B2A4A" stroke-width="1.5" stroke-linecap="round"/>
+          <line x1="150" y1="164" x2="118" y2="164" stroke="#1B2A4A" stroke-width="1.5" stroke-linecap="round"/>
+          <line x1="240" y1="158" x2="270" y2="152" stroke="#1B2A4A" stroke-width="1.5" stroke-linecap="round"/>
+          <line x1="240" y1="164" x2="272" y2="164" stroke="#1B2A4A" stroke-width="1.5" stroke-linecap="round"/>
+          <!-- zzz -->
+          <text x="288" y="90" font-family="Nunito" font-weight="800" font-size="18" fill="#1B2A4A" opacity="0.14">z</text>
+          <text x="306" y="72" font-family="Nunito" font-weight="800" font-size="14" fill="#1B2A4A" opacity="0.10">z</text>
+        </svg>
+      </div>
+
+      <!-- Brush toolbar (backdrop) -->
+      <div class="brush-toolbar">
+        <div class="b-icon"><svg viewBox="0 0 32 32"><rect x="13" y="3" width="6" height="18" rx="1.5" fill="#F5A623"/><path d="M13 21 L16 29 L19 21Z" fill="#D4811A"/><rect x="13" y="1.5" width="6" height="3" rx="1.5" fill="#D4811A"/></svg></div>
+        <div class="b-icon selected" style="position:relative;"><svg viewBox="0 0 32 32"><rect x="12.5" y="2" width="7" height="20" rx="3.5" fill="#0EA5A0"/><path d="M13 21 Q16 20 19 21 L18 27 Q16 30 14 27Z" fill="#0EA5A0"/></svg></div>
+        <div class="b-icon"><svg viewBox="0 0 32 32"><rect x="14" y="2" width="4" height="18" rx="2" fill="#8FBCD4"/><path d="M13 21 Q11 24 10 28 Q13 27 16 28 Q19 27 22 28 Q21 24 19 21Z" fill="#6BB8E8"/></svg></div>
+        <div class="b-icon"><svg viewBox="0 0 32 32"><rect x="13.5" y="2" width="5" height="22" rx="1" fill="#999"/><path d="M13.5 24 L16 30 L18.5 24Z" fill="#D4956A"/></svg></div>
+        <div class="b-icon"><svg viewBox="0 0 32 32"><rect x="11" y="12" width="10" height="14" rx="2" fill="#7CB686"/><circle cx="26" cy="7" r="1.2" fill="#7CB686" opacity="0.7"/><circle cx="28" cy="10" r="0.9" fill="#7CB686" opacity="0.5"/></svg></div>
+        <div class="b-icon"><svg viewBox="0 0 32 32"><polygon points="16,2 17.8,7.4 23.5,7.4 18.9,10.6 20.7,16 16,12.8 11.3,16 13.1,10.6 8.5,7.4 14.2,7.4" fill="#F5A623"/></svg></div>
+        <div class="b-icon"><svg viewBox="0 0 32 32"><rect x="12" y="2" width="8" height="10" rx="3" fill="#B8A9E8"/><rect x="9" y="18" width="14" height="8" rx="1.5" fill="#B8A9E8"/></svg></div>
+        <div class="b-icon"><svg viewBox="0 0 32 32"><rect x="6" y="14" width="20" height="10" rx="3" fill="#FCBFA0" transform="rotate(-8 16 19)"/></svg></div>
+      </div>
+
+      <!-- Color tray (backdrop) -->
+      <div class="color-tray-wrap">
+        <div class="color-tray">
+          <div class="sw" style="background:#E8412A;"></div>
+          <div class="sw" style="background:#F06449;"></div>
+          <div class="sw" style="background:#F5A623;"></div>
+          <div class="sw" style="background:#F5E642;"></div>
+          <div class="sw" style="background:#7CB686;"></div>
+          <div class="sw sel" style="background:#0EA5A0;"></div>
+          <div class="sw" style="background:#6BB8E8;"></div>
+          <div class="sw" style="background:#B8A9E8;"></div>
+        </div>
+        <div class="tray-add-wrap">
+          <div class="sw-add"><svg viewBox="0 0 14 14"><line x1="7" y1="1" x2="7" y2="13"/><line x1="1" y1="7" x2="13" y2="7"/></svg></div>
+        </div>
+      </div>
+
+      <!-- Control bar (backdrop) -->
+      <div class="control-bar">
+        <button class="ctrl-btn"><svg viewBox="0 0 22 22"><path d="M3 9 L3 3 M3 9 C3 9 6 2 13 3 C18 4 21 8 20 14 C19 18 15 21 10 20"/><polyline points="3,3 3,9 9,9"/></svg></button>
+        <div class="slider-wrap"><div class="slider-track"><div class="slider-fill"></div><div class="slider-thumb"></div></div></div>
+        <button class="ctrl-btn"><svg viewBox="0 0 22 22"><path d="M19 9 L19 3 M19 9 C19 9 16 2 9 3 C4 4 1 8 2 14 C3 18 7 21 12 20"/><polyline points="19,3 19,9 13,9"/></svg></button>
+      </div>
+
+      <!-- Safe area -->
+      <div class="safe-area"><div class="home-indicator"></div></div>
+
+    </div><!-- /screen -->
+
+    <!-- ════════════
+         SCRIM
+         ════════════ -->
+    <div class="scrim"></div>
+
+    <!-- ════════════════════════════════════
+         BOTTOM SHEET
+         ════════════════════════════════════ -->
+    <div class="sheet">
+      <div class="drag-handle"></div>
+
+      <div class="sheet-scroll">
+
+        <div class="sheet-title">Who's playing?</div>
+
+        <!-- ── PLAYER 1 ── -->
+        <div class="player-section">
+          <div class="player-label">Player 1</div>
+
+          <!-- Avatar row -->
+          <div class="avatar-row">
+
+            <!-- Bear — SELECTED (teal ring) -->
+            <div class="avatar sel-teal">
+              <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect width="40" height="40" rx="20" fill="#C8844A"/>
+                <circle cx="12" cy="13" r="6" fill="#C8844A"/><circle cx="28" cy="13" r="6" fill="#C8844A"/>
+                <circle cx="12" cy="13" r="3.5" fill="#D89A68" opacity="0.7"/>
+                <circle cx="28" cy="13" r="3.5" fill="#D89A68" opacity="0.7"/>
+                <circle cx="14" cy="20" r="5.5" fill="#120800"/><circle cx="26" cy="20" r="5.5" fill="#120800"/>
+                <circle cx="15.5" cy="18.5" r="2" fill="white" opacity="0.85"/>
+                <circle cx="27.5" cy="18.5" r="2" fill="white" opacity="0.85"/>
+                <ellipse cx="20" cy="27" rx="7" ry="5" fill="#D89A68"/>
+                <ellipse cx="20" cy="25" rx="3" ry="2.2" fill="#2A1000"/>
+                <path d="M16 29 Q20 33 24 29" fill="none" stroke="#2A1000" stroke-width="1.8" stroke-linecap="round"/>
+                <circle cx="14" cy="25" r="4" fill="#F06449" opacity="0.15"/>
+                <circle cx="26" cy="25" r="4" fill="#F06449" opacity="0.15"/>
+              </svg>
+            </div>
+
+            <!-- Cat -->
+            <div class="avatar">
+              <svg viewBox="0 0 40 40" fill="none">
+                <rect width="40" height="40" rx="20" fill="#F5A623"/>
+                <polygon points="8,14 4,5 14,10" fill="#F5A623"/><polygon points="32,14 36,5 26,10" fill="#F5A623"/>
+                <polygon points="8,13 6,7 13,10" fill="#FCBFA0" opacity="0.7"/>
+                <polygon points="32,13 34,7 27,10" fill="#FCBFA0" opacity="0.7"/>
+                <path d="M13 19 Q17 16 21 19" fill="none" stroke="#D4811A" stroke-width="1.8" stroke-linecap="round"/>
+                <path d="M19 19 Q23 16 27 19" fill="none" stroke="#D4811A" stroke-width="1.8" stroke-linecap="round"/>
+                <path d="M17 23 Q20 26 23 23 Q20 20 17 23Z" fill="#C84820"/>
+                <path d="M15 27 Q20 31 25 27" fill="none" stroke="#A83010" stroke-width="1.6" stroke-linecap="round"/>
+                <line x1="6" y1="22" x2="14" y2="23" stroke="#D4A860" stroke-width="1.2" stroke-linecap="round" opacity="0.7"/>
+                <line x1="6" y1="25" x2="14" y2="25" stroke="#D4A860" stroke-width="1.2" stroke-linecap="round" opacity="0.7"/>
+                <line x1="26" y1="23" x2="34" y2="22" stroke="#D4A860" stroke-width="1.2" stroke-linecap="round" opacity="0.7"/>
+                <line x1="26" y1="25" x2="34" y2="25" stroke="#D4A860" stroke-width="1.2" stroke-linecap="round" opacity="0.7"/>
+              </svg>
+            </div>
+
+            <!-- Owl -->
+            <div class="avatar">
+              <svg viewBox="0 0 40 40" fill="none">
+                <rect width="40" height="40" rx="20" fill="#B8A9E8"/>
+                <ellipse cx="20" cy="22" rx="13" ry="14" fill="#CFC4F0"/>
+                <!-- Ear tufts -->
+                <path d="M11 13 L8 6 L15 12" fill="#9C8DD0" stroke="#9C8DD0" stroke-linejoin="round"/>
+                <path d="M29 13 L32 6 L25 12" fill="#9C8DD0" stroke="#9C8DD0" stroke-linejoin="round"/>
+                <!-- Big eyes -->
+                <circle cx="15" cy="20" r="6" fill="#FFFFF0"/>
+                <circle cx="25" cy="20" r="6" fill="#FFFFF0"/>
+                <circle cx="15" cy="20" r="4.5" fill="#C87820"/>
+                <circle cx="25" cy="20" r="4.5" fill="#C87820"/>
+                <circle cx="15" cy="20" r="3" fill="#1B2A4A"/>
+                <circle cx="25" cy="20" r="3" fill="#1B2A4A"/>
+                <circle cx="16.2" cy="18.8" r="1.2" fill="white" opacity="0.9"/>
+                <circle cx="26.2" cy="18.8" r="1.2" fill="white" opacity="0.9"/>
+                <!-- Beak -->
+                <path d="M18 24 L20 28 L22 24 Z" fill="#F5A623"/>
+                <!-- Belly pattern -->
+                <ellipse cx="20" cy="30" rx="6" ry="5" fill="#DDD5F8" opacity="0.6"/>
+              </svg>
+            </div>
+
+            <!-- Fox -->
+            <div class="avatar">
+              <svg viewBox="0 0 40 40" fill="none">
+                <rect width="40" height="40" rx="20" fill="#F06449"/>
+                <!-- Pointy ears -->
+                <path d="M9 15 L5 5 L15 12" fill="#F06449" stroke="#D94532" stroke-linejoin="round" stroke-width="0.5"/>
+                <path d="M31 15 L35 5 L25 12" fill="#F06449" stroke="#D94532" stroke-linejoin="round" stroke-width="0.5"/>
+                <path d="M9 14 L7 7 L14 12" fill="#FCBFA0" opacity="0.6"/>
+                <path d="M31 14 L33 7 L26 12" fill="#FCBFA0" opacity="0.6"/>
+                <!-- Face -->
+                <ellipse cx="20" cy="24" rx="9" ry="7" fill="#FCBFA0" opacity="0.9"/>
+                <!-- Eyes — slit pupils -->
+                <ellipse cx="14" cy="19" rx="3.5" ry="4" fill="#FFFFF0"/>
+                <ellipse cx="26" cy="19" rx="3.5" ry="4" fill="#FFFFF0"/>
+                <ellipse cx="14" cy="19" rx="1.8" ry="3" fill="#1B2A4A"/>
+                <ellipse cx="26" cy="19" rx="1.8" ry="3" fill="#1B2A4A"/>
+                <circle cx="14.8" cy="17.8" r="1" fill="white" opacity="0.8"/>
+                <circle cx="26.8" cy="17.8" r="1" fill="white" opacity="0.8"/>
+                <!-- Nose -->
+                <ellipse cx="20" cy="24" rx="2.5" ry="1.8" fill="#1B2A4A"/>
+                <path d="M17 27 Q20 30 23 27" fill="none" stroke="#1B2A4A" stroke-width="1.5" stroke-linecap="round"/>
+              </svg>
+            </div>
+
+            <!-- Rabbit -->
+            <div class="avatar">
+              <svg viewBox="0 0 40 40" fill="none">
+                <rect width="40" height="40" rx="20" fill="#E8E0F0"/>
+                <!-- Long ears -->
+                <ellipse cx="14" cy="10" rx="4" ry="9" fill="#E8E0F0"/>
+                <ellipse cx="26" cy="10" rx="4" ry="9" fill="#E8E0F0"/>
+                <ellipse cx="14" cy="10" rx="2" ry="6" fill="#FCBFA0" opacity="0.7"/>
+                <ellipse cx="26" cy="10" rx="2" ry="6" fill="#FCBFA0" opacity="0.7"/>
+                <!-- Face -->
+                <ellipse cx="20" cy="26" rx="12" ry="11" fill="#F0ECF8"/>
+                <!-- Eyes -->
+                <circle cx="15" cy="23" r="3.5" fill="#1B2A4A"/>
+                <circle cx="25" cy="23" r="3.5" fill="#1B2A4A"/>
+                <circle cx="16.2" cy="21.8" r="1.3" fill="white" opacity="0.85"/>
+                <circle cx="26.2" cy="21.8" r="1.3" fill="white" opacity="0.85"/>
+                <!-- Nose -->
+                <ellipse cx="20" cy="28" rx="2.5" ry="1.8" fill="#F08EB0"/>
+                <path d="M17.5 30 Q20 33 22.5 30" fill="none" stroke="#1B2A4A" stroke-width="1.5" stroke-linecap="round"/>
+                <!-- Cheek blush -->
+                <circle cx="12" cy="27" r="3.5" fill="#F08EB0" opacity="0.2"/>
+                <circle cx="28" cy="27" r="3.5" fill="#F08EB0" opacity="0.2"/>
+              </svg>
+            </div>
+
+            <!-- Penguin -->
+            <div class="avatar">
+              <svg viewBox="0 0 40 40" fill="none">
+                <rect width="40" height="40" rx="20" fill="#1B2A4A"/>
+                <!-- White belly face -->
+                <ellipse cx="20" cy="25" rx="11" ry="13" fill="#FFFFF0"/>
+                <!-- Eyes -->
+                <circle cx="15" cy="19" r="4" fill="white"/>
+                <circle cx="25" cy="19" r="4" fill="white"/>
+                <circle cx="15" cy="19" r="2.5" fill="#1B2A4A"/>
+                <circle cx="25" cy="19" r="2.5" fill="#1B2A4A"/>
+                <circle cx="15.8" cy="18.2" r="1" fill="white" opacity="0.9"/>
+                <circle cx="25.8" cy="18.2" r="1" fill="white" opacity="0.9"/>
+                <!-- Beak -->
+                <path d="M18 24 L20 27.5 L22 24 Z" fill="#F5A623"/>
+                <!-- Cheeks -->
+                <circle cx="11" cy="23" r="3.5" fill="#F06449" opacity="0.3"/>
+                <circle cx="29" cy="23" r="3.5" fill="#F06449" opacity="0.3"/>
+                <!-- Wings hint -->
+                <ellipse cx="7" cy="25" rx="4" ry="7" fill="#1B2A4A" opacity="0.0"/>
+              </svg>
+            </div>
+
+            <!-- Lion -->
+            <div class="avatar">
+              <svg viewBox="0 0 40 40" fill="none">
+                <rect width="40" height="40" rx="20" fill="#D4811A"/>
+                <!-- Mane ring -->
+                <circle cx="20" cy="22" r="14" fill="#A05C08" opacity="0.5"/>
+                <!-- Head -->
+                <circle cx="20" cy="20" r="11" fill="#F5D060"/>
+                <!-- Ears -->
+                <path d="M10 13 L7 7 L14 11Z" fill="#E8A828"/>
+                <path d="M30 13 L33 7 L26 11Z" fill="#E8A828"/>
+                <!-- Eyes -->
+                <ellipse cx="15.5" cy="18" rx="3" ry="3.2" fill="#FFFFF0"/>
+                <ellipse cx="24.5" cy="18" rx="3" ry="3.2" fill="#FFFFF0"/>
+                <ellipse cx="15.5" cy="18" rx="2" ry="2.5" fill="#C87820"/>
+                <ellipse cx="24.5" cy="18" rx="2" ry="2.5" fill="#C87820"/>
+                <ellipse cx="15.5" cy="18.5" rx="1.2" ry="1.6" fill="#1B2A4A"/>
+                <ellipse cx="24.5" cy="18.5" rx="1.2" ry="1.6" fill="#1B2A4A"/>
+                <circle cx="16.2" cy="17" r="0.9" fill="white" opacity="0.85"/>
+                <circle cx="25.2" cy="17" r="0.9" fill="white" opacity="0.85"/>
+                <!-- Nose -->
+                <path d="M17.5 23 Q20 26 22.5 23 Q20 20 17.5 23Z" fill="#C84820"/>
+                <path d="M16 26 Q20 29 24 26" fill="none" stroke="#A83010" stroke-width="1.5" stroke-linecap="round"/>
+              </svg>
+            </div>
+
+            <!-- Frog -->
+            <div class="avatar">
+              <svg viewBox="0 0 40 40" fill="none">
+                <rect width="40" height="40" rx="20" fill="#7CB686"/>
+                <!-- Eye bumps on top -->
+                <circle cx="13" cy="12" r="6" fill="#7CB686"/>
+                <circle cx="27" cy="12" r="6" fill="#7CB686"/>
+                <circle cx="13" cy="11" r="4.5" fill="#FFFFF0"/>
+                <circle cx="27" cy="11" r="4.5" fill="#FFFFF0"/>
+                <circle cx="13" cy="11" r="2.8" fill="#1B2A4A"/>
+                <circle cx="27" cy="11" r="2.8" fill="#1B2A4A"/>
+                <circle cx="14" cy="10" r="1" fill="white" opacity="0.85"/>
+                <circle cx="28" cy="10" r="1" fill="white" opacity="0.85"/>
+                <!-- Face -->
+                <ellipse cx="20" cy="26" rx="14" ry="11" fill="#8DC890"/>
+                <!-- Wide smile -->
+                <path d="M11 26 Q20 34 29 26" fill="none" stroke="#2A5C38" stroke-width="2.2" stroke-linecap="round"/>
+                <!-- Nostrils -->
+                <circle cx="18" cy="22" r="1.5" fill="#5A9668"/>
+                <circle cx="22" cy="22" r="1.5" fill="#5A9668"/>
+                <!-- Cheek spots -->
+                <circle cx="10" cy="26" r="4" fill="#6AAE76" opacity="0.4"/>
+                <circle cx="30" cy="26" r="4" fill="#6AAE76" opacity="0.4"/>
+              </svg>
+            </div>
+
+          </div><!-- /avatar-row P1 -->
+
+          <!-- Name input P1 -->
+          <div class="name-input">Player 1</div>
+        </div><!-- /player 1 -->
+
+        <!-- ── PLAYER 2 ── -->
+        <div class="player-section">
+          <div class="player-label">Player 2</div>
+
+          <div class="avatar-row">
+            <!-- Bear (no ring) -->
+            <div class="avatar">
+              <svg viewBox="0 0 40 40" fill="none">
+                <rect width="40" height="40" rx="20" fill="#C8844A"/>
+                <circle cx="12" cy="13" r="6" fill="#C8844A"/><circle cx="28" cy="13" r="6" fill="#C8844A"/>
+                <circle cx="12" cy="13" r="3.5" fill="#D89A68" opacity="0.7"/>
+                <circle cx="28" cy="13" r="3.5" fill="#D89A68" opacity="0.7"/>
+                <circle cx="14" cy="20" r="5.5" fill="#120800"/><circle cx="26" cy="20" r="5.5" fill="#120800"/>
+                <circle cx="15.5" cy="18.5" r="2" fill="white" opacity="0.85"/>
+                <circle cx="27.5" cy="18.5" r="2" fill="white" opacity="0.85"/>
+                <ellipse cx="20" cy="27" rx="7" ry="5" fill="#D89A68"/>
+                <ellipse cx="20" cy="25" rx="3" ry="2.2" fill="#2A1000"/>
+                <path d="M16 29 Q20 33 24 29" fill="none" stroke="#2A1000" stroke-width="1.8" stroke-linecap="round"/>
+              </svg>
+            </div>
+
+            <!-- Cat — SELECTED (sky ring) -->
+            <div class="avatar sel-sky">
+              <svg viewBox="0 0 40 40" fill="none">
+                <rect width="40" height="40" rx="20" fill="#F5A623"/>
+                <polygon points="8,14 4,5 14,10" fill="#F5A623"/>
+                <polygon points="32,14 36,5 26,10" fill="#F5A623"/>
+                <polygon points="8,13 6,7 13,10" fill="#FCBFA0" opacity="0.7"/>
+                <polygon points="32,13 34,7 27,10" fill="#FCBFA0" opacity="0.7"/>
+                <path d="M13 19 Q17 16 21 19" fill="none" stroke="#D4811A" stroke-width="1.8" stroke-linecap="round"/>
+                <path d="M19 19 Q23 16 27 19" fill="none" stroke="#D4811A" stroke-width="1.8" stroke-linecap="round"/>
+                <path d="M17 23 Q20 26 23 23 Q20 20 17 23Z" fill="#C84820"/>
+                <path d="M15 27 Q20 31 25 27" fill="none" stroke="#A83010" stroke-width="1.6" stroke-linecap="round"/>
+                <line x1="6" y1="22" x2="14" y2="23" stroke="#D4A860" stroke-width="1.2" stroke-linecap="round" opacity="0.7"/>
+                <line x1="6" y1="25" x2="14" y2="25" stroke="#D4A860" stroke-width="1.2" stroke-linecap="round" opacity="0.7"/>
+                <line x1="26" y1="23" x2="34" y2="22" stroke="#D4A860" stroke-width="1.2" stroke-linecap="round" opacity="0.7"/>
+                <line x1="26" y1="25" x2="34" y2="25" stroke="#D4A860" stroke-width="1.2" stroke-linecap="round" opacity="0.7"/>
+              </svg>
+            </div>
+
+            <!-- Owl -->
+            <div class="avatar">
+              <svg viewBox="0 0 40 40" fill="none">
+                <rect width="40" height="40" rx="20" fill="#B8A9E8"/>
+                <ellipse cx="20" cy="22" rx="13" ry="14" fill="#CFC4F0"/>
+                <path d="M11 13 L8 6 L15 12" fill="#9C8DD0" stroke="#9C8DD0" stroke-linejoin="round"/>
+                <path d="M29 13 L32 6 L25 12" fill="#9C8DD0" stroke="#9C8DD0" stroke-linejoin="round"/>
+                <circle cx="15" cy="20" r="6" fill="#FFFFF0"/>
+                <circle cx="25" cy="20" r="6" fill="#FFFFF0"/>
+                <circle cx="15" cy="20" r="4.5" fill="#C87820"/>
+                <circle cx="25" cy="20" r="4.5" fill="#C87820"/>
+                <circle cx="15" cy="20" r="3" fill="#1B2A4A"/>
+                <circle cx="25" cy="20" r="3" fill="#1B2A4A"/>
+                <circle cx="16.2" cy="18.8" r="1.2" fill="white" opacity="0.9"/>
+                <circle cx="26.2" cy="18.8" r="1.2" fill="white" opacity="0.9"/>
+                <path d="M18 24 L20 28 L22 24 Z" fill="#F5A623"/>
+              </svg>
+            </div>
+
+            <!-- Fox -->
+            <div class="avatar">
+              <svg viewBox="0 0 40 40" fill="none">
+                <rect width="40" height="40" rx="20" fill="#F06449"/>
+                <path d="M9 15 L5 5 L15 12" fill="#F06449"/>
+                <path d="M31 15 L35 5 L25 12" fill="#F06449"/>
+                <path d="M9 14 L7 7 L14 12" fill="#FCBFA0" opacity="0.6"/>
+                <path d="M31 14 L33 7 L26 12" fill="#FCBFA0" opacity="0.6"/>
+                <ellipse cx="20" cy="24" rx="9" ry="7" fill="#FCBFA0" opacity="0.9"/>
+                <ellipse cx="14" cy="19" rx="3.5" ry="4" fill="#FFFFF0"/>
+                <ellipse cx="26" cy="19" rx="3.5" ry="4" fill="#FFFFF0"/>
+                <ellipse cx="14" cy="19" rx="1.8" ry="3" fill="#1B2A4A"/>
+                <ellipse cx="26" cy="19" rx="1.8" ry="3" fill="#1B2A4A"/>
+                <circle cx="14.8" cy="17.8" r="1" fill="white" opacity="0.8"/>
+                <circle cx="26.8" cy="17.8" r="1" fill="white" opacity="0.8"/>
+                <ellipse cx="20" cy="24" rx="2.5" ry="1.8" fill="#1B2A4A"/>
+                <path d="M17 27 Q20 30 23 27" fill="none" stroke="#1B2A4A" stroke-width="1.5" stroke-linecap="round"/>
+              </svg>
+            </div>
+
+            <!-- Rabbit -->
+            <div class="avatar">
+              <svg viewBox="0 0 40 40" fill="none">
+                <rect width="40" height="40" rx="20" fill="#E8E0F0"/>
+                <ellipse cx="14" cy="10" rx="4" ry="9" fill="#E8E0F0"/>
+                <ellipse cx="26" cy="10" rx="4" ry="9" fill="#E8E0F0"/>
+                <ellipse cx="14" cy="10" rx="2" ry="6" fill="#FCBFA0" opacity="0.7"/>
+                <ellipse cx="26" cy="10" rx="2" ry="6" fill="#FCBFA0" opacity="0.7"/>
+                <ellipse cx="20" cy="26" rx="12" ry="11" fill="#F0ECF8"/>
+                <circle cx="15" cy="23" r="3.5" fill="#1B2A4A"/>
+                <circle cx="25" cy="23" r="3.5" fill="#1B2A4A"/>
+                <circle cx="16.2" cy="21.8" r="1.3" fill="white" opacity="0.85"/>
+                <circle cx="26.2" cy="21.8" r="1.3" fill="white" opacity="0.85"/>
+                <ellipse cx="20" cy="28" rx="2.5" ry="1.8" fill="#F08EB0"/>
+                <path d="M17.5 30 Q20 33 22.5 30" fill="none" stroke="#1B2A4A" stroke-width="1.5" stroke-linecap="round"/>
+              </svg>
+            </div>
+
+            <!-- Penguin -->
+            <div class="avatar">
+              <svg viewBox="0 0 40 40" fill="none">
+                <rect width="40" height="40" rx="20" fill="#1B2A4A"/>
+                <ellipse cx="20" cy="25" rx="11" ry="13" fill="#FFFFF0"/>
+                <circle cx="15" cy="19" r="4" fill="white"/>
+                <circle cx="25" cy="19" r="4" fill="white"/>
+                <circle cx="15" cy="19" r="2.5" fill="#1B2A4A"/>
+                <circle cx="25" cy="19" r="2.5" fill="#1B2A4A"/>
+                <circle cx="15.8" cy="18.2" r="1" fill="white" opacity="0.9"/>
+                <circle cx="25.8" cy="18.2" r="1" fill="white" opacity="0.9"/>
+                <path d="M18 24 L20 27.5 L22 24 Z" fill="#F5A623"/>
+                <circle cx="11" cy="23" r="3.5" fill="#F06449" opacity="0.3"/>
+                <circle cx="29" cy="23" r="3.5" fill="#F06449" opacity="0.3"/>
+              </svg>
+            </div>
+
+            <!-- Lion -->
+            <div class="avatar">
+              <svg viewBox="0 0 40 40" fill="none">
+                <rect width="40" height="40" rx="20" fill="#D4811A"/>
+                <circle cx="20" cy="22" r="14" fill="#A05C08" opacity="0.5"/>
+                <circle cx="20" cy="20" r="11" fill="#F5D060"/>
+                <path d="M10 13 L7 7 L14 11Z" fill="#E8A828"/>
+                <path d="M30 13 L33 7 L26 11Z" fill="#E8A828"/>
+                <ellipse cx="15.5" cy="18" rx="3" ry="3.2" fill="#FFFFF0"/>
+                <ellipse cx="24.5" cy="18" rx="3" ry="3.2" fill="#FFFFF0"/>
+                <ellipse cx="15.5" cy="18" rx="2" ry="2.5" fill="#C87820"/>
+                <ellipse cx="24.5" cy="18" rx="2" ry="2.5" fill="#C87820"/>
+                <ellipse cx="15.5" cy="18.5" rx="1.2" ry="1.6" fill="#1B2A4A"/>
+                <ellipse cx="24.5" cy="18.5" rx="1.2" ry="1.6" fill="#1B2A4A"/>
+                <circle cx="16.2" cy="17" r="0.9" fill="white" opacity="0.85"/>
+                <circle cx="25.2" cy="17" r="0.9" fill="white" opacity="0.85"/>
+                <path d="M17.5 23 Q20 26 22.5 23 Q20 20 17.5 23Z" fill="#C84820"/>
+                <path d="M16 26 Q20 29 24 26" fill="none" stroke="#A83010" stroke-width="1.5" stroke-linecap="round"/>
+              </svg>
+            </div>
+
+            <!-- Frog -->
+            <div class="avatar">
+              <svg viewBox="0 0 40 40" fill="none">
+                <rect width="40" height="40" rx="20" fill="#7CB686"/>
+                <circle cx="13" cy="12" r="6" fill="#7CB686"/>
+                <circle cx="27" cy="12" r="6" fill="#7CB686"/>
+                <circle cx="13" cy="11" r="4.5" fill="#FFFFF0"/>
+                <circle cx="27" cy="11" r="4.5" fill="#FFFFF0"/>
+                <circle cx="13" cy="11" r="2.8" fill="#1B2A4A"/>
+                <circle cx="27" cy="11" r="2.8" fill="#1B2A4A"/>
+                <circle cx="14" cy="10" r="1" fill="white" opacity="0.85"/>
+                <circle cx="28" cy="10" r="1" fill="white" opacity="0.85"/>
+                <ellipse cx="20" cy="26" rx="14" ry="11" fill="#8DC890"/>
+                <path d="M11 26 Q20 34 29 26" fill="none" stroke="#2A5C38" stroke-width="2.2" stroke-linecap="round"/>
+                <circle cx="18" cy="22" r="1.5" fill="#5A9668"/>
+                <circle cx="22" cy="22" r="1.5" fill="#5A9668"/>
+              </svg>
+            </div>
+
+          </div><!-- /avatar-row P2 -->
+
+          <!-- Name input P2 -->
+          <div class="name-input">Player 2</div>
+        </div><!-- /player 2 -->
+
+        <!-- ── ADD PLAYER ── -->
+        <div class="add-player">
+          <span style="font-size:16px; line-height:1;">+</span>
+          <span>Add player</span>
+        </div>
+
+        <!-- ── TURN TIME ── -->
+        <div class="turn-time-section">
+          <div class="turn-label">Turn time:</div>
+          <div class="seg-control" style="margin-top:8px;">
+            <div class="seg">30s</div>
+            <div class="seg active">60s</div>
+            <div class="seg">90s</div>
+          </div>
+        </div>
+
+        <!-- ── START BUTTON ── -->
+        <button class="btn-start">
+          <span>Start Coloring!</span>
+        </button>
+
+      </div><!-- /sheet-scroll -->
+    </div><!-- /sheet -->
+
+  </div><!-- /iphone -->
+  <div class="device-label">iPhone 15 Pro — 390 × 844 pt · Pass &amp; Play Setup</div>
+</div>
+
+</body>
+</html>

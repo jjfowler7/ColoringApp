@@ -1,0 +1,819 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=390px, initial-scale=1.0" />
+  <title>PaperBrush — My Gallery</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800&family=Nunito+Sans:wght@400;600&display=swap" rel="stylesheet" />
+  <style>
+    /* ─── Reset ─────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --cream:     #FFF8F0;
+      --canvas-bg: #FFFDF9;
+      --teal:      #0EA5A0;
+      --navy:      #1B2A4A;
+      --coral:     #F06449;
+      --gold:      #F5A623;
+      --sage:      #7CB686;
+      --sky:       #6BB8E8;
+      --lavender:  #B8A9E8;
+      --peach:     #FCBFA0;
+      --secondary: #666666;
+      --divider:   #E8E0D8;
+    }
+
+    html, body {
+      width: 100%;
+      min-height: 100%;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 48px;
+      padding: 48px;
+      align-items: flex-start;
+      justify-content: center;
+      background: #C8C0AE;
+      font-family: 'Nunito Sans', sans-serif;
+    }
+
+    .device-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+    }
+    .device-label {
+      font-family: 'Nunito Sans', sans-serif;
+      font-size: 13px;
+      color: #888;
+      letter-spacing: 0.04em;
+    }
+
+    /* ─── iPhone shell ───────────────────────────────────── */
+    .iphone {
+      width: 390px;
+      height: 844px;
+      border-radius: 50px;
+      background: #1a1a1a;
+      box-shadow: 0 24px 80px rgba(0,0,0,0.45), inset 0 0 0 2px #3a3a3a;
+      position: relative;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+    .iphone::before {
+      content: '';
+      position: absolute;
+      top: 12px; left: 50%;
+      transform: translateX(-50%);
+      width: 120px; height: 34px;
+      background: #1a1a1a;
+      border-radius: 20px;
+      z-index: 30;
+    }
+
+    /* ─── Screen ─────────────────────────────────────────── */
+    .screen {
+      position: absolute;
+      inset: 0;
+      border-radius: 48px;
+      overflow: hidden;
+      background: var(--cream);
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ─── Status bar ─────────────────────────────────────── */
+    .status-bar {
+      height: 54px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      padding: 0 28px 8px;
+      background: var(--canvas-bg);
+    }
+    .status-time {
+      font-family: 'Nunito', sans-serif;
+      font-weight: 700;
+      font-size: 15px;
+      color: var(--navy);
+    }
+    .status-icons { display: flex; align-items: center; gap: 5px; }
+    .status-icons svg { fill: var(--navy); }
+
+    /* ─── NAV BAR ────────────────────────────────────────── */
+    .nav-bar {
+      height: 44px;
+      flex-shrink: 0;
+      background: var(--canvas-bg);
+      border-bottom: 1px solid var(--divider);
+      display: flex;
+      align-items: center;
+      position: relative;
+      z-index: 10;
+    }
+    .nav-back {
+      width: 44px; height: 44px;
+      display: flex; align-items: center; justify-content: center;
+      margin-left: 8px; flex-shrink: 0;
+      cursor: pointer; border-radius: 9999px;
+    }
+    .nav-back svg {
+      width: 18px; height: 18px;
+      stroke: var(--teal);
+      stroke-width: 2.5;
+      stroke-linecap: round; stroke-linejoin: round;
+      fill: none;
+    }
+    .nav-title {
+      position: absolute;
+      left: 0; right: 0;
+      text-align: center;
+      font-family: 'Nunito', sans-serif;
+      font-weight: 700;
+      font-size: 20px;
+      color: var(--navy);
+      pointer-events: none;
+      letter-spacing: -0.25px;
+    }
+    .nav-right {
+      margin-left: auto;
+      margin-right: 4px;
+      display: flex;
+      align-items: center;
+    }
+    .nav-icon {
+      width: 44px; height: 44px;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; border-radius: 9999px;
+    }
+    .nav-icon svg {
+      width: 24px; height: 24px;
+      fill: none;
+      stroke: var(--teal);
+      stroke-width: 1.8;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    /* ─── SCROLL BODY ────────────────────────────────────── */
+    .scroll-body {
+      flex: 1;
+      overflow-y: auto;
+      overflow-x: hidden;
+      scrollbar-width: none;
+      min-height: 0;
+    }
+    .scroll-body::-webkit-scrollbar { display: none; }
+
+    /* ─── GRID ───────────────────────────────────────────── */
+    .gallery-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      padding: 16px 16px 32px;
+    }
+
+    /* ─── CARD ───────────────────────────────────────────── */
+    .g-card {
+      width: 100%;
+      height: 220px;
+      border-radius: 16px;
+      background: var(--canvas-bg);
+      box-shadow: 0 2px 8px rgba(27,42,74,0.06);
+      overflow: hidden;
+      position: relative;
+      cursor: pointer;
+      transition: transform 0.18s cubic-bezier(0.34,1.4,0.64,1),
+                  box-shadow 0.18s ease;
+    }
+    .g-card:hover {
+      transform: translateY(-2px) scale(1.01);
+      box-shadow: 0 6px 20px rgba(27,42,74,0.11);
+    }
+    .g-card:active {
+      transform: scale(0.97);
+      box-shadow: 0 1px 4px rgba(27,42,74,0.06);
+    }
+
+    /* Thumbnail SVG fills the whole card */
+    .g-card svg.thumb {
+      width: 100%;
+      height: 100%;
+      display: block;
+      position: absolute;
+      inset: 0;
+    }
+
+    /* Bottom info gradient overlay */
+    .card-overlay {
+      position: absolute;
+      left: 0; right: 0; bottom: 0;
+      height: 72px;
+      background: linear-gradient(to bottom, transparent 0%, rgba(27,42,74,0.78) 100%);
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      padding: 0 10px 9px;
+      z-index: 3;
+    }
+    .card-name {
+      font-family: 'Nunito', sans-serif;
+      font-weight: 600;
+      font-size: 12px;
+      color: #ffffff;
+      line-height: 1.3;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .card-date {
+      font-family: 'Nunito Sans', sans-serif;
+      font-weight: 400;
+      font-size: 10px;
+      color: rgba(255,255,255,0.70);
+      margin-top: 1px;
+    }
+
+    /* Tier dot — top-left */
+    .tier-dot {
+      position: absolute;
+      top: 9px; left: 9px;
+      width: 9px; height: 9px;
+      border-radius: 50%;
+      z-index: 4;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.25);
+    }
+
+    /* CONTINUE badge — top-right */
+    .badge-continue {
+      position: absolute;
+      top: 8px; right: 8px;
+      background: var(--teal);
+      color: #ffffff;
+      font-family: 'Nunito', sans-serif;
+      font-weight: 700;
+      font-size: 9px;
+      letter-spacing: 0.05em;
+      padding: 3px 8px;
+      border-radius: 9999px;
+      z-index: 5;
+      box-shadow: 0 1px 6px rgba(14,165,160,0.40);
+    }
+
+    /* ─── Safe area ──────────────────────────────────────── */
+    .safe-area {
+      height: 34px; flex-shrink: 0;
+      background: var(--cream);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .home-indicator {
+      width: 120px; height: 5px;
+      background: var(--navy);
+      border-radius: 9999px;
+      opacity: 0.18;
+    }
+
+    /* ─── Entrance animations ────────────────────────────── */
+    @keyframes fadeDown { from { opacity:0; transform:translateY(-8px) } to { opacity:1; transform:translateY(0) } }
+    @keyframes popIn    { from { opacity:0; transform:scale(0.93)       } to { opacity:1; transform:scale(1)    } }
+
+    .nav-bar { animation: fadeDown 0.3s ease 0.05s both; }
+    .g-card:nth-child(1) { animation: popIn 0.38s cubic-bezier(0.34,1.3,0.64,1) 0.12s both; }
+    .g-card:nth-child(2) { animation: popIn 0.38s cubic-bezier(0.34,1.3,0.64,1) 0.18s both; }
+    .g-card:nth-child(3) { animation: popIn 0.38s cubic-bezier(0.34,1.3,0.64,1) 0.24s both; }
+    .g-card:nth-child(4) { animation: popIn 0.38s cubic-bezier(0.34,1.3,0.64,1) 0.30s both; }
+    .g-card:nth-child(5) { animation: popIn 0.38s cubic-bezier(0.34,1.3,0.64,1) 0.36s both; }
+    .g-card:nth-child(6) { animation: popIn 0.38s cubic-bezier(0.34,1.3,0.64,1) 0.42s both; }
+  </style>
+</head>
+<body>
+
+<div class="device-wrap">
+  <div class="iphone">
+    <div class="screen">
+
+      <!-- Status bar -->
+      <div class="status-bar">
+        <span class="status-time">9:41</span>
+        <div class="status-icons">
+          <svg width="17" height="12" viewBox="0 0 17 12"><rect x="0" y="8" width="3" height="4" rx="0.8"/><rect x="4.5" y="5.5" width="3" height="6.5" rx="0.8"/><rect x="9" y="3" width="3" height="9" rx="0.8"/><rect x="13.5" y="0" width="3" height="12" rx="0.8"/></svg>
+          <svg width="16" height="12" viewBox="0 0 16 12" fill="none" stroke="#1B2A4A" stroke-width="1.8" stroke-linecap="round"><path d="M1 4.5C3.8 1.8 8 1.8 10.5 4" opacity="0.3"/><path d="M2.8 6.2C4.8 4.3 7.4 4 9.2 5.5"/><path d="M4.8 7.8C5.8 6.9 7.2 6.9 8.2 7.8"/><circle cx="6.5" cy="10" r="1.2" fill="#1B2A4A" stroke="none"/></svg>
+          <svg width="25" height="12" viewBox="0 0 25 12" fill="#1B2A4A"><rect x="0" y="1" width="21" height="10" rx="2.5" stroke="#1B2A4A" stroke-width="1.2" fill="none"/><rect x="1.5" y="2.5" width="16" height="7" rx="1.5"/><path d="M22.5 4v4a2 2 0 0 0 0-4z"/></svg>
+        </div>
+      </div>
+
+      <!-- ══ NAV BAR ══ -->
+      <div class="nav-bar">
+        <div class="nav-back">
+          <svg viewBox="0 0 18 18"><polyline points="12,3 5,9 12,15"/></svg>
+        </div>
+        <span class="nav-title">My Gallery</span>
+        <div class="nav-right">
+          <div class="nav-icon" title="Browse pages">
+            <!-- plus.circle -->
+            <svg viewBox="0 0 24 24">
+              <circle cx="12" cy="12" r="10"/>
+              <line x1="12" y1="7" x2="12" y2="17"/>
+              <line x1="7" y1="12" x2="17" y2="12"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ GALLERY GRID ══ -->
+      <div class="scroll-body">
+        <div class="gallery-grid">
+
+          <!-- ══════════════════════════════════════════
+               CARD 1 — Sleeping Lion (completed, today)
+               ════════════════════════════════════════ -->
+          <div class="g-card">
+            <svg class="thumb" viewBox="0 0 163 220" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
+              <defs>
+                <radialGradient id="sk1" cx="50%" cy="30%" r="70%"><stop offset="0%" stop-color="#A8D4E8"/><stop offset="100%" stop-color="#78B8D0"/></radialGradient>
+                <radialGradient id="mn1" cx="50%" cy="40%" r="55%"><stop offset="0%" stop-color="#D4811A"/><stop offset="100%" stop-color="#A05C08"/></radialGradient>
+                <radialGradient id="bd1" cx="50%" cy="35%" r="60%"><stop offset="0%" stop-color="#F5D060"/><stop offset="100%" stop-color="#E8B030"/></radialGradient>
+              </defs>
+              <!-- Sky -->
+              <rect width="163" height="220" fill="url(#sk1)"/>
+              <!-- Sun -->
+              <circle cx="130" cy="32" r="22" fill="#FFF5B0" opacity="0.85"/>
+              <circle cx="130" cy="32" r="14" fill="#FFDD50" opacity="0.9"/>
+              <!-- Ground -->
+              <ellipse cx="81" cy="196" rx="110" ry="48" fill="#5A9E48"/>
+              <rect x="0" y="172" width="163" height="48" fill="#4E8E3C"/>
+              <!-- Grass -->
+              <path d="M8 172 Q10 158 12 172 Q14 158 16 172" fill="none" stroke="#3E7830" stroke-width="1.5" stroke-linecap="round"/>
+              <path d="M140 172 Q142 160 144 172 Q146 160 148 172" fill="none" stroke="#3E7830" stroke-width="1.5" stroke-linecap="round"/>
+              <!-- Acacia right -->
+              <rect x="138" y="115" width="5" height="62" rx="2.5" fill="#8B6040"/>
+              <ellipse cx="140" cy="108" rx="20" ry="12" fill="#5A9E48"/>
+              <!-- Mane -->
+              <ellipse cx="81" cy="118" rx="54" ry="52" fill="url(#mn1)"/>
+              <!-- Body -->
+              <ellipse cx="81" cy="180" rx="48" ry="36" fill="url(#bd1)"/>
+              <!-- Head -->
+              <ellipse cx="81" cy="112" rx="40" ry="38" fill="#F5D060"/>
+              <!-- Cheeks -->
+              <ellipse cx="56" cy="122" rx="12" ry="8" fill="#F0B840" opacity="0.45"/>
+              <ellipse cx="106" cy="122" rx="12" ry="8" fill="#F0B840" opacity="0.45"/>
+              <!-- Ears -->
+              <path d="M46 90 L36 72 L56 82Z" fill="#E8A828"/>
+              <path d="M116 90 L126 72 L106 82Z" fill="#E8A828"/>
+              <!-- Eyes -->
+              <ellipse cx="66" cy="108" rx="9" ry="8" fill="#FFFFF0"/>
+              <ellipse cx="96" cy="108" rx="9" ry="8" fill="#FFFFF0"/>
+              <ellipse cx="66" cy="109" rx="6" ry="6" fill="#C87820"/>
+              <ellipse cx="96" cy="109" rx="6" ry="6" fill="#C87820"/>
+              <ellipse cx="66" cy="110" rx="3.5" ry="4" fill="#1B2A4A"/>
+              <ellipse cx="96" cy="110" rx="3.5" ry="4" fill="#1B2A4A"/>
+              <circle cx="68" cy="106" r="2" fill="white" opacity="0.9"/>
+              <circle cx="98" cy="106" r="2" fill="white" opacity="0.9"/>
+              <!-- Upper lid -->
+              <path d="M58 104 Q66 98 74 104" fill="none" stroke="#8B5A00" stroke-width="1.5" stroke-linecap="round"/>
+              <path d="M88 104 Q96 98 104 104" fill="none" stroke="#8B5A00" stroke-width="1.5" stroke-linecap="round"/>
+              <!-- Nose -->
+              <path d="M74 120 Q81 125 88 120 Q81 115 74 120Z" fill="#C84820"/>
+              <!-- Smile -->
+              <path d="M70 130 Q81 140 92 130" fill="none" stroke="#A83010" stroke-width="2" stroke-linecap="round"/>
+              <!-- Whiskers -->
+              <line x1="44" y1="122" x2="66" y2="124" stroke="#C8A060" stroke-width="1.2" stroke-linecap="round" opacity="0.7"/>
+              <line x1="42" y1="127" x2="64" y2="128" stroke="#C8A060" stroke-width="1.2" stroke-linecap="round" opacity="0.7"/>
+              <line x1="96" y1="124" x2="118" y2="122" stroke="#C8A060" stroke-width="1.2" stroke-linecap="round" opacity="0.7"/>
+              <line x1="98" y1="128" x2="120" y2="127" stroke="#C8A060" stroke-width="1.2" stroke-linecap="round" opacity="0.7"/>
+              <!-- Paws -->
+              <ellipse cx="56" cy="200" rx="18" ry="11" fill="#E8B030"/>
+              <ellipse cx="106" cy="200" rx="18" ry="11" fill="#E8B030"/>
+              <!-- Tail -->
+              <path d="M124 168 Q144 152 146 164 Q148 174 136 180" fill="none" stroke="#E8B030" stroke-width="8" stroke-linecap="round"/>
+              <ellipse cx="146" cy="164" rx="9" ry="11" fill="#D4721A" transform="rotate(-15 146 164)"/>
+            </svg>
+            <!-- Tier dot — Sky Blue (Explorer) -->
+            <div class="tier-dot" style="background:#6BB8E8;"></div>
+            <div class="card-overlay">
+              <div class="card-name">Sleeping Lion</div>
+              <div class="card-date">Today</div>
+            </div>
+          </div>
+
+          <!-- ══════════════════════════════════════════
+               CARD 2 — Puppy Friends (completed, yesterday)
+               ════════════════════════════════════════ -->
+          <div class="g-card">
+            <svg class="thumb" viewBox="0 0 163 220" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
+              <defs>
+                <radialGradient id="sk2" cx="50%" cy="20%" r="70%"><stop offset="0%" stop-color="#D4EAF8"/><stop offset="100%" stop-color="#A8CEE8"/></radialGradient>
+              </defs>
+              <!-- Sky -->
+              <rect width="163" height="220" fill="url(#sk2)"/>
+              <!-- Ground -->
+              <rect x="0" y="168" width="163" height="52" fill="#7CB686"/>
+              <ellipse cx="81" cy="168" rx="100" ry="22" fill="#8DC890"/>
+              <!-- Simple meadow flowers -->
+              <circle cx="22" cy="168" r="4" fill="#F5A623"/>
+              <circle cx="135" cy="170" r="3.5" fill="#F06449"/>
+              <circle cx="68" cy="172" r="3" fill="#FCBFA0"/>
+
+              <!-- Left puppy -->
+              <!-- Body -->
+              <ellipse cx="46" cy="152" rx="28" ry="22" fill="#C8954A"/>
+              <!-- Tummy patch -->
+              <ellipse cx="46" cy="156" rx="16" ry="13" fill="#E8C07A" opacity="0.75"/>
+              <!-- Head -->
+              <circle cx="46" cy="110" r="28" fill="#C8954A"/>
+              <!-- Snout -->
+              <ellipse cx="46" cy="118" rx="14" ry="10" fill="#D8A860"/>
+              <!-- Floppy ears -->
+              <path d="M22 100 Q14 104 16 120 Q18 128 26 126" fill="#A87030" stroke="#8B5C20" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M70 100 Q78 104 76 120 Q74 128 66 126" fill="#A87030" stroke="#8B5C20" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              <!-- Eyes -->
+              <circle cx="38" cy="106" r="5.5" fill="#2E1A08"/>
+              <circle cx="54" cy="106" r="5.5" fill="#2E1A08"/>
+              <circle cx="40" cy="104" r="2"   fill="white" opacity="0.9"/>
+              <circle cx="56" cy="104" r="2"   fill="white" opacity="0.9"/>
+              <!-- Nose -->
+              <ellipse cx="46" cy="113" rx="4.5" ry="3" fill="#1A0A00"/>
+              <!-- Smile -->
+              <path d="M38 118 Q46 126 54 118" fill="none" stroke="#1A0A00" stroke-width="1.8" stroke-linecap="round"/>
+              <!-- Tongue -->
+              <ellipse cx="46" cy="122" rx="5" ry="4" fill="#F06449" opacity="0.9"/>
+              <!-- Paws -->
+              <ellipse cx="30" cy="170" rx="10" ry="7" fill="#C8954A"/>
+              <ellipse cx="62" cy="170" rx="10" ry="7" fill="#C8954A"/>
+
+              <!-- Right puppy (sitting, slightly different) -->
+              <!-- Body -->
+              <ellipse cx="116" cy="148" rx="24" ry="20" fill="#6BB8E8"/>
+              <!-- Tummy -->
+              <ellipse cx="116" cy="152" rx="13" ry="12" fill="#9DD0F0" opacity="0.7"/>
+              <!-- Head -->
+              <circle cx="116" cy="106" r="26" fill="#6BB8E8"/>
+              <!-- Snout -->
+              <ellipse cx="116" cy="114" rx="12" ry="9" fill="#90C8EC"/>
+              <!-- One ear up, one floppy -->
+              <path d="M94 96 L88 76 L104 90" fill="#4A98CC" stroke="#3878AA" stroke-width="1.5" stroke-linejoin="round"/>
+              <path d="M138 96 Q146 100 144 116 Q142 122 134 120" fill="#4A98CC" stroke="#3878AA" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              <!-- Eyes -->
+              <circle cx="108" cy="102" r="5" fill="#1B2A4A"/>
+              <circle cx="124" cy="102" r="5" fill="#1B2A4A"/>
+              <circle cx="110" cy="100" r="1.8" fill="white" opacity="0.9"/>
+              <circle cx="126" cy="100" r="1.8" fill="white" opacity="0.9"/>
+              <!-- Nose -->
+              <ellipse cx="116" cy="109" rx="4" ry="2.8" fill="#1B2A4A"/>
+              <!-- Smile -->
+              <path d="M109 115 Q116 122 123 115" fill="none" stroke="#1B2A4A" stroke-width="1.8" stroke-linecap="round"/>
+              <!-- Paws -->
+              <ellipse cx="100" cy="165" rx="9" ry="6" fill="#6BB8E8"/>
+              <ellipse cx="132" cy="165" rx="9" ry="6" fill="#6BB8E8"/>
+
+              <!-- Heart between them -->
+              <path d="M81 72 C81 68 76 66 76 70 C76 74 81 78 81 78 C81 78 86 74 86 70 C86 66 81 68 81 72Z" fill="#F06449" opacity="0.85"/>
+            </svg>
+            <div class="tier-dot" style="background:#6BB8E8;"></div>
+            <div class="card-overlay">
+              <div class="card-name">Puppy Friends</div>
+              <div class="card-date">Yesterday</div>
+            </div>
+          </div>
+
+          <!-- ══════════════════════════════════════════
+               CARD 3 — Happy Cat IN PROGRESS
+               Left half colored, right half line art
+               ════════════════════════════════════════ -->
+          <div class="g-card">
+            <svg class="thumb" viewBox="0 0 163 220" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
+              <defs>
+                <clipPath id="lhC"><rect x="0" y="0" width="81.5" height="220"/></clipPath>
+                <clipPath id="rhC"><rect x="81.5" y="0" width="81.5" height="220"/></clipPath>
+                <radialGradient id="skC" cx="40%" cy="25%" r="70%"><stop offset="0%" stop-color="#FFF5DC"/><stop offset="100%" stop-color="#FFE8B0"/></radialGradient>
+              </defs>
+              <!-- Background — colored left, plain right -->
+              <rect width="163" height="220" fill="#FFF8F0"/>
+              <rect x="0" y="0" width="81.5" height="220" fill="url(#skC)"/>
+              <!-- Subtle dividing seam -->
+              <line x1="81.5" y1="0" x2="81.5" y2="220" stroke="#E8E0D8" stroke-width="0.8" stroke-dasharray="4 4"/>
+
+              <!-- Colored fills — left half -->
+              <g clip-path="url(#lhC)">
+                <!-- Body -->
+                <ellipse cx="81.5" cy="168" rx="55" ry="40" fill="#F5A623"/>
+                <!-- Tummy -->
+                <ellipse cx="81.5" cy="175" rx="30" ry="26" fill="#FCBFA0"/>
+                <!-- Head -->
+                <ellipse cx="81.5" cy="96" rx="48" ry="44" fill="#F5A623"/>
+                <!-- Left ear fill -->
+                <polygon points="36,64 24,40 52,56" fill="#F5A623"/>
+                <polygon points="36,62 28,44 48,56" fill="#FCBFA0" opacity="0.7"/>
+                <!-- Teal eye patch left -->
+                <ellipse cx="62" cy="94" rx="14" ry="10" fill="#0EA5A0" opacity="0.18"/>
+                <!-- Tabby forehead stripe -->
+                <path d="M68 66 Q76 56 81.5 60" fill="none" stroke="#D4811A" stroke-width="2.5" stroke-linecap="round"/>
+                <!-- Paw left -->
+                <ellipse cx="50" cy="202" rx="16" ry="9" fill="#F5A623"/>
+                <!-- Tail left -->
+                <path d="M28 152 Q8 178 18 194 Q28 208 40 196" fill="none" stroke="#F5A623" stroke-width="10" stroke-linecap="round"/>
+                <path d="M28 152 Q8 178 18 194 Q28 208 40 196" fill="none" stroke="#FCBFA0" stroke-width="4" stroke-linecap="round" opacity="0.6"/>
+              </g>
+
+              <!-- White fills — right half -->
+              <g clip-path="url(#rhC)">
+                <ellipse cx="81.5" cy="168" rx="55" ry="40" fill="#ffffff"/>
+                <ellipse cx="81.5" cy="175" rx="30" ry="26" fill="#ffffff"/>
+                <ellipse cx="81.5" cy="96" rx="48" ry="44" fill="#ffffff"/>
+                <polygon points="127,64 139,40 111,56" fill="#ffffff"/>
+                <ellipse cx="50" cy="202" rx="16" ry="9" fill="#ffffff"/>
+                <ellipse cx="113" cy="202" rx="16" ry="9" fill="#ffffff"/>
+              </g>
+
+              <!-- Outlines — both sides -->
+              <ellipse cx="81.5" cy="168" rx="55" ry="40" fill="none" stroke="#C8C0B0" stroke-width="2.5"/>
+              <ellipse cx="81.5" cy="175" rx="30" ry="26" fill="none" stroke="#C8C0B0" stroke-width="1.8"/>
+              <ellipse cx="81.5" cy="96" rx="48" ry="44" fill="none" stroke="#C8C0B0" stroke-width="2.5"/>
+              <polygon points="36,64 24,40 52,56" fill="none" stroke="#C8C0B0" stroke-width="2" stroke-linejoin="round"/>
+              <polygon points="127,64 139,40 111,56" fill="none" stroke="#C8C0B0" stroke-width="2" stroke-linejoin="round"/>
+              <!-- Eyes -->
+              <path d="M55 90 Q62 84 69 90" fill="none" stroke="#C8C0B0" stroke-width="2" stroke-linecap="round"/>
+              <path d="M94 90 Q101 84 108 90" fill="none" stroke="#C8C0B0" stroke-width="2" stroke-linecap="round"/>
+              <!-- Nose -->
+              <path d="M76 100 Q81.5 104 87 100 Q81.5 96 76 100Z" fill="none" stroke="#C8C0B0" stroke-width="1.6" stroke-linejoin="round"/>
+              <!-- Smile -->
+              <path d="M68 108 Q81.5 118 95 108" fill="none" stroke="#C8C0B0" stroke-width="1.8" stroke-linecap="round"/>
+              <!-- Whiskers -->
+              <line x1="42" y1="100" x2="66" y2="102" stroke="#C8C0B0" stroke-width="1.2" stroke-linecap="round"/>
+              <line x1="40" y1="106" x2="65" y2="106" stroke="#C8C0B0" stroke-width="1.2" stroke-linecap="round"/>
+              <line x1="97" y1="102" x2="121" y2="100" stroke="#C8C0B0" stroke-width="1.2" stroke-linecap="round"/>
+              <line x1="98" y1="106" x2="123" y2="106" stroke="#C8C0B0" stroke-width="1.2" stroke-linecap="round"/>
+              <!-- Paws outlines -->
+              <ellipse cx="50" cy="202" rx="16" ry="9" fill="none" stroke="#C8C0B0" stroke-width="2"/>
+              <ellipse cx="113" cy="202" rx="16" ry="9" fill="none" stroke="#C8C0B0" stroke-width="2"/>
+              <!-- Tail outline -->
+              <path d="M28 152 Q8 178 18 194 Q28 208 40 196" fill="none" stroke="#C8C0B0" stroke-width="10" stroke-linecap="round"/>
+              <path d="M28 152 Q8 178 18 194 Q28 208 40 196" fill="none" stroke="#FFF8F0" stroke-width="6" stroke-linecap="round"/>
+              <path d="M28 152 Q8 178 18 194 Q28 208 40 196" fill="none" stroke="#C8C0B0" stroke-width="2.2" stroke-linecap="round"/>
+            </svg>
+            <!-- CONTINUE badge -->
+            <div class="badge-continue">CONTINUE</div>
+            <div class="card-overlay">
+              <div class="card-name">Happy Cat</div>
+              <div class="card-date">Mon</div>
+            </div>
+          </div>
+
+          <!-- ══════════════════════════════════════════
+               CARD 4 — Jungle Bird (completed)
+               ════════════════════════════════════════ -->
+          <div class="g-card">
+            <svg class="thumb" viewBox="0 0 163 220" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
+              <defs>
+                <radialGradient id="jg4" cx="50%" cy="30%" r="80%"><stop offset="0%" stop-color="#1A6B3A"/><stop offset="100%" stop-color="#0F4A28"/></radialGradient>
+              </defs>
+              <!-- Deep jungle bg -->
+              <rect width="163" height="220" fill="url(#jg4)"/>
+              <!-- Light shafts -->
+              <path d="M60 0 L40 220" stroke="#7CB686" stroke-width="18" opacity="0.12"/>
+              <path d="M100 0 L85 220" stroke="#7CB686" stroke-width="12" opacity="0.10"/>
+              <!-- Large leaves -->
+              <path d="M0 80 Q40 50 60 90 Q40 100 0 80Z" fill="#2A8A48" opacity="0.9"/>
+              <path d="M163 60 Q130 40 112 78 Q130 88 163 60Z" fill="#2A8A48" opacity="0.9"/>
+              <path d="M0 140 Q35 120 50 155 Q30 162 0 140Z" fill="#226040" opacity="0.8"/>
+              <path d="M163 160 Q132 142 118 172 Q136 178 163 160Z" fill="#226040" opacity="0.8"/>
+              <!-- Branch -->
+              <path d="M20 130 Q81.5 118 143 130" fill="none" stroke="#5C3A18" stroke-width="10" stroke-linecap="round"/>
+              <path d="M20 130 Q81.5 122 143 130" fill="none" stroke="#7A5028" stroke-width="5" stroke-linecap="round" opacity="0.5"/>
+              <!-- Mossy branch texture -->
+              <path d="M30 132 Q50 138 70 132" fill="none" stroke="#3E7830" stroke-width="3" stroke-linecap="round" opacity="0.6"/>
+              <path d="M90 128 Q110 134 130 128" fill="none" stroke="#3E7830" stroke-width="3" stroke-linecap="round" opacity="0.6"/>
+
+              <!-- ── TROPICAL BIRD (macaw-style) ── -->
+              <!-- Tail feathers long -->
+              <path d="M81.5 148 Q72 175 65 210" fill="none" stroke="#0EA5A0" stroke-width="6" stroke-linecap="round"/>
+              <path d="M81.5 148 Q81.5 178 80 214" fill="none" stroke="#6BB8E8" stroke-width="5" stroke-linecap="round"/>
+              <path d="M81.5 148 Q91 175 97 210" fill="none" stroke="#F5A623" stroke-width="6" stroke-linecap="round"/>
+              <path d="M81.5 148 Q96 170 108 202" fill="none" stroke="#F06449" stroke-width="5" stroke-linecap="round"/>
+              <!-- Wing left -->
+              <path d="M81.5 118 Q46 102 38 124 Q46 140 68 136 Q58 152 50 162" fill="#F06449" stroke="#C84820" stroke-width="1.5" stroke-linejoin="round"/>
+              <!-- Wing feather detail left -->
+              <path d="M56 114 Q50 124 52 134" fill="none" stroke="#FFB840" stroke-width="2" stroke-linecap="round" opacity="0.7"/>
+              <path d="M48 118 Q42 128 46 138" fill="none" stroke="#F5A623" stroke-width="1.8" stroke-linecap="round" opacity="0.6"/>
+              <!-- Body -->
+              <ellipse cx="81.5" cy="126" rx="28" ry="30" fill="#F06449"/>
+              <!-- Chest -->
+              <ellipse cx="81.5" cy="130" rx="16" ry="18" fill="#F5A623" opacity="0.9"/>
+              <!-- Wing right -->
+              <path d="M81.5 118 Q117 102 125 124 Q117 140 95 136 Q105 152 113 162" fill="#0EA5A0" stroke="#0A8080" stroke-width="1.5" stroke-linejoin="round"/>
+              <!-- Wing feather detail right -->
+              <path d="M107 114 Q113 124 111 134" fill="none" stroke="#6BB8E8" stroke-width="2" stroke-linecap="round" opacity="0.7"/>
+              <path d="M115 118 Q121 128 117 138" fill="none" stroke="#B8A9E8" stroke-width="1.8" stroke-linecap="round" opacity="0.6"/>
+              <!-- Neck -->
+              <ellipse cx="81.5" cy="98" rx="18" ry="16" fill="#F5A623"/>
+              <!-- Head -->
+              <circle cx="81.5" cy="78" r="22" fill="#F5A623"/>
+              <!-- Face mask (white + red) -->
+              <ellipse cx="81.5" cy="82" rx="14" ry="10" fill="#FFFFF0" opacity="0.9"/>
+              <!-- Tiny feather lines on face -->
+              <line x1="74" y1="80" x2="74" y2="87" stroke="#E8D080" stroke-width="0.8" opacity="0.6"/>
+              <line x1="78" y1="78" x2="78" y2="87" stroke="#E8D080" stroke-width="0.8" opacity="0.6"/>
+              <line x1="82" y1="78" x2="82" y2="87" stroke="#E8D080" stroke-width="0.8" opacity="0.6"/>
+              <line x1="86" y1="78" x2="86" y2="87" stroke="#E8D080" stroke-width="0.8" opacity="0.6"/>
+              <!-- Beak -->
+              <path d="M74 80 Q81.5 76 89 80 L87 90 Q81.5 96 76 90 Z" fill="#1B2A4A"/>
+              <path d="M76 83 Q81.5 80 87 83" fill="none" stroke="#4A6080" stroke-width="1.2"/>
+              <!-- Eye -->
+              <circle cx="67" cy="72" r="6" fill="#FFFFF0"/>
+              <circle cx="67" cy="72" r="4" fill="#1B2A4A"/>
+              <circle cx="69" cy="70" r="1.5" fill="white" opacity="0.9"/>
+              <!-- Crest feathers -->
+              <path d="M78 58 Q72 40 68 30" fill="none" stroke="#F06449" stroke-width="3.5" stroke-linecap="round"/>
+              <path d="M81.5 56 Q81.5 38 82 26" fill="none" stroke="#F5A623" stroke-width="3" stroke-linecap="round"/>
+              <path d="M85 58 Q90 40 94 30" fill="none" stroke="#0EA5A0" stroke-width="3" stroke-linecap="round"/>
+              <!-- Claws on branch -->
+              <path d="M70 130 L64 132 L66 136" fill="none" stroke="#1B2A4A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M70 130 L62 134 L65 138" fill="none" stroke="#1B2A4A" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <div class="card-overlay">
+              <div class="card-name">Jungle Bird</div>
+              <div class="card-date">Last week</div>
+            </div>
+          </div>
+
+          <!-- ══════════════════════════════════════════
+               CARD 5 — Baby Bear (completed, Starter)
+               ════════════════════════════════════════ -->
+          <div class="g-card">
+            <svg class="thumb" viewBox="0 0 163 220" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
+              <defs>
+                <radialGradient id="sk5" cx="50%" cy="25%" r="75%"><stop offset="0%" stop-color="#FFF0C8"/><stop offset="100%" stop-color="#FFD880"/></radialGradient>
+                <radialGradient id="br5" cx="50%" cy="35%" r="55%"><stop offset="0%" stop-color="#C8844A"/><stop offset="100%" stop-color="#9A5C28"/></radialGradient>
+              </defs>
+              <!-- Warm golden sky -->
+              <rect width="163" height="220" fill="url(#sk5)"/>
+              <!-- Sun rays -->
+              <circle cx="81.5" cy="28" r="20" fill="#FFE060" opacity="0.7"/>
+              <circle cx="81.5" cy="28" r="12" fill="#FFCC20" opacity="0.9"/>
+              <!-- Ground -->
+              <rect x="0" y="175" width="163" height="45" fill="#C8884A"/>
+              <ellipse cx="81.5" cy="175" rx="100" ry="18" fill="#D89A5A"/>
+              <!-- Honey jar on ground -->
+              <rect x="112" y="160" width="22" height="28" rx="4" fill="#F5A623" opacity="0.95"/>
+              <ellipse cx="123" cy="160" rx="11" ry="5" fill="#FFD060"/>
+              <rect x="115" y="165" width="16" height="3" rx="1.5" fill="#D4811A" opacity="0.5"/>
+              <!-- "H" on jar -->
+              <text x="120" y="177" font-family="Nunito" font-weight="800" font-size="9" fill="#9A5C10" opacity="0.8">H</text>
+              <!-- Honey drip -->
+              <path d="M118 188 Q120 195 118 198" fill="none" stroke="#F5A623" stroke-width="2.5" stroke-linecap="round"/>
+              <!-- Bees -->
+              <ellipse cx="44" cy="42" rx="5" ry="3.5" fill="#F5A623"/>
+              <line x1="40" y1="40" x2="42" y2="37" stroke="#1B2A4A" stroke-width="1.2"/>
+              <line x1="44" y1="39" x2="44" y2="36" stroke="#1B2A4A" stroke-width="1.2"/>
+              <line x1="48" y1="40" x2="50" y2="37" stroke="#1B2A4A" stroke-width="1.2"/>
+              <line x1="40" y1="41" x2="40" y2="46" stroke="#1B2A4A" stroke-width="1" stroke-linecap="round"/>
+              <line x1="48" y1="41" x2="49" y2="46" stroke="#1B2A4A" stroke-width="1" stroke-linecap="round"/>
+
+              <!-- BEAR BODY -->
+              <ellipse cx="78" cy="168" rx="40" ry="32" fill="url(#br5)"/>
+              <!-- Tummy -->
+              <ellipse cx="78" cy="172" rx="22" ry="20" fill="#E8A870" opacity="0.75"/>
+              <!-- Head — big round baby head -->
+              <circle cx="78" cy="104" r="44" fill="#C8844A"/>
+              <!-- Head shading -->
+              <ellipse cx="58" cy="112" rx="16" ry="10" fill="#B87038" opacity="0.3"/>
+              <ellipse cx="98" cy="112" rx="16" ry="10" fill="#B87038" opacity="0.3"/>
+              <!-- Round ears -->
+              <circle cx="42" cy="70" r="16" fill="#C8844A"/>
+              <circle cx="114" cy="70" r="16" fill="#C8844A"/>
+              <circle cx="42" cy="70" r="9"  fill="#D89A68" opacity="0.7"/>
+              <circle cx="114" cy="70" r="9" fill="#D89A68" opacity="0.7"/>
+              <!-- BIG baby eyes -->
+              <circle cx="64" cy="100" r="10" fill="#1A0800"/>
+              <circle cx="92" cy="100" r="10" fill="#1A0800"/>
+              <circle cx="67" cy="96" r="3.5" fill="white" opacity="0.9"/>
+              <circle cx="95" cy="96" r="3.5" fill="white" opacity="0.9"/>
+              <circle cx="62" cy="104" r="1.5" fill="white" opacity="0.5"/>
+              <circle cx="90" cy="104" r="1.5" fill="white" opacity="0.5"/>
+              <!-- Snout bump -->
+              <ellipse cx="78" cy="114" rx="16" ry="11" fill="#D89A68"/>
+              <!-- Button nose -->
+              <ellipse cx="78" cy="110" rx="5.5" ry="4" fill="#2A1000"/>
+              <!-- Big smile -->
+              <path d="M64 120 Q78 132 92 120" fill="none" stroke="#2A1000" stroke-width="2.5" stroke-linecap="round"/>
+              <!-- Rosy cheeks -->
+              <circle cx="52" cy="112" r="9" fill="#F06449" opacity="0.18"/>
+              <circle cx="104" cy="112" r="9" fill="#F06449" opacity="0.18"/>
+              <!-- Paws holding honey -->
+              <ellipse cx="52" cy="192" rx="18" ry="12" fill="#C8844A"/>
+              <ellipse cx="104" cy="192" rx="18" ry="12" fill="#C8844A"/>
+              <!-- Toe marks -->
+              <path d="M42 196 Q46 202 50 196" fill="none" stroke="#9A5C28" stroke-width="1.5" stroke-linecap="round"/>
+              <path d="M54 196 Q58 202 62 196" fill="none" stroke="#9A5C28" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+            <!-- Peach dot — Starter tier -->
+            <div class="tier-dot" style="background:#FCBFA0;"></div>
+            <div class="card-overlay">
+              <div class="card-name">Baby Bear</div>
+              <div class="card-date">Last week</div>
+            </div>
+          </div>
+
+          <!-- ══════════════════════════════════════════
+               CARD 6 — Wild Zebra IN PROGRESS
+               Left stripes colored, right still outline
+               ════════════════════════════════════════ -->
+          <div class="g-card">
+            <svg class="thumb" viewBox="0 0 163 220" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
+              <defs>
+                <clipPath id="lhZ"><rect x="0" y="0" width="81.5" height="220"/></clipPath>
+                <clipPath id="rhZ"><rect x="81.5" y="0" width="81.5" height="220"/></clipPath>
+              </defs>
+              <!-- Background -->
+              <rect width="163" height="220" fill="#FFF8F0"/>
+              <rect x="0" y="0" width="81.5" height="220" fill="#EEE8D8"/>
+              <!-- Divider seam -->
+              <line x1="81.5" y1="0" x2="81.5" y2="220" stroke="#E8E0D8" stroke-width="0.8" stroke-dasharray="4 4"/>
+
+              <!-- Colored fills — left half -->
+              <g clip-path="url(#lhZ)">
+                <!-- Body fill -->
+                <ellipse cx="81.5" cy="172" rx="55" ry="36" fill="#F5F0E8"/>
+                <!-- Neck fill -->
+                <path d="M60 140 Q58 100 62 80 Q68 64 76 64 Q84 64 88 80 Q92 100 90 140" fill="#F5F0E8"/>
+                <!-- Head fill -->
+                <path d="M50 96 Q48 70 62 62 Q70 56 82 56 Q94 58 100 68 Q108 78 104 96 Q100 112 82 114 Q62 114 50 96Z" fill="#F5F0E8"/>
+                <!-- Mane color (deep black) -->
+                <path d="M74 56 L70 44 M74 56 L74 42 M74 56 L78 44" fill="none" stroke="#1B2A4A" stroke-width="3" stroke-linecap="round"/>
+                <!-- Stripes on neck — black -->
+                <path d="M61 90 Q72 86 81.5 88" fill="none" stroke="#1B2A4A" stroke-width="4" stroke-linecap="round" opacity="0.9"/>
+                <path d="M60 100 Q71 96 81.5 98" fill="none" stroke="#1B2A4A" stroke-width="3.5" stroke-linecap="round" opacity="0.85"/>
+                <path d="M60 110 Q70 106 81.5 108" fill="none" stroke="#1B2A4A" stroke-width="3" stroke-linecap="round" opacity="0.8"/>
+                <!-- Stripes on body -->
+                <path d="M30 156 Q55 150 75 154" fill="none" stroke="#1B2A4A" stroke-width="4" stroke-linecap="round" opacity="0.85"/>
+                <path d="M28 166 Q55 160 76 164" fill="none" stroke="#1B2A4A" stroke-width="3.5" stroke-linecap="round" opacity="0.8"/>
+                <path d="M30 178 Q55 172 76 176" fill="none" stroke="#1B2A4A" stroke-width="3" stroke-linecap="round" opacity="0.75"/>
+                <!-- Head stripes -->
+                <path d="M54 78 Q66 74 78 76" fill="none" stroke="#1B2A4A" stroke-width="3" stroke-linecap="round" opacity="0.8"/>
+                <path d="M52 86 Q64 82 78 84" fill="none" stroke="#1B2A4A" stroke-width="2.5" stroke-linecap="round" opacity="0.75"/>
+              </g>
+
+              <!-- White fills right half -->
+              <g clip-path="url(#rhZ)">
+                <ellipse cx="81.5" cy="172" rx="55" ry="36" fill="#ffffff"/>
+                <path d="M60 140 Q58 100 62 80 Q68 64 76 64 Q84 64 88 80 Q92 100 90 140" fill="#ffffff"/>
+                <path d="M50 96 Q48 70 62 62 Q70 56 82 56 Q94 58 100 68 Q108 78 104 96 Q100 112 82 114 Q62 114 50 96Z" fill="#ffffff"/>
+              </g>
+
+              <!-- All outlines -->
+              <!-- Body -->
+              <ellipse cx="81.5" cy="172" rx="55" ry="36" fill="none" stroke="#C8C0B0" stroke-width="2.2"/>
+              <!-- Neck -->
+              <path d="M60 140 Q58 100 62 80 Q68 64 76 64 Q84 64 88 80 Q92 100 90 140" fill="none" stroke="#C8C0B0" stroke-width="2.2" stroke-linecap="round"/>
+              <!-- Head -->
+              <path d="M50 96 Q48 70 62 62 Q70 56 82 56 Q94 58 100 68 Q108 78 104 96 Q100 112 82 114 Q62 114 50 96Z" fill="none" stroke="#C8C0B0" stroke-width="2.2"/>
+              <!-- Muzzle -->
+              <ellipse cx="81.5" cy="102" rx="14" ry="10" fill="none" stroke="#C8C0B0" stroke-width="1.8"/>
+              <!-- Nostril -->
+              <ellipse cx="76" cy="102" rx="2.5" ry="1.8" fill="none" stroke="#C8C0B0" stroke-width="1.4"/>
+              <ellipse cx="87" cy="102" rx="2.5" ry="1.8" fill="none" stroke="#C8C0B0" stroke-width="1.4"/>
+              <!-- Ears -->
+              <path d="M60 66 L54 52 L68 62" fill="none" stroke="#C8C0B0" stroke-width="2" stroke-linejoin="round"/>
+              <path d="M103 66 L109 52 L95 62" fill="none" stroke="#C8C0B0" stroke-width="2" stroke-linejoin="round"/>
+              <!-- Eye -->
+              <ellipse cx="66" cy="82" rx="5.5" ry="6" fill="none" stroke="#C8C0B0" stroke-width="1.8"/>
+              <!-- Mane -->
+              <path d="M74 56 L70 44 M74 56 L74 42 M74 56 L78 44 M74 56 L82 46" fill="none" stroke="#C8C0B0" stroke-width="2" stroke-linecap="round"/>
+              <!-- Legs -->
+              <line x1="52" y1="200" x2="50" y2="216" stroke="#C8C0B0" stroke-width="4" stroke-linecap="round"/>
+              <line x1="62" y1="204" x2="61" y2="218" stroke="#C8C0B0" stroke-width="4" stroke-linecap="round"/>
+              <line x1="101" y1="204" x2="102" y2="218" stroke="#C8C0B0" stroke-width="4" stroke-linecap="round"/>
+              <line x1="111" y1="200" x2="113" y2="216" stroke="#C8C0B0" stroke-width="4" stroke-linecap="round"/>
+              <!-- Right-side ghost stripes (faint guide) -->
+              <g opacity="0.15">
+                <path d="M87 88 Q100 84 120 86" fill="none" stroke="#1B2A4A" stroke-width="3" stroke-linecap="round"/>
+                <path d="M88 98 Q102 94 122 96" fill="none" stroke="#1B2A4A" stroke-width="2.5" stroke-linecap="round"/>
+                <path d="M87 154 Q105 150 130 152" fill="none" stroke="#1B2A4A" stroke-width="3" stroke-linecap="round"/>
+                <path d="M87 164 Q106 160 130 162" fill="none" stroke="#1B2A4A" stroke-width="2.5" stroke-linecap="round"/>
+              </g>
+            </svg>
+            <!-- CONTINUE badge -->
+            <div class="badge-continue">CONTINUE</div>
+            <div class="card-overlay">
+              <div class="card-name">Wild Zebra</div>
+              <div class="card-date"></div>
+            </div>
+          </div>
+
+        </div><!-- /gallery-grid -->
+      </div><!-- /scroll-body -->
+
+      <!-- Safe area -->
+      <div class="safe-area"><div class="home-indicator"></div></div>
+
+    </div><!-- /screen -->
+  </div><!-- /iphone -->
+  <div class="device-label">iPhone 15 Pro — 390 × 844 pt · My Gallery</div>
+</div>
+
+</body>
+</html>

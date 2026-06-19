@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=390px, initial-scale=1.0" />
+  <title>PaperBrush — Celebration</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800&family=Nunito+Sans:wght@400;600&display=swap" rel="stylesheet" />
+  <style>
+    /* ─── Reset ─────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --navy:    #1B2A4A;
+      --teal:    #0EA5A0;
+      --coral:   #F06449;
+      --gold:    #F5A623;
+      --sky:     #6BB8E8;
+      --sage:    #7CB686;
+    }
+
+    /* ─── Page shell ─────────────────────────────────────── */
+    html, body {
+      width: 100%;
+      min-height: 100%;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 48px;
+      padding: 48px;
+      align-items: flex-start;
+      justify-content: center;
+      background: #1A1714;
+      font-family: 'Nunito Sans', sans-serif;
+    }
+
+    .device-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+    }
+    .device-label {
+      font-family: 'Nunito Sans', sans-serif;
+      font-size: 13px;
+      color: #666;
+      letter-spacing: 0.04em;
+    }
+
+    /* ─── iPhone shell ───────────────────────────────────── */
+    .iphone {
+      width: 390px;
+      height: 844px;
+      border-radius: 50px;
+      background: #111;
+      box-shadow:
+        0 24px 80px rgba(0,0,0,0.6),
+        inset 0 0 0 2px #2a2a2a;
+      position: relative;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+    /* Dynamic island */
+    .iphone::before {
+      content: '';
+      position: absolute;
+      top: 12px; left: 50%;
+      transform: translateX(-50%);
+      width: 120px; height: 34px;
+      background: #111;
+      border-radius: 20px;
+      z-index: 30;
+    }
+
+    /* ─── Screen — Deep Navy bg ──────────────────────────── */
+    .screen {
+      position: absolute;
+      inset: 0;
+      border-radius: 48px;
+      overflow: hidden;
+      background: var(--navy);
+    }
+
+    /* ─── Status bar (light on dark) ────────────────────── */
+    .status-bar {
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 54px;
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      padding: 0 28px 8px;
+      z-index: 20;
+    }
+    .status-time {
+      font-family: 'Nunito', sans-serif;
+      font-weight: 700;
+      font-size: 15px;
+      color: rgba(255,255,255,0.85);
+    }
+    .status-icons { display: flex; align-items: center; gap: 5px; }
+    .status-icons svg { fill: rgba(255,255,255,0.75); }
+
+    /* ─── ARTWORK CONTAINER ──────────────────────────────── */
+    .artwork-wrap {
+      position: absolute;
+      top: 54px;       /* below status bar */
+      left: 32px;
+      right: 32px;
+      /* leave room for overlay at bottom; artwork is tall */
+      bottom: 210px;
+      border-radius: 16px;
+      overflow: hidden;
+      /* Teal glow frame */
+      box-shadow:
+        0 0 0 3px var(--teal),
+        0 0 20px 8px rgba(14,165,160,0.40);
+      z-index: 2;
+    }
+
+    .artwork-wrap svg {
+      width: 100%;
+      height: 100%;
+      display: block;
+      border-radius: 14px;
+    }
+
+    /* ─── CONFETTI / SPARKLES ────────────────────────────── */
+    .confetti-layer {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: 3;
+      border-radius: 48px;
+      overflow: hidden;
+    }
+
+    /* Each sparkle is absolutely positioned */
+    .sp {
+      position: absolute;
+    }
+
+    /* ─── GRADIENT OVERLAY (bottom 40%) ─────────────────── */
+    .gradient-overlay {
+      position: absolute;
+      left: 0; right: 0;
+      bottom: 0;
+      height: 380px;
+      background: linear-gradient(
+        to bottom,
+        transparent 0%,
+        rgba(27,42,74,0.55) 30%,
+        rgba(27,42,74,0.92) 55%,
+        var(--navy) 75%
+      );
+      z-index: 4;
+      border-radius: 0 0 48px 48px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-end;
+      padding-bottom: 40px;
+    }
+
+    /* ─── CELEBRATION TEXT ───────────────────────────────── */
+    .celebration-text {
+      font-family: 'Nunito', sans-serif;
+      font-weight: 800;
+      font-size: 28px;
+      color: #ffffff;
+      text-align: center;
+      letter-spacing: -0.3px;
+      text-shadow: 0 2px 12px rgba(0,0,0,0.30);
+      line-height: 1.2;
+    }
+
+    /* ─── ACTION BUTTONS ─────────────────────────────────── */
+    .action-buttons {
+      display: flex;
+      gap: 12px;
+      width: 100%;
+      padding: 0 24px;
+      margin-top: 16px;
+    }
+    .btn {
+      flex: 1;
+      height: 48px;
+      border-radius: 10px;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      font-family: 'Nunito', sans-serif;
+      font-weight: 700;
+      font-size: 16px;
+      color: #ffffff;
+      transition: transform 0.14s cubic-bezier(0.34,1.56,0.64,1),
+                  box-shadow 0.14s ease;
+    }
+    .btn:active {
+      transform: scale(0.96);
+    }
+    .btn-save {
+      background: var(--teal);
+      box-shadow: 0 4px 16px rgba(14,165,160,0.35);
+    }
+    .btn-share {
+      background: var(--coral);
+      box-shadow: 0 4px 16px rgba(240,100,73,0.35);
+    }
+
+    /* ─── COLOR ANOTHER LINK ─────────────────────────────── */
+    .color-another {
+      margin-top: 16px;
+      font-family: 'Nunito Sans', sans-serif;
+      font-weight: 600;
+      font-size: 15px;
+      color: rgba(255,255,255,0.70);
+      text-align: center;
+      cursor: pointer;
+      letter-spacing: 0.01em;
+    }
+
+    /* ─── REPLAY BUTTON (top right) ─────────────────────── */
+    .replay-btn {
+      position: absolute;
+      top: 62px;    /* below status bar + some padding */
+      right: 16px;
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      background: rgba(14,165,160,0.20);
+      box-shadow: 0 4px 16px rgba(27,42,74,0.10);
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+      z-index: 10;
+      transition: background 0.15s;
+    }
+    .replay-btn:hover { background: rgba(14,165,160,0.32); }
+    .replay-btn svg {
+      width: 18px; height: 18px;
+      stroke: var(--teal);
+      stroke-width: 2.2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      fill: none;
+    }
+
+    /* ─── Entrance animations ────────────────────────────── */
+    @keyframes fadeIn    { from { opacity:0 }              to { opacity:1 } }
+    @keyframes scaleUp   { from { opacity:0; transform:scale(0.9) }  to { opacity:1; transform:scale(1) } }
+    @keyframes slideUp   { from { opacity:0; transform:translateY(20px) } to { opacity:1; transform:translateY(0) } }
+    @keyframes popStar   { 0%{opacity:0;transform:scale(0) rotate(0deg)} 60%{transform:scale(1.2) rotate(20deg)} 100%{opacity:1;transform:scale(1) rotate(0deg)} }
+
+    .artwork-wrap     { animation: scaleUp 0.5s cubic-bezier(0.34,1.3,0.64,1) 0.1s both; }
+    .replay-btn       { animation: fadeIn  0.4s ease 0.25s both; }
+    .gradient-overlay { animation: fadeIn  0.5s ease 0.3s  both; }
+    .celebration-text { animation: slideUp 0.45s ease 0.45s both; }
+    .action-buttons   { animation: slideUp 0.45s ease 0.55s both; }
+    .color-another    { animation: slideUp 0.45s ease 0.62s both; }
+
+    .sp { animation: popStar 0.5s cubic-bezier(0.34,1.56,0.64,1) both; }
+    .sp:nth-child(1)  { animation-delay: 0.35s; }
+    .sp:nth-child(2)  { animation-delay: 0.40s; }
+    .sp:nth-child(3)  { animation-delay: 0.42s; }
+    .sp:nth-child(4)  { animation-delay: 0.45s; }
+    .sp:nth-child(5)  { animation-delay: 0.38s; }
+    .sp:nth-child(6)  { animation-delay: 0.50s; }
+    .sp:nth-child(7)  { animation-delay: 0.44s; }
+    .sp:nth-child(8)  { animation-delay: 0.48s; }
+    .sp:nth-child(9)  { animation-delay: 0.52s; }
+    .sp:nth-child(10) { animation-delay: 0.36s; }
+    .sp:nth-child(11) { animation-delay: 0.54s; }
+    .sp:nth-child(12) { animation-delay: 0.46s; }
+    .sp:nth-child(13) { animation-delay: 0.58s; }
+    .sp:nth-child(14) { animation-delay: 0.43s; }
+    .sp:nth-child(15) { animation-delay: 0.60s; }
+    .sp:nth-child(16) { animation-delay: 0.56s; }
+  </style>
+</head>
+<body>
+
+<div class="device-wrap">
+  <div class="iphone">
+    <div class="screen">
+
+      <!-- Status bar -->
+      <div class="status-bar">
+        <span class="status-time">9:41</span>
+        <div class="status-icons">
+          <svg width="17" height="12" viewBox="0 0 17 12"><rect x="0" y="8" width="3" height="4" rx="0.8"/><rect x="4.5" y="5.5" width="3" height="6.5" rx="0.8"/><rect x="9" y="3" width="3" height="9" rx="0.8"/><rect x="13.5" y="0" width="3" height="12" rx="0.8"/></svg>
+          <svg width="16" height="12" viewBox="0 0 16 12" fill="none" stroke="rgba(255,255,255,0.75)" stroke-width="1.8" stroke-linecap="round"><path d="M1 4.5C3.8 1.8 8 1.8 10.5 4" opacity="0.4"/><path d="M2.8 6.2C4.8 4.3 7.4 4 9.2 5.5"/><path d="M4.8 7.8C5.8 6.9 7.2 6.9 8.2 7.8"/><circle cx="6.5" cy="10" r="1.2" fill="rgba(255,255,255,0.75)" stroke="none"/></svg>
+          <svg width="25" height="12" viewBox="0 0 25 12" fill="rgba(255,255,255,0.75)"><rect x="0" y="1" width="21" height="10" rx="2.5" stroke="rgba(255,255,255,0.75)" stroke-width="1.2" fill="none"/><rect x="1.5" y="2.5" width="16" height="7" rx="1.5"/><path d="M22.5 4v4a2 2 0 0 0 0-4z"/></svg>
+        </div>
+      </div>
+
+      <!-- ══ COMPLETED LION ARTWORK ══ -->
+      <div class="artwork-wrap">
+        <svg viewBox="0 0 326 480" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
+
+          <!-- ── Background — lush green savanna ── -->
+          <defs>
+            <radialGradient id="skyBg" cx="50%" cy="25%" r="80%">
+              <stop offset="0%" stop-color="#A8D4E8"/>
+              <stop offset="100%" stop-color="#6BB0CC"/>
+            </radialGradient>
+            <radialGradient id="sunGlow" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stop-color="#FFF5C0" stop-opacity="0.9"/>
+              <stop offset="100%" stop-color="#F5A623" stop-opacity="0"/>
+            </radialGradient>
+            <radialGradient id="maneGrad" cx="50%" cy="40%" r="55%">
+              <stop offset="0%" stop-color="#D4811A"/>
+              <stop offset="100%" stop-color="#A85E0A"/>
+            </radialGradient>
+            <radialGradient id="bodyGrad" cx="50%" cy="35%" r="60%">
+              <stop offset="0%" stop-color="#F5D060"/>
+              <stop offset="100%" stop-color="#E8B030"/>
+            </radialGradient>
+          </defs>
+
+          <!-- Sky -->
+          <rect width="326" height="480" fill="url(#skyBg)"/>
+          <!-- Sun glow -->
+          <circle cx="163" cy="80" r="55" fill="url(#sunGlow)"/>
+          <circle cx="163" cy="80" r="32" fill="#FFF5C0" opacity="0.8"/>
+
+          <!-- Ground — rich green -->
+          <ellipse cx="163" cy="420" rx="200" ry="90" fill="#5A9E48"/>
+          <rect x="0" y="380" width="326" height="100" fill="#4E8E3C"/>
+
+          <!-- Grass tufts -->
+          <g fill="#3E7830" opacity="0.8">
+            <path d="M20 380 Q22 360 24 380 Q26 360 28 380"/>
+            <path d="M40 382 Q42 362 44 382 Q46 362 48 382"/>
+            <path d="M270 380 Q272 358 274 380 Q276 358 278 380"/>
+            <path d="M295 378 Q297 360 299 378 Q301 360 303 378"/>
+            <path d="M305 385 Q307 368 309 385"/>
+            <path d="M12 388 Q14 372 16 388"/>
+          </g>
+
+          <!-- Acacia tree right -->
+          <rect x="272" y="280" width="8" height="120" rx="4" fill="#8B6040"/>
+          <ellipse cx="276" cy="265" rx="38" ry="22" fill="#5A9E48"/>
+          <ellipse cx="258" cy="275" rx="26" ry="16" fill="#4E8E3C"/>
+          <ellipse cx="296" cy="272" rx="24" ry="14" fill="#4E8E3C"/>
+
+          <!-- Acacia tree left -->
+          <rect x="46" y="300" width="7" height="100" rx="3.5" fill="#8B6040"/>
+          <ellipse cx="49" cy="287" rx="32" ry="18" fill="#5A9E48"/>
+          <ellipse cx="34" cy="296" rx="22" ry="14" fill="#4E8E3C"/>
+          <ellipse cx="66" cy="293" rx="22" ry="13" fill="#4E8E3C"/>
+
+          <!-- Small flowers in grass -->
+          <circle cx="80" cy="385" r="4" fill="#F06449"/>
+          <circle cx="82" cy="385" r="2" fill="#F5A623"/>
+          <circle cx="240" cy="382" r="4" fill="#B8A9E8"/>
+          <circle cx="242" cy="382" r="2" fill="#F5A623"/>
+          <circle cx="130" cy="390" r="3.5" fill="#0EA5A0"/>
+
+          <!-- ── LION MANE (outer) — deep orange-brown ── -->
+          <ellipse cx="163" cy="250" rx="92" ry="88" fill="url(#maneGrad)"/>
+
+          <!-- Mane texture — layered darker arcs for depth -->
+          <path d="M85 220 Q90 190 120 178" fill="none" stroke="#8B4E0A" stroke-width="3" stroke-linecap="round" opacity="0.5"/>
+          <path d="M80 248 Q82 215 100 202" fill="none" stroke="#8B4E0A" stroke-width="3" stroke-linecap="round" opacity="0.4"/>
+          <path d="M241 220 Q236 190 206 178" fill="none" stroke="#8B4E0A" stroke-width="3" stroke-linecap="round" opacity="0.5"/>
+          <path d="M246 248 Q244 215 226 202" fill="none" stroke="#8B4E0A" stroke-width="3" stroke-linecap="round" opacity="0.4"/>
+          <!-- Top mane tuft -->
+          <path d="M135 162 Q148 140 163 136 Q178 140 191 162" fill="none" stroke="#8B4E0A" stroke-width="3" stroke-linecap="round" opacity="0.45"/>
+          <path d="M145 158 Q155 138 163 134 Q171 138 181 158" fill="none" stroke="#A06010" stroke-width="2.5" stroke-linecap="round" opacity="0.5"/>
+
+          <!-- ── LION BODY ── -->
+          <ellipse cx="163" cy="390" rx="85" ry="65" fill="url(#bodyGrad)"/>
+          <!-- Belly pale patch -->
+          <ellipse cx="163" cy="405" rx="48" ry="40" fill="#F5E090" opacity="0.7"/>
+
+          <!-- ── LION HEAD ── -->
+          <ellipse cx="163" cy="238" rx="68" ry="65" fill="#F5D060"/>
+          <!-- Head shading — cheek blush -->
+          <ellipse cx="128" cy="255" rx="18" ry="12" fill="#F0B840" opacity="0.5"/>
+          <ellipse cx="198" cy="255" rx="18" ry="12" fill="#F0B840" opacity="0.5"/>
+
+          <!-- ── EARS ── -->
+          <!-- Left ear -->
+          <path d="M102 182 L86 152 L118 168Z" fill="#E8A828"/>
+          <path d="M102 180 L92 158 L114 170Z" fill="#D4721A" opacity="0.7"/>
+          <!-- Right ear -->
+          <path d="M224 182 L240 152 L208 168Z" fill="#E8A828"/>
+          <path d="M224 180 L234 158 L212 170Z" fill="#D4721A" opacity="0.7"/>
+
+          <!-- ── EYES — large, expressive, happy ── -->
+          <!-- Eye whites -->
+          <ellipse cx="140" cy="230" rx="16" ry="14" fill="#FFFFF0"/>
+          <ellipse cx="186" cy="230" rx="16" ry="14" fill="#FFFFF0"/>
+          <!-- Irises — warm amber -->
+          <ellipse cx="140" cy="231" rx="11" ry="11" fill="#C87820"/>
+          <ellipse cx="186" cy="231" rx="11" ry="11" fill="#C87820"/>
+          <!-- Pupils -->
+          <ellipse cx="140" cy="232" rx="6" ry="7" fill="#1B2A4A"/>
+          <ellipse cx="186" cy="232" rx="6" ry="7" fill="#1B2A4A"/>
+          <!-- Shine spots -->
+          <circle cx="144" cy="227" r="3.5" fill="white" opacity="0.9"/>
+          <circle cx="190" cy="227" r="3.5" fill="white" opacity="0.9"/>
+          <circle cx="138" cy="235" r="1.5" fill="white" opacity="0.5"/>
+          <circle cx="184" cy="235" r="1.5" fill="white" opacity="0.5"/>
+          <!-- Happy eye curve (upper lid) -->
+          <path d="M127 224 Q140 216 153 224" fill="none" stroke="#8B5A00" stroke-width="2" stroke-linecap="round"/>
+          <path d="M173 224 Q186 216 199 224" fill="none" stroke="#8B5A00" stroke-width="2" stroke-linecap="round"/>
+
+          <!-- ── NOSE ── -->
+          <path d="M150 252 Q163 260 176 252 Q163 244 150 252Z" fill="#C84820"/>
+          <!-- Nose bridge -->
+          <line x1="163" y1="244" x2="163" y2="252" stroke="#A83010" stroke-width="1.8" stroke-linecap="round"/>
+
+          <!-- ── BIG HAPPY MOUTH ── -->
+          <path d="M145 265 Q163 280 181 265" fill="none" stroke="#A83010" stroke-width="2.5" stroke-linecap="round"/>
+          <!-- Teeth peek -->
+          <path d="M152 270 Q163 280 174 270 Q163 275 152 270Z" fill="white" opacity="0.85"/>
+
+          <!-- ── WHISKER DOTS ── -->
+          <circle cx="134" cy="258" r="2.5" fill="#8B5A00" opacity="0.5"/>
+          <circle cx="128" cy="263" r="2.5" fill="#8B5A00" opacity="0.5"/>
+          <circle cx="122" cy="255" r="2.5" fill="#8B5A00" opacity="0.5"/>
+          <circle cx="192" cy="258" r="2.5" fill="#8B5A00" opacity="0.5"/>
+          <circle cx="198" cy="263" r="2.5" fill="#8B5A00" opacity="0.5"/>
+          <circle cx="204" cy="255" r="2.5" fill="#8B5A00" opacity="0.5"/>
+
+          <!-- ── WHISKERS ── -->
+          <line x1="130" y1="258" x2="98"  y2="252" stroke="#C8A060" stroke-width="1.5" stroke-linecap="round" opacity="0.7"/>
+          <line x1="128" y1="263" x2="94"  y2="263" stroke="#C8A060" stroke-width="1.5" stroke-linecap="round" opacity="0.7"/>
+          <line x1="132" y1="268" x2="100" y2="274" stroke="#C8A060" stroke-width="1.5" stroke-linecap="round" opacity="0.7"/>
+          <line x1="196" y1="258" x2="228" y2="252" stroke="#C8A060" stroke-width="1.5" stroke-linecap="round" opacity="0.7"/>
+          <line x1="198" y1="263" x2="232" y2="263" stroke="#C8A060" stroke-width="1.5" stroke-linecap="round" opacity="0.7"/>
+          <line x1="194" y1="268" x2="226" y2="274" stroke="#C8A060" stroke-width="1.5" stroke-linecap="round" opacity="0.7"/>
+
+          <!-- ── PAWS ── -->
+          <!-- Front paws -->
+          <ellipse cx="118" cy="432" rx="32" ry="20" fill="#E8B030"/>
+          <ellipse cx="208" cy="432" rx="32" ry="20" fill="#E8B030"/>
+          <!-- Toe lines left -->
+          <path d="M102 435 Q106 445 110 435" fill="none" stroke="#C88020" stroke-width="2" stroke-linecap="round"/>
+          <path d="M116 436 Q120 447 124 436" fill="none" stroke="#C88020" stroke-width="2" stroke-linecap="round"/>
+          <path d="M130 435 Q134 445 138 435" fill="none" stroke="#C88020" stroke-width="2" stroke-linecap="round"/>
+          <!-- Toe lines right -->
+          <path d="M192 435 Q196 445 200 435" fill="none" stroke="#C88020" stroke-width="2" stroke-linecap="round"/>
+          <path d="M206 436 Q210 447 214 436" fill="none" stroke="#C88020" stroke-width="2" stroke-linecap="round"/>
+          <path d="M220 435 Q224 445 228 435" fill="none" stroke="#C88020" stroke-width="2" stroke-linecap="round"/>
+
+          <!-- ── TAIL ── -->
+          <path d="M248 360 Q290 320 296 350 Q302 375 284 390 Q270 400 260 388" fill="none" stroke="#E8B030" stroke-width="14" stroke-linecap="round"/>
+          <!-- Tail tuft -->
+          <ellipse cx="296" cy="350" rx="16" ry="20" fill="#D4721A" transform="rotate(-20 296 350)"/>
+          <ellipse cx="292" cy="348" rx="8" ry="12" fill="#A85E0A" opacity="0.7" transform="rotate(-20 292 348)"/>
+
+          <!-- ── THIN OUTLINES for definition ── -->
+          <ellipse cx="163" cy="250" rx="92" ry="88" fill="none" stroke="#8B4E0A" stroke-width="2" opacity="0.4"/>
+          <ellipse cx="163" cy="238" rx="68" ry="65" fill="none" stroke="#C88020" stroke-width="2" opacity="0.4"/>
+          <ellipse cx="163" cy="390" rx="85" ry="65" fill="none" stroke="#C88020" stroke-width="1.5" opacity="0.3"/>
+
+          <!-- ── STAR RATING at bottom of artwork ── -->
+          <g transform="translate(163,468)" fill="#F5A623">
+            <polygon points="-30,0 -27,-8 -20,-8 -26,-3 -24,5 -30,1 -36,5 -34,-3 -40,-8 -33,-8" opacity="0.9"/>
+            <polygon points="0,-2 2,-9 8,-9 3,-4 5,4 0,0 -5,4 -3,-4 -8,-9 -2,-9" opacity="0.9" transform="scale(1.15)"/>
+            <polygon points="30,0 27,-8 20,-8 26,-3 24,5 30,1 36,5 34,-3 40,-8 33,-8" opacity="0.9"/>
+          </g>
+
+        </svg>
+      </div>
+
+      <!-- ══ CONFETTI / SPARKLES ══ -->
+      <div class="confetti-layer">
+
+        <!-- Gold stars -->
+        <div class="sp" style="top:72px; left:38px;">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="#F5A623">
+            <polygon points="9,1 11,6.5 17,6.5 12.5,10 14,16 9,12.5 4,16 5.5,10 1,6.5 7,6.5"/>
+          </svg>
+        </div>
+        <div class="sp" style="top:90px; right:42px;">
+          <svg width="14" height="14" viewBox="0 0 18 18" fill="#F5A623">
+            <polygon points="9,1 11,6.5 17,6.5 12.5,10 14,16 9,12.5 4,16 5.5,10 1,6.5 7,6.5"/>
+          </svg>
+        </div>
+        <div class="sp" style="top:130px; left:26px;">
+          <svg width="10" height="10" viewBox="0 0 18 18" fill="#F5A623" opacity="0.8">
+            <polygon points="9,1 11,6.5 17,6.5 12.5,10 14,16 9,12.5 4,16 5.5,10 1,6.5 7,6.5"/>
+          </svg>
+        </div>
+
+        <!-- Coral stars & circles -->
+        <div class="sp" style="top:78px; left:65px;">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="#F06449">
+            <circle cx="6" cy="6" r="5"/>
+          </svg>
+        </div>
+        <div class="sp" style="top:110px; right:30px;">
+          <svg width="16" height="16" viewBox="0 0 18 18" fill="#F06449">
+            <polygon points="9,1 11,6.5 17,6.5 12.5,10 14,16 9,12.5 4,16 5.5,10 1,6.5 7,6.5"/>
+          </svg>
+        </div>
+        <div class="sp" style="top:160px; right:22px;">
+          <svg width="8" height="8" viewBox="0 0 8 8" fill="#F06449" opacity="0.9">
+            <circle cx="4" cy="4" r="3.5"/>
+          </svg>
+        </div>
+
+        <!-- Sky blue sparkles (4-point stars) -->
+        <div class="sp" style="top:68px; right:70px;">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="#6BB8E8">
+            <path d="M8 0 L9.2 6.8 L16 8 L9.2 9.2 L8 16 L6.8 9.2 L0 8 L6.8 6.8 Z"/>
+          </svg>
+        </div>
+        <div class="sp" style="top:155px; left:30px;">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="#6BB8E8" opacity="0.9">
+            <path d="M8 0 L9.2 6.8 L16 8 L9.2 9.2 L8 16 L6.8 9.2 L0 8 L6.8 6.8 Z"/>
+          </svg>
+        </div>
+        <div class="sp" style="top:106px; left:52px;">
+          <svg width="10" height="10" viewBox="0 0 16 16" fill="#6BB8E8" opacity="0.85">
+            <path d="M8 0 L9.2 6.8 L16 8 L9.2 9.2 L8 16 L6.8 9.2 L0 8 L6.8 6.8 Z"/>
+          </svg>
+        </div>
+
+        <!-- Squiggle lines -->
+        <div class="sp" style="top:96px; left:18px;">
+          <svg width="28" height="12" viewBox="0 0 28 12" fill="none">
+            <path d="M2 6 Q6 1 10 6 Q14 11 18 6 Q22 1 26 6" stroke="#F5A623" stroke-width="2.2" stroke-linecap="round" fill="none"/>
+          </svg>
+        </div>
+        <div class="sp" style="top:138px; right:18px;">
+          <svg width="24" height="10" viewBox="0 0 28 12" fill="none">
+            <path d="M2 6 Q6 1 10 6 Q14 11 18 6 Q22 1 26 6" stroke="#6BB8E8" stroke-width="2" stroke-linecap="round" fill="none"/>
+          </svg>
+        </div>
+        <div class="sp" style="top:175px; left:16px;">
+          <svg width="20" height="8" viewBox="0 0 28 12" fill="none">
+            <path d="M2 6 Q6 1 10 6 Q14 11 18 6 Q22 1 26 6" stroke="#F06449" stroke-width="2" stroke-linecap="round" fill="none"/>
+          </svg>
+        </div>
+
+        <!-- Small dot clusters -->
+        <div class="sp" style="top:82px; right:52px;">
+          <svg width="22" height="10" viewBox="0 0 22 10">
+            <circle cx="3"  cy="5" r="2.5" fill="#F5A623"/>
+            <circle cx="11" cy="3" r="2"   fill="#F06449"/>
+            <circle cx="19" cy="6" r="2.5" fill="#6BB8E8"/>
+          </svg>
+        </div>
+        <div class="sp" style="top:165px; right:36px;">
+          <svg width="18" height="8" viewBox="0 0 18 8">
+            <circle cx="2"  cy="4" r="2"   fill="#F5A623" opacity="0.9"/>
+            <circle cx="9"  cy="2" r="1.5" fill="#6BB8E8" opacity="0.9"/>
+            <circle cx="16" cy="5" r="2"   fill="#F06449" opacity="0.9"/>
+          </svg>
+        </div>
+        <!-- Extra small dot top left corner area -->
+        <div class="sp" style="top:58px; left:46px;">
+          <svg width="6" height="6"><circle cx="3" cy="3" r="3" fill="#F5A623" opacity="0.9"/></svg>
+        </div>
+
+      </div><!-- /confetti-layer -->
+
+      <!-- ══ GRADIENT OVERLAY + ACTIONS ══ -->
+      <div class="gradient-overlay">
+
+        <div class="celebration-text">Amazing work! ⭐</div>
+
+        <div class="action-buttons">
+          <button class="btn btn-save">💾 Save</button>
+          <button class="btn btn-share">📤 Share</button>
+        </div>
+
+        <div class="color-another">Color another ›</div>
+
+      </div>
+
+      <!-- ══ REPLAY BUTTON ══ -->
+      <div class="replay-btn">
+        <!-- Circular arrow / replay -->
+        <svg viewBox="0 0 20 20">
+          <path d="M14.5 5.5 A7 7 0 1 0 16 10"/>
+          <polyline points="13,3 16,5.5 13.5,8.5"/>
+        </svg>
+      </div>
+
+    </div><!-- /screen -->
+  </div><!-- /iphone -->
+  <div class="device-label">iPhone 15 Pro — 390 × 844 pt · Celebration Screen</div>
+</div>
+
+</body>
+</html>

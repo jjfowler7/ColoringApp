@@ -1,0 +1,1190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=390px, initial-scale=1.0" />
+  <title>PaperBrush — Pass & Play In-Game</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800&family=Nunito+Sans:wght@400;600&display=swap" rel="stylesheet" />
+  <style>
+    /* ─── Reset ─────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --cream:     #FFF8F0;
+      --canvas-bg: #FFFDF9;
+      --teal:      #0EA5A0;
+      --navy:      #1B2A4A;
+      --coral:     #F06449;
+      --gold:      #F5A623;
+      --sky:       #6BB8E8;
+      --sage:      #7CB686;
+      --secondary: #666666;
+      --divider:   #E8E0D8;
+      --peach:     #FCBFA0;
+    }
+
+    html, body {
+      width: 100%;
+      min-height: 100%;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 48px;
+      padding: 48px;
+      align-items: flex-start;
+      justify-content: center;
+      background: #C8C0AE;
+      font-family: 'Nunito Sans', sans-serif;
+    }
+
+    .device-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+    }
+    .device-label {
+      font-family: 'Nunito Sans', sans-serif;
+      font-size: 13px;
+      color: #888;
+      letter-spacing: 0.04em;
+    }
+
+    /* ─── iPhone shell ───────────────────────────────────── */
+    .iphone {
+      width: 390px;
+      height: 844px;
+      border-radius: 50px;
+      background: #1a1a1a;
+      box-shadow: 0 24px 80px rgba(0,0,0,0.45), inset 0 0 0 2px #3a3a3a;
+      position: relative;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+    .iphone::before {
+      content: '';
+      position: absolute;
+      top: 12px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 120px;
+      height: 34px;
+      background: #1a1a1a;
+      border-radius: 20px;
+      z-index: 30;
+    }
+
+    /* ─── Screen ─────────────────────────────────────────── */
+    .screen {
+      position: absolute;
+      inset: 0;
+      border-radius: 48px;
+      overflow: hidden;
+      background: var(--canvas-bg);
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ─── Status bar ─────────────────────────────────────– */
+    .status-bar {
+      height: 54px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      padding: 0 28px 8px;
+      background: var(--canvas-bg);
+      z-index: 20;
+    }
+    .status-time {
+      font-family: 'Nunito', sans-serif;
+      font-weight: 700;
+      font-size: 15px;
+      color: var(--navy);
+    }
+    .status-icons { display: flex; align-items: center; gap: 5px; }
+    .status-icons svg { fill: var(--navy); }
+
+    /* ─── TURN INDICATOR BAR (replaces top-toolbar) ────────── */
+    .turn-bar {
+      height: 48px;
+      flex-shrink: 0;
+      background: var(--sky);
+      opacity: 0.85;
+      display: flex;
+      align-items: center;
+      padding: 0 16px;
+      gap: 12px;
+      z-index: 10;
+    }
+
+    .turn-bar.warning {
+      background: var(--coral);
+      opacity: 0.9;
+    }
+
+    .player-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      background: rgba(255,255,255, 0.3);
+      flex-shrink: 0;
+    }
+
+    .turn-text {
+      flex: 1;
+      font-family: 'Nunito', sans-serif;
+      font-weight: 700;
+      font-size: 16px;
+      color: var(--navy);
+    }
+
+    /* Countdown timer ring and text */
+    .timer-circle {
+      width: 44px;
+      height: 44px;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .timer-ring {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      border: 3px solid var(--teal);
+      border-right-color: transparent;
+      border-top-color: transparent;
+      transform: rotate(-90deg);
+      opacity: 0.7;
+    }
+
+    .timer-ring.warning {
+      border-color: var(--coral);
+      border-right-color: transparent;
+      border-top-color: transparent;
+    }
+
+    .timer-text {
+      font-family: 'Nunito', sans-serif;
+      font-weight: 700;
+      font-size: 12px;
+      color: var(--navy);
+      position: relative;
+      z-index: 1;
+    }
+
+    .timer-text.warning {
+      color: var(--coral);
+      animation: pulseScale 1s ease-in-out infinite;
+    }
+
+    @keyframes pulseScale {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+
+    /* Pause button */
+    .pause-btn {
+      width: 44px;
+      height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: transform 0.15s;
+    }
+
+    .pause-btn:active { transform: scale(0.9); }
+
+    .pause-icon {
+      width: 16px;
+      height: 20px;
+      display: flex;
+      gap: 4px;
+      align-items: center;
+    }
+
+    .pause-bar {
+      width: 3px;
+      height: 100%;
+      background: var(--secondary);
+      border-radius: 1px;
+    }
+
+    /* ─── CANVAS AREA ────────────────────────────────────── */
+    .canvas-area {
+      flex: 1;
+      background: #ffffff;
+      position: relative;
+      overflow: hidden;
+      min-height: 0;
+    }
+
+    .canvas-area svg {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    /* ─── BRUSH TOOLBAR ──────────────────────────────────── */
+    .brush-toolbar {
+      height: 56px;
+      flex-shrink: 0;
+      background: var(--canvas-bg);
+      border-top: 1px solid var(--divider);
+      display: flex;
+      align-items: center;
+      justify-content: space-around;
+      padding: 0 4px;
+    }
+
+    .brush-btn {
+      width: 48px;
+      height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 9999px;
+      cursor: pointer;
+      position: relative;
+      flex-shrink: 0;
+      border: none;
+      background: transparent;
+      transition: transform 0.15s cubic-bezier(0.34,1.56,0.64,1);
+    }
+    .brush-btn:active { transform: scale(0.9); }
+
+    .brush-btn.selected::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: 9999px;
+      background: rgba(14,165,160,0.15);
+    }
+
+    .brush-btn svg {
+      width: 32px;
+      height: 32px;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* ─── COLOR TRAY ─────────────────────────────────────– */
+    .color-tray-wrap {
+      height: 48px;
+      flex-shrink: 0;
+      background: var(--canvas-bg);
+      border-top: 1px solid var(--divider);
+      display: flex;
+      align-items: center;
+      position: relative;
+    }
+
+    .color-tray-wrap::before {
+      content: '';
+      position: absolute;
+      top: 0; bottom: 0; left: 0;
+      width: 32px;
+      z-index: 2;
+      pointer-events: none;
+      background: linear-gradient(to right, var(--canvas-bg), transparent);
+    }
+
+    .color-tray {
+      flex: 1;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 0 12px 0 16px;
+      overflow-x: auto;
+      overflow-y: hidden;
+      scrollbar-width: none;
+      -webkit-overflow-scrolling: touch;
+    }
+    .color-tray::-webkit-scrollbar { display: none; }
+
+    .swatch {
+      width: 32px;
+      height: 32px;
+      border-radius: 9999px;
+      flex-shrink: 0;
+      cursor: pointer;
+      transition: transform 0.15s cubic-bezier(0.34,1.56,0.64,1);
+      position: relative;
+    }
+    .swatch:active { transform: scale(0.88); }
+
+    .swatch.selected {
+      width: 40px;
+      height: 40px;
+      outline: 3px solid #ffffff;
+      outline-offset: 1px;
+      box-shadow: 0 0 0 1.5px rgba(27,42,74,0.15), 0 2px 8px rgba(14,165,160,0.3);
+    }
+    .swatch.selected::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: 9999px;
+      background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpolyline points='4,10 8,14 16,6' stroke='white' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round' fill='none'/%3E%3C/svg%3E") center/60% no-repeat;
+    }
+
+    .tray-add-wrap {
+      flex-shrink: 0;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      padding: 0 12px 0 4px;
+      border-left: 1px solid var(--divider);
+      background: var(--canvas-bg);
+    }
+    .swatch-add {
+      width: 32px;
+      height: 32px;
+      border-radius: 9999px;
+      flex-shrink: 0;
+      cursor: pointer;
+      border: 2px dashed var(--secondary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: transparent;
+      transition: transform 0.15s ease, border-color 0.15s;
+    }
+    .swatch-add:hover { border-color: var(--teal); transform: scale(1.08); }
+    .swatch-add:active { transform: scale(0.92); }
+    .swatch-add svg {
+      width: 14px;
+      height: 14px;
+      stroke: var(--secondary);
+      stroke-width: 2;
+      stroke-linecap: round;
+      fill: none;
+    }
+
+    /* ─── UNDO / SIZE / REDO BAR ─────────────────────────── */
+    .control-bar {
+      height: 40px;
+      flex-shrink: 0;
+      background: var(--canvas-bg);
+      display: flex;
+      align-items: center;
+      padding: 0 8px;
+    }
+
+    .ctrl-btn {
+      width: 44px;
+      height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      border-radius: 9999px;
+      border: none;
+      background: transparent;
+      flex-shrink: 0;
+      transition: background 0.15s;
+    }
+    .ctrl-btn:active { background: rgba(14,165,160,0.1); }
+    .ctrl-btn svg {
+      width: 22px;
+      height: 22px;
+      stroke: var(--teal);
+      stroke-width: 2.2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      fill: none;
+    }
+
+    .size-slider-wrap {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .size-slider-track {
+      width: 200px;
+      height: 6px;
+      border-radius: 9999px;
+      background: var(--divider);
+      position: relative;
+    }
+    .size-slider-fill {
+      position: absolute;
+      left: 0; top: 0; bottom: 0;
+      width: 55%;
+      background: var(--teal);
+      border-radius: 9999px;
+    }
+    .size-slider-thumb {
+      position: absolute;
+      top: 50%;
+      left: 55%;
+      transform: translate(-50%, -50%);
+      width: 24px;
+      height: 24px;
+      border-radius: 9999px;
+      background: #ffffff;
+      box-shadow: 0 4px 16px rgba(27,42,74,0.10);
+      border: 1px solid rgba(27,42,74,0.08);
+      cursor: grab;
+    }
+
+    /* ─── Bottom safe area ───────────────────────────────– */
+    .safe-area-bottom {
+      height: 34px;
+      flex-shrink: 0;
+      background: var(--canvas-bg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .home-indicator {
+      width: 120px;
+      height: 5px;
+      background: var(--navy);
+      border-radius: 9999px;
+      opacity: 0.18;
+    }
+
+    /* ─── OVERLAY: Time's Up (Variant 3) ─────────────────── */
+    .overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(27, 42, 74, 0.5);
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .time-up-card {
+      background: #ffffff;
+      border-radius: 16px;
+      padding: 32px 24px;
+      width: 240px;
+      text-align: center;
+      box-shadow: 0 16px 64px rgba(27, 42, 74, 0.25);
+      animation: timeUpEntrance 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    }
+
+    @keyframes timeUpEntrance {
+      from {
+        opacity: 0;
+        transform: scale(0.8);
+      }
+      to {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+
+    .time-up-title {
+      font-family: 'Nunito', sans-serif;
+      font-weight: 700;
+      font-size: 20px;
+      color: var(--navy);
+      margin-bottom: 8px;
+    }
+
+    .time-up-subtitle {
+      font-family: 'Nunito Sans', sans-serif;
+      font-weight: 400;
+      font-size: 14px;
+      color: var(--secondary);
+    }
+
+    .overlay { display: flex; }
+  </style>
+</head>
+<body>
+
+<!-- VARIANT 1: Normal turn (>10s remaining) ──────────────────── -->
+<div class="device-wrap">
+  <div class="iphone">
+    <div class="screen">
+
+      <!-- Status bar -->
+      <div class="status-bar">
+        <span class="status-time">9:41</span>
+        <div class="status-icons">
+          <svg width="17" height="12" viewBox="0 0 17 12"><rect x="0" y="8" width="3" height="4" rx="0.8"/><rect x="4.5" y="5.5" width="3" height="6.5" rx="0.8"/><rect x="9" y="3" width="3" height="9" rx="0.8"/><rect x="13.5" y="0" width="3" height="12" rx="0.8"/></svg>
+          <svg width="16" height="12" viewBox="0 0 16 12" fill="none" stroke="#1B2A4A" stroke-width="1.8" stroke-linecap="round"><path d="M1 4.5C3.8 1.8 8 1.8 10.5 4" opacity="0.3"/><path d="M2.8 6.2C4.8 4.3 7.4 4 9.2 5.5"/><path d="M4.8 7.8C5.8 6.9 7.2 6.9 8.2 7.8"/><circle cx="6.5" cy="10" r="1.2" fill="#1B2A4A" stroke="none"/></svg>
+          <svg width="25" height="12" viewBox="0 0 25 12" fill="#1B2A4A"><rect x="0" y="1" width="21" height="10" rx="2.5" stroke="#1B2A4A" stroke-width="1.2" fill="none"/><rect x="1.5" y="2.5" width="16" height="7" rx="1.5"/><path d="M22.5 4v4a2 2 0 0 0 0-4z"/></svg>
+        </div>
+      </div>
+
+      <!-- Turn indicator bar -->
+      <div class="turn-bar">
+        <div class="player-avatar"><svg viewBox="0 0 32 32" width="32" height="32"><circle cx="16" cy="16" r="16" fill="#E8854A"/><polygon points="10,4 6,10 11,8" fill="#E8854A"/><polygon points="22,4 26,10 21,8" fill="#E8854A"/><circle cx="12" cy="14" r="2" fill="#ffffff"/><circle cx="11.5" cy="13.5" r="0.8" fill="#000000"/><circle cx="20" cy="14" r="2" fill="#ffffff"/><circle cx="20.5" cy="13.5" r="0.8" fill="#000000"/><polygon points="16,17.5 14.5,19 17.5,19" fill="#ffffff"/><line x1="8" y1="20" x2="5" y2="18.5" stroke="#ffffff" stroke-width="0.8" stroke-linecap="round"/><line x1="8" y1="21" x2="4" y2="21" stroke="#ffffff" stroke-width="0.8" stroke-linecap="round"/><line x1="8" y1="22" x2="5" y2="23.5" stroke="#ffffff" stroke-width="0.8" stroke-linecap="round"/><line x1="24" y1="20" x2="27" y2="18.5" stroke="#ffffff" stroke-width="0.8" stroke-linecap="round"/><line x1="24" y1="21" x2="28" y2="21" stroke="#ffffff" stroke-width="0.8" stroke-linecap="round"/><line x1="24" y1="22" x2="27" y2="23.5" stroke="#ffffff" stroke-width="0.8" stroke-linecap="round"/></svg></div>
+        <div class="turn-text">Sarah's turn</div>
+        <div class="timer-circle">
+          <div class="timer-ring" style="clip-path: polygon(50% 50%, 50% 0%, 100% 0%, 100% 100%, 0% 100%, 0% 50%);"></div>
+          <div class="timer-text">0:42</div>
+        </div>
+        <button class="pause-btn">
+          <div class="pause-icon">
+            <div class="pause-bar"></div>
+            <div class="pause-bar"></div>
+          </div>
+        </button>
+      </div>
+
+      <!-- Canvas area -->
+      <div class="canvas-area">
+        <svg viewBox="0 0 390 400" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">
+          <rect width="390" height="400" fill="#ffffff"/>
+          <defs>
+            <clipPath id="v1LeftHalf"><rect x="0" y="0" width="195" height="400"/></clipPath>
+            <clipPath id="v1RightHalf"><rect x="195" y="0" width="195" height="400"/></clipPath>
+          </defs>
+          <ellipse cx="195" cy="270" rx="120" ry="88" fill="#F5A623" clip-path="url(#v1LeftHalf)"/>
+          <ellipse cx="195" cy="285" rx="68" ry="58" fill="#FCBFA0" clip-path="url(#v1LeftHalf)"/>
+          <ellipse cx="195" cy="165" rx="75" ry="70" fill="#F5A623" clip-path="url(#v1LeftHalf)"/>
+          <polygon points="128,118 110,82 148,100" fill="#F5A623" clip-path="url(#v1LeftHalf)"/>
+          <polygon points="128,114 116,90 142,104" fill="#FCBFA0" clip-path="url(#v1LeftHalf)"/>
+          <ellipse cx="162" cy="168" rx="22" ry="16" fill="#0EA5A0" opacity="0.25" clip-path="url(#v1LeftHalf)"/>
+          <path d="M175 120 Q185 108 195 115" stroke="#D4811A" stroke-width="3.5" fill="none" stroke-linecap="round" clip-path="url(#v1LeftHalf)"/>
+          <path d="M170 110 Q182 96 195 103" stroke="#D4811A" stroke-width="3" fill="none" stroke-linecap="round" clip-path="url(#v1LeftHalf)"/>
+          <ellipse cx="138" cy="340" rx="26" ry="16" fill="#F5A623" clip-path="url(#v1LeftHalf)"/>
+          <ellipse cx="188" cy="348" rx="28" ry="14" fill="#FCBFA0" clip-path="url(#v1LeftHalf)"/>
+          <path d="M95 310 Q42 370 75 390 Q110 410 130 375" stroke="#F5A623" stroke-width="18" fill="none" stroke-linecap="round" clip-path="url(#v1LeftHalf)"/>
+          <path d="M95 310 Q42 370 75 390 Q110 410 130 375" stroke="#FCBFA0" stroke-width="8" fill="none" stroke-linecap="round" opacity="0.6" clip-path="url(#v1LeftHalf)"/>
+        </svg>
+      </div>
+
+      <!-- Brush toolbar -->
+      <div class="brush-toolbar">
+        <button class="brush-btn" title="Crayon">
+          <svg viewBox="0 0 32 32" fill="none">
+            <rect x="13" y="3" width="6" height="18" rx="1.5" fill="#F5A623"/>
+            <rect x="14.5" y="3" width="2" height="18" rx="1" fill="#FFD16A" opacity="0.6"/>
+            <rect x="13" y="12" width="6" height="5" fill="#FFFDF9" opacity="0.5"/>
+            <path d="M13 21 L16 29 L19 21Z" fill="#D4811A"/>
+            <path d="M14.5 21 L16 27 L17.5 21Z" fill="#F5C842" opacity="0.6"/>
+            <rect x="13" y="1.5" width="6" height="3" rx="1.5" fill="#D4811A"/>
+          </svg>
+        </button>
+        <button class="brush-btn selected" title="Marker">
+          <svg viewBox="0 0 32 32" fill="none">
+            <rect x="12.5" y="2" width="7" height="20" rx="3.5" fill="#0EA5A0"/>
+            <rect x="14" y="2" width="2.5" height="20" rx="1.2" fill="#3ECFCA" opacity="0.5"/>
+            <rect x="12" y="18" width="8" height="3" rx="1.5" fill="#0B8A86"/>
+            <path d="M13 21 Q16 20 19 21 L18 27 Q16 30 14 27Z" fill="#0EA5A0"/>
+            <path d="M14.5 22 Q16 21.5 17.5 22 L17 26 Q16 28 15 26Z" fill="#3ECFCA" opacity="0.5"/>
+            <rect x="18" y="3" width="2.5" height="10" rx="1.2" fill="#0B8A86"/>
+            <circle cx="19.25" cy="3" r="1.5" fill="#0B8A86"/>
+          </svg>
+        </button>
+        <button class="brush-btn" title="Watercolor">
+          <svg viewBox="0 0 32 32" fill="none">
+            <rect x="14" y="2" width="4" height="18" rx="2" fill="#8FBCD4"/>
+            <rect x="15" y="2" width="1.5" height="18" rx="0.75" fill="#B8D8EC" opacity="0.6"/>
+            <rect x="12.5" y="17" width="7" height="4" rx="1" fill="#B0C4CE"/>
+            <path d="M13 21 Q11 24 10 28 Q13 27 16 28 Q19 27 22 28 Q21 24 19 21Z" fill="#6BB8E8"/>
+            <path d="M13.5 21 Q12 24.5 11.5 27 Q14 26.5 16 27 Q18 26.5 20.5 27 Q20 24.5 18.5 21Z" fill="#8DCCF0" opacity="0.6"/>
+            <ellipse cx="16" cy="29.5" rx="2" ry="1.5" fill="#6BB8E8" opacity="0.5"/>
+          </svg>
+        </button>
+        <button class="brush-btn" title="Pencil">
+          <svg viewBox="0 0 32 32" fill="none">
+            <rect x="13.5" y="2" width="5" height="22" rx="1" fill="#999"/>
+            <rect x="15" y="2" width="1.8" height="22" rx="0.9" fill="#CCC" opacity="0.6"/>
+            <rect x="13.5" y="1" width="5" height="3.5" rx="1" fill="#F5A6A6"/>
+            <rect x="13" y="21" width="6" height="3" rx="0.5" fill="#B8C5D0"/>
+            <path d="M13.5 24 L16 30 L18.5 24Z" fill="#D4956A"/>
+            <path d="M15 27 L16 30 L17 27Z" fill="#444"/>
+          </svg>
+        </button>
+        <button class="brush-btn" title="Spray">
+          <svg viewBox="0 0 32 32" fill="none">
+            <rect x="11" y="12" width="10" height="14" rx="2" fill="#7CB686"/>
+            <rect x="12" y="12" width="3" height="14" rx="1" fill="#9ED4AA" opacity="0.5"/>
+            <rect x="19" y="10" width="5" height="3" rx="1.5" fill="#5A9668"/>
+            <rect x="23" y="9" width="2" height="5" rx="1" fill="#5A9668"/>
+            <circle cx="26" cy="7"  r="1.2" fill="#7CB686" opacity="0.7"/>
+            <circle cx="28" cy="10" r="0.9" fill="#7CB686" opacity="0.5"/>
+            <circle cx="27" cy="13" r="0.8" fill="#7CB686" opacity="0.4"/>
+            <circle cx="25" cy="6"  r="0.7" fill="#7CB686" opacity="0.3"/>
+            <circle cx="29" cy="7.5" r="0.6" fill="#7CB686" opacity="0.3"/>
+            <path d="M11 12 Q16 8 21 12Z" fill="#5A9668"/>
+          </svg>
+        </button>
+        <button class="brush-btn" title="Glitter">
+          <svg viewBox="0 0 32 32" fill="none">
+            <rect x="15" y="14" width="3" height="15" rx="1.5" fill="#C8A94A" transform="rotate(20 16 22)"/>
+            <polygon points="16,2 17.8,7.4 23.5,7.4 18.9,10.6 20.7,16 16,12.8 11.3,16 13.1,10.6 8.5,7.4 14.2,7.4" fill="#F5A623"/>
+            <circle cx="24" cy="4"  r="1.5" fill="#F5A623" opacity="0.8"/>
+            <circle cx="8"  cy="6"  r="1.2" fill="#F5A623" opacity="0.6"/>
+            <circle cx="26" cy="14" r="1"   fill="#F5A623" opacity="0.5"/>
+            <circle cx="6"  cy="16" r="0.8" fill="#F5A623" opacity="0.4"/>
+            <path d="M25 8 V10 M24 9 H26" stroke="#F5A623" stroke-width="1.2" stroke-linecap="round" opacity="0.7"/>
+            <path d="M7 11 V13 M6 12 H8"  stroke="#F5A623" stroke-width="1.2" stroke-linecap="round" opacity="0.5"/>
+          </svg>
+        </button>
+        <button class="brush-btn" title="Stamp">
+          <svg viewBox="0 0 32 32" fill="none">
+            <rect x="12" y="2" width="8" height="10" rx="3" fill="#B8A9E8"/>
+            <rect x="13.5" y="2" width="3" height="10" rx="1.5" fill="#CFC4F0" opacity="0.5"/>
+            <rect x="9" y="12" width="14" height="6" rx="2" fill="#9C8DD0"/>
+            <rect x="9" y="18" width="14" height="8" rx="1.5" fill="#B8A9E8"/>
+            <rect x="8" y="24" width="16" height="3" rx="1.5" fill="#9C8DD0" opacity="0.5"/>
+            <polygon points="16,19.5 16.8,21.8 19.2,21.8 17.3,23.1 18,25.4 16,24.1 14,25.4 14.7,23.1 12.8,21.8 15.2,21.8" fill="#ffffff" opacity="0.7"/>
+          </svg>
+        </button>
+        <button class="brush-btn" title="Eraser">
+          <svg viewBox="0 0 32 32" fill="none">
+            <rect x="6" y="14" width="20" height="10" rx="3" fill="#FCBFA0" transform="rotate(-8 16 19)"/>
+            <rect x="7" y="14" width="6" height="10" rx="3" fill="#F5876E" opacity="0.6" transform="rotate(-8 16 19)"/>
+            <rect x="11" y="14" width="3" height="10" rx="0" fill="#F5A6A6" opacity="0.5" transform="rotate(-8 16 19)"/>
+            <path d="M8 26 Q14 24 18 26" stroke="#E8E0D8" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+            <circle cx="22" cy="27" r="1.2" fill="#FCBFA0" opacity="0.6"/>
+            <circle cx="25" cy="25" r="0.9" fill="#FCBFA0" opacity="0.4"/>
+            <circle cx="20" cy="28.5" r="0.7" fill="#FCBFA0" opacity="0.5"/>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Color tray -->
+      <div class="color-tray-wrap">
+        <div class="color-tray">
+          <div class="swatch" style="background:#E8412A;"></div>
+          <div class="swatch" style="background:#F06449;"></div>
+          <div class="swatch" style="background:#F5A623;"></div>
+          <div class="swatch" style="background:#F5E642;"></div>
+          <div class="swatch" style="background:#7CB686;"></div>
+          <div class="swatch selected" style="background:#0EA5A0;"></div>
+          <div class="swatch" style="background:#6BB8E8;"></div>
+          <div class="swatch" style="background:#B8A9E8;"></div>
+          <div class="swatch" style="background:#F08EB0;"></div>
+          <div class="swatch" style="background:#FCBFA0;"></div>
+          <div class="swatch" style="background:#1B2A4A;"></div>
+          <div class="swatch" style="background:#666666;"></div>
+          <div class="swatch" style="background:#4A2C12;"></div>
+          <div class="swatch" style="background:#FFFFFF; border: 1.5px solid #E8E0D8;"></div>
+        </div>
+        <div class="tray-add-wrap">
+          <div class="swatch-add" title="Custom color">
+            <svg viewBox="0 0 14 14"><line x1="7" y1="1" x2="7" y2="13"/><line x1="1" y1="7" x2="13" y2="7"/></svg>
+          </div>
+        </div>
+      </div>
+
+      <!-- Control bar -->
+      <div class="control-bar">
+        <button class="ctrl-btn" title="Undo">
+          <svg viewBox="0 0 22 22">
+            <path d="M3 9 L3 3 M3 9 C3 9 6 2 13 3 C18 4 21 8 20 14 C19 18 15 21 10 20"/>
+            <polyline points="3,3 3,9 9,9"/>
+          </svg>
+        </button>
+        <div class="size-slider-wrap">
+          <div class="size-slider-track">
+            <div class="size-slider-fill"></div>
+            <div class="size-slider-thumb"></div>
+          </div>
+        </div>
+        <button class="ctrl-btn" title="Redo">
+          <svg viewBox="0 0 22 22">
+            <path d="M19 9 L19 3 M19 9 C19 9 16 2 9 3 C4 4 1 8 2 14 C3 18 7 21 12 20"/>
+            <polyline points="19,3 19,9 13,9"/>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Safe area -->
+      <div class="safe-area-bottom">
+        <div class="home-indicator"></div>
+      </div>
+
+    </div>
+  </div>
+  <div class="device-label">Normal turn — 42s remaining</div>
+</div>
+
+<!-- VARIANT 2: Warning state (≤10s remaining) ────────────────── -->
+<div class="device-wrap">
+  <div class="iphone">
+    <div class="screen">
+
+      <!-- Status bar -->
+      <div class="status-bar">
+        <span class="status-time">9:41</span>
+        <div class="status-icons">
+          <svg width="17" height="12" viewBox="0 0 17 12"><rect x="0" y="8" width="3" height="4" rx="0.8"/><rect x="4.5" y="5.5" width="3" height="6.5" rx="0.8"/><rect x="9" y="3" width="3" height="9" rx="0.8"/><rect x="13.5" y="0" width="3" height="12" rx="0.8"/></svg>
+          <svg width="16" height="12" viewBox="0 0 16 12" fill="none" stroke="#1B2A4A" stroke-width="1.8" stroke-linecap="round"><path d="M1 4.5C3.8 1.8 8 1.8 10.5 4" opacity="0.3"/><path d="M2.8 6.2C4.8 4.3 7.4 4 9.2 5.5"/><path d="M4.8 7.8C5.8 6.9 7.2 6.9 8.2 7.8"/><circle cx="6.5" cy="10" r="1.2" fill="#1B2A4A" stroke="none"/></svg>
+          <svg width="25" height="12" viewBox="0 0 25 12" fill="#1B2A4A"><rect x="0" y="1" width="21" height="10" rx="2.5" stroke="#1B2A4A" stroke-width="1.2" fill="none"/><rect x="1.5" y="2.5" width="16" height="7" rx="1.5"/><path d="M22.5 4v4a2 2 0 0 0 0-4z"/></svg>
+        </div>
+      </div>
+
+      <!-- Turn indicator bar (warning) -->
+      <div class="turn-bar warning">
+        <div class="player-avatar"><svg viewBox="0 0 32 32" width="32" height="32"><circle cx="16" cy="16" r="16" fill="#E8854A"/><polygon points="10,4 6,10 11,8" fill="#E8854A"/><polygon points="22,4 26,10 21,8" fill="#E8854A"/><circle cx="12" cy="14" r="2" fill="#ffffff"/><circle cx="11.5" cy="13.5" r="0.8" fill="#000000"/><circle cx="20" cy="14" r="2" fill="#ffffff"/><circle cx="20.5" cy="13.5" r="0.8" fill="#000000"/><polygon points="16,17.5 14.5,19 17.5,19" fill="#ffffff"/><line x1="8" y1="20" x2="5" y2="18.5" stroke="#ffffff" stroke-width="0.8" stroke-linecap="round"/><line x1="8" y1="21" x2="4" y2="21" stroke="#ffffff" stroke-width="0.8" stroke-linecap="round"/><line x1="8" y1="22" x2="5" y2="23.5" stroke="#ffffff" stroke-width="0.8" stroke-linecap="round"/><line x1="24" y1="20" x2="27" y2="18.5" stroke="#ffffff" stroke-width="0.8" stroke-linecap="round"/><line x1="24" y1="21" x2="28" y2="21" stroke="#ffffff" stroke-width="0.8" stroke-linecap="round"/><line x1="24" y1="22" x2="27" y2="23.5" stroke="#ffffff" stroke-width="0.8" stroke-linecap="round"/></svg></div>
+        <div class="turn-text">Sarah's turn</div>
+        <div class="timer-circle">
+          <div class="timer-ring warning" style="clip-path: polygon(50% 50%, 50% 0%, 100% 0%, 100% 100%, 0% 100%, 0% 50%);"></div>
+          <div class="timer-text warning">0:08</div>
+        </div>
+        <button class="pause-btn">
+          <div class="pause-icon">
+            <div class="pause-bar"></div>
+            <div class="pause-bar"></div>
+          </div>
+        </button>
+      </div>
+
+      <!-- Canvas area -->
+      <div class="canvas-area">
+        <svg viewBox="0 0 390 400" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">
+          <rect width="390" height="400" fill="#ffffff"/>
+          <defs>
+            <clipPath id="v2LeftHalf"><rect x="0" y="0" width="195" height="400"/></clipPath>
+            <clipPath id="v2RightHalf"><rect x="195" y="0" width="195" height="400"/></clipPath>
+          </defs>
+          <ellipse cx="195" cy="270" rx="120" ry="88" fill="#F5A623" clip-path="url(#v2LeftHalf)"/>
+          <ellipse cx="195" cy="285" rx="68" ry="58" fill="#FCBFA0" clip-path="url(#v2LeftHalf)"/>
+          <ellipse cx="195" cy="165" rx="75" ry="70" fill="#F5A623" clip-path="url(#v2LeftHalf)"/>
+          <polygon points="128,118 110,82 148,100" fill="#F5A623" clip-path="url(#v2LeftHalf)"/>
+          <polygon points="128,114 116,90 142,104" fill="#FCBFA0" clip-path="url(#v2LeftHalf)"/>
+          <ellipse cx="162" cy="168" rx="22" ry="16" fill="#0EA5A0" opacity="0.25" clip-path="url(#v2LeftHalf)"/>
+          <path d="M175 120 Q185 108 195 115" stroke="#D4811A" stroke-width="3.5" fill="none" stroke-linecap="round" clip-path="url(#v2LeftHalf)"/>
+          <path d="M170 110 Q182 96 195 103" stroke="#D4811A" stroke-width="3" fill="none" stroke-linecap="round" clip-path="url(#v2LeftHalf)"/>
+          <ellipse cx="138" cy="340" rx="26" ry="16" fill="#F5A623" clip-path="url(#v2LeftHalf)"/>
+          <ellipse cx="188" cy="348" rx="28" ry="14" fill="#FCBFA0" clip-path="url(#v2LeftHalf)"/>
+          <path d="M95 310 Q42 370 75 390 Q110 410 130 375" stroke="#F5A623" stroke-width="18" fill="none" stroke-linecap="round" clip-path="url(#v2LeftHalf)"/>
+          <path d="M95 310 Q42 370 75 390 Q110 410 130 375" stroke="#FCBFA0" stroke-width="8" fill="none" stroke-linecap="round" opacity="0.6" clip-path="url(#v2LeftHalf)"/>
+        </svg>
+      </div>
+
+      <!-- Brush toolbar -->
+      <div class="brush-toolbar">
+        <button class="brush-btn" title="Crayon">
+          <svg viewBox="0 0 32 32" fill="none">
+            <rect x="13" y="3" width="6" height="18" rx="1.5" fill="#F5A623"/>
+            <rect x="14.5" y="3" width="2" height="18" rx="1" fill="#FFD16A" opacity="0.6"/>
+            <rect x="13" y="12" width="6" height="5" fill="#FFFDF9" opacity="0.5"/>
+            <path d="M13 21 L16 29 L19 21Z" fill="#D4811A"/>
+            <path d="M14.5 21 L16 27 L17.5 21Z" fill="#F5C842" opacity="0.6"/>
+            <rect x="13" y="1.5" width="6" height="3" rx="1.5" fill="#D4811A"/>
+          </svg>
+        </button>
+        <button class="brush-btn selected" title="Marker">
+          <svg viewBox="0 0 32 32" fill="none">
+            <rect x="12.5" y="2" width="7" height="20" rx="3.5" fill="#0EA5A0"/>
+            <rect x="14" y="2" width="2.5" height="20" rx="1.2" fill="#3ECFCA" opacity="0.5"/>
+            <rect x="12" y="18" width="8" height="3" rx="1.5" fill="#0B8A86"/>
+            <path d="M13 21 Q16 20 19 21 L18 27 Q16 30 14 27Z" fill="#0EA5A0"/>
+            <path d="M14.5 22 Q16 21.5 17.5 22 L17 26 Q16 28 15 26Z" fill="#3ECFCA" opacity="0.5"/>
+            <rect x="18" y="3" width="2.5" height="10" rx="1.2" fill="#0B8A86"/>
+            <circle cx="19.25" cy="3" r="1.5" fill="#0B8A86"/>
+          </svg>
+        </button>
+        <button class="brush-btn" title="Watercolor">
+          <svg viewBox="0 0 32 32" fill="none">
+            <rect x="14" y="2" width="4" height="18" rx="2" fill="#8FBCD4"/>
+            <rect x="15" y="2" width="1.5" height="18" rx="0.75" fill="#B8D8EC" opacity="0.6"/>
+            <rect x="12.5" y="17" width="7" height="4" rx="1" fill="#B0C4CE"/>
+            <path d="M13 21 Q11 24 10 28 Q13 27 16 28 Q19 27 22 28 Q21 24 19 21Z" fill="#6BB8E8"/>
+            <path d="M13.5 21 Q12 24.5 11.5 27 Q14 26.5 16 27 Q18 26.5 20.5 27 Q20 24.5 18.5 21Z" fill="#8DCCF0" opacity="0.6"/>
+            <ellipse cx="16" cy="29.5" rx="2" ry="1.5" fill="#6BB8E8" opacity="0.5"/>
+          </svg>
+        </button>
+        <button class="brush-btn" title="Pencil">
+          <svg viewBox="0 0 32 32" fill="none">
+            <rect x="13.5" y="2" width="5" height="22" rx="1" fill="#999"/>
+            <rect x="15" y="2" width="1.8" height="22" rx="0.9" fill="#CCC" opacity="0.6"/>
+            <rect x="13.5" y="1" width="5" height="3.5" rx="1" fill="#F5A6A6"/>
+            <rect x="13" y="21" width="6" height="3" rx="0.5" fill="#B8C5D0"/>
+            <path d="M13.5 24 L16 30 L18.5 24Z" fill="#D4956A"/>
+            <path d="M15 27 L16 30 L17 27Z" fill="#444"/>
+          </svg>
+        </button>
+        <button class="brush-btn" title="Spray">
+          <svg viewBox="0 0 32 32" fill="none">
+            <rect x="11" y="12" width="10" height="14" rx="2" fill="#7CB686"/>
+            <rect x="12" y="12" width="3" height="14" rx="1" fill="#9ED4AA" opacity="0.5"/>
+            <rect x="19" y="10" width="5" height="3" rx="1.5" fill="#5A9668"/>
+            <rect x="23" y="9" width="2" height="5" rx="1" fill="#5A9668"/>
+            <circle cx="26" cy="7"  r="1.2" fill="#7CB686" opacity="0.7"/>
+            <circle cx="28" cy="10" r="0.9" fill="#7CB686" opacity="0.5"/>
+            <circle cx="27" cy="13" r="0.8" fill="#7CB686" opacity="0.4"/>
+            <circle cx="25" cy="6"  r="0.7" fill="#7CB686" opacity="0.3"/>
+            <circle cx="29" cy="7.5" r="0.6" fill="#7CB686" opacity="0.3"/>
+            <path d="M11 12 Q16 8 21 12Z" fill="#5A9668"/>
+          </svg>
+        </button>
+        <button class="brush-btn" title="Glitter">
+          <svg viewBox="0 0 32 32" fill="none">
+            <rect x="15" y="14" width="3" height="15" rx="1.5" fill="#C8A94A" transform="rotate(20 16 22)"/>
+            <polygon points="16,2 17.8,7.4 23.5,7.4 18.9,10.6 20.7,16 16,12.8 11.3,16 13.1,10.6 8.5,7.4 14.2,7.4" fill="#F5A623"/>
+            <circle cx="24" cy="4"  r="1.5" fill="#F5A623" opacity="0.8"/>
+            <circle cx="8"  cy="6"  r="1.2" fill="#F5A623" opacity="0.6"/>
+            <circle cx="26" cy="14" r="1"   fill="#F5A623" opacity="0.5"/>
+            <circle cx="6"  cy="16" r="0.8" fill="#F5A623" opacity="0.4"/>
+            <path d="M25 8 V10 M24 9 H26" stroke="#F5A623" stroke-width="1.2" stroke-linecap="round" opacity="0.7"/>
+            <path d="M7 11 V13 M6 12 H8"  stroke="#F5A623" stroke-width="1.2" stroke-linecap="round" opacity="0.5"/>
+          </svg>
+        </button>
+        <button class="brush-btn" title="Stamp">
+          <svg viewBox="0 0 32 32" fill="none">
+            <rect x="12" y="2" width="8" height="10" rx="3" fill="#B8A9E8"/>
+            <rect x="13.5" y="2" width="3" height="10" rx="1.5" fill="#CFC4F0" opacity="0.5"/>
+            <rect x="9" y="12" width="14" height="6" rx="2" fill="#9C8DD0"/>
+            <rect x="9" y="18" width="14" height="8" rx="1.5" fill="#B8A9E8"/>
+            <rect x="8" y="24" width="16" height="3" rx="1.5" fill="#9C8DD0" opacity="0.5"/>
+            <polygon points="16,19.5 16.8,21.8 19.2,21.8 17.3,23.1 18,25.4 16,24.1 14,25.4 14.7,23.1 12.8,21.8 15.2,21.8" fill="#ffffff" opacity="0.7"/>
+          </svg>
+        </button>
+        <button class="brush-btn" title="Eraser">
+          <svg viewBox="0 0 32 32" fill="none">
+            <rect x="6" y="14" width="20" height="10" rx="3" fill="#FCBFA0" transform="rotate(-8 16 19)"/>
+            <rect x="7" y="14" width="6" height="10" rx="3" fill="#F5876E" opacity="0.6" transform="rotate(-8 16 19)"/>
+            <rect x="11" y="14" width="3" height="10" rx="0" fill="#F5A6A6" opacity="0.5" transform="rotate(-8 16 19)"/>
+            <path d="M8 26 Q14 24 18 26" stroke="#E8E0D8" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+            <circle cx="22" cy="27" r="1.2" fill="#FCBFA0" opacity="0.6"/>
+            <circle cx="25" cy="25" r="0.9" fill="#FCBFA0" opacity="0.4"/>
+            <circle cx="20" cy="28.5" r="0.7" fill="#FCBFA0" opacity="0.5"/>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Color tray -->
+      <div class="color-tray-wrap">
+        <div class="color-tray">
+          <div class="swatch" style="background:#E8412A;" title="Red"></div>
+          <div class="swatch" style="background:#F06449;" title="Orange Red"></div>
+          <div class="swatch" style="background:#F5A623;" title="Orange/Gold"></div>
+          <div class="swatch" style="background:#F5E642;" title="Yellow"></div>
+          <div class="swatch" style="background:#7CB686;" title="Green"></div>
+          <div class="swatch selected" style="background:#0EA5A0;" title="Teal"></div>
+          <div class="swatch" style="background:#6BB8E8;" title="Blue"></div>
+          <div class="swatch" style="background:#B8A9E8;" title="Purple"></div>
+          <div class="swatch" style="background:#F08EB0;" title="Pink"></div>
+          <div class="swatch" style="background:#FCBFA0;" title="Peach"></div>
+          <div class="swatch" style="background:#1B2A4A;" title="Navy"></div>
+          <div class="swatch" style="background:#666666;" title="Gray"></div>
+          <div class="swatch" style="background:#4A2C12;" title="Brown"></div>
+          <div class="swatch" style="background:#FFFFFF; border: 1.5px solid #E8E0D8;" title="White"></div>
+        </div>
+        <div class="tray-add-wrap">
+          <div class="swatch-add" title="Custom color">
+            <svg viewBox="0 0 14 14"><line x1="7" y1="1" x2="7" y2="13"/><line x1="1" y1="7" x2="13" y2="7"/></svg>
+          </div>
+        </div>
+      </div>
+
+      <!-- Control bar -->
+      <div class="control-bar">
+        <button class="ctrl-btn" title="Undo">
+          <svg viewBox="0 0 22 22">
+            <path d="M3 9 L3 3 M3 9 C3 9 6 2 13 3 C18 4 21 8 20 14 C19 18 15 21 10 20"/>
+            <polyline points="3,3 3,9 9,9"/>
+          </svg>
+        </button>
+        <div class="size-slider-wrap">
+          <div class="size-slider-track">
+            <div class="size-slider-fill"></div>
+            <div class="size-slider-thumb"></div>
+          </div>
+        </div>
+        <button class="ctrl-btn" title="Redo">
+          <svg viewBox="0 0 22 22">
+            <path d="M19 9 L19 3 M19 9 C19 9 16 2 9 3 C4 4 1 8 2 14 C3 18 7 21 12 20"/>
+            <polyline points="19,3 19,9 13,9"/>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Safe area -->
+      <div class="safe-area-bottom">
+        <div class="home-indicator"></div>
+      </div>
+
+    </div>
+  </div>
+  <div class="device-label">⚠ Warning — 8 seconds left</div>
+</div>
+
+<!-- VARIANT 3: Time's up transition ──────────────────────────────── -->
+<div class="device-wrap">
+  <div class="iphone">
+    <div class="screen">
+
+      <!-- Status bar -->
+      <div class="status-bar">
+        <span class="status-time">9:41</span>
+        <div class="status-icons">
+          <svg width="17" height="12" viewBox="0 0 17 12"><rect x="0" y="8" width="3" height="4" rx="0.8"/><rect x="4.5" y="5.5" width="3" height="6.5" rx="0.8"/><rect x="9" y="3" width="3" height="9" rx="0.8"/><rect x="13.5" y="0" width="3" height="12" rx="0.8"/></svg>
+          <svg width="16" height="12" viewBox="0 0 16 12" fill="none" stroke="#1B2A4A" stroke-width="1.8" stroke-linecap="round"><path d="M1 4.5C3.8 1.8 8 1.8 10.5 4" opacity="0.3"/><path d="M2.8 6.2C4.8 4.3 7.4 4 9.2 5.5"/><path d="M4.8 7.8C5.8 6.9 7.2 6.9 8.2 7.8"/><circle cx="6.5" cy="10" r="1.2" fill="#1B2A4A" stroke="none"/></svg>
+          <svg width="25" height="12" viewBox="0 0 25 12" fill="#1B2A4A"><rect x="0" y="1" width="21" height="10" rx="2.5" stroke="#1B2A4A" stroke-width="1.2" fill="none"/><rect x="1.5" y="2.5" width="16" height="7" rx="1.5"/><path d="M22.5 4v4a2 2 0 0 0 0-4z"/></svg>
+        </div>
+      </div>
+
+      <!-- Turn indicator bar (fully filled, time's up) -->
+      <div class="turn-bar warning">
+        <div class="player-avatar"><svg viewBox="0 0 32 32" width="32" height="32"><circle cx="16" cy="16" r="16" fill="#E8854A"/><polygon points="10,4 6,10 11,8" fill="#E8854A"/><polygon points="22,4 26,10 21,8" fill="#E8854A"/><circle cx="12" cy="14" r="2" fill="#ffffff"/><circle cx="11.5" cy="13.5" r="0.8" fill="#000000"/><circle cx="20" cy="14" r="2" fill="#ffffff"/><circle cx="20.5" cy="13.5" r="0.8" fill="#000000"/><polygon points="16,17.5 14.5,19 17.5,19" fill="#ffffff"/><line x1="8" y1="20" x2="5" y2="18.5" stroke="#ffffff" stroke-width="0.8" stroke-linecap="round"/><line x1="8" y1="21" x2="4" y2="21" stroke="#ffffff" stroke-width="0.8" stroke-linecap="round"/><line x1="8" y1="22" x2="5" y2="23.5" stroke="#ffffff" stroke-width="0.8" stroke-linecap="round"/><line x1="24" y1="20" x2="27" y2="18.5" stroke="#ffffff" stroke-width="0.8" stroke-linecap="round"/><line x1="24" y1="21" x2="28" y2="21" stroke="#ffffff" stroke-width="0.8" stroke-linecap="round"/><line x1="24" y1="22" x2="27" y2="23.5" stroke="#ffffff" stroke-width="0.8" stroke-linecap="round"/></svg></div>
+        <div class="turn-text">Sarah's turn</div>
+        <div class="timer-circle">
+          <div class="timer-ring warning" style="clip-path: polygon(50% 50%, 50% 0%, 100% 0%, 100% 100%, 0% 100%, 0% 0%);"></div>
+          <div class="timer-text warning">0:00</div>
+        </div>
+        <button class="pause-btn">
+          <div class="pause-icon">
+            <div class="pause-bar"></div>
+            <div class="pause-bar"></div>
+          </div>
+        </button>
+      </div>
+
+      <!-- Canvas area (dimmed) -->
+      <div class="canvas-area" style="opacity: 0.4; position: relative;">
+        <svg viewBox="0 0 390 400" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">
+          <rect width="390" height="400" fill="#ffffff"/>
+          <defs>
+            <clipPath id="v3LeftHalf"><rect x="0" y="0" width="195" height="400"/></clipPath>
+            <clipPath id="v3RightHalf"><rect x="195" y="0" width="195" height="400"/></clipPath>
+          </defs>
+          <ellipse cx="195" cy="270" rx="120" ry="88" fill="#F5A623" clip-path="url(#v3LeftHalf)"/>
+          <ellipse cx="195" cy="285" rx="68" ry="58" fill="#FCBFA0" clip-path="url(#v3LeftHalf)"/>
+          <ellipse cx="195" cy="165" rx="75" ry="70" fill="#F5A623" clip-path="url(#v3LeftHalf)"/>
+          <polygon points="128,118 110,82 148,100" fill="#F5A623" clip-path="url(#v3LeftHalf)"/>
+          <polygon points="128,114 116,90 142,104" fill="#FCBFA0" clip-path="url(#v3LeftHalf)"/>
+          <ellipse cx="162" cy="168" rx="22" ry="16" fill="#0EA5A0" opacity="0.25" clip-path="url(#v3LeftHalf)"/>
+          <path d="M175 120 Q185 108 195 115" stroke="#D4811A" stroke-width="3.5" fill="none" stroke-linecap="round" clip-path="url(#v3LeftHalf)"/>
+          <path d="M170 110 Q182 96 195 103" stroke="#D4811A" stroke-width="3" fill="none" stroke-linecap="round" clip-path="url(#v3LeftHalf)"/>
+          <ellipse cx="138" cy="340" rx="26" ry="16" fill="#F5A623" clip-path="url(#v3LeftHalf)"/>
+          <ellipse cx="188" cy="348" rx="28" ry="14" fill="#FCBFA0" clip-path="url(#v3LeftHalf)"/>
+          <path d="M95 310 Q42 370 75 390 Q110 410 130 375" stroke="#F5A623" stroke-width="18" fill="none" stroke-linecap="round" clip-path="url(#v3LeftHalf)"/>
+          <path d="M95 310 Q42 370 75 390 Q110 410 130 375" stroke="#FCBFA0" stroke-width="8" fill="none" stroke-linecap="round" opacity="0.6" clip-path="url(#v3LeftHalf)"/>
+          <ellipse cx="195" cy="270" rx="120" ry="88" fill="#ffffff" clip-path="url(#v3RightHalf)"/>
+          <ellipse cx="195" cy="285" rx="68" ry="58" fill="#ffffff" clip-path="url(#v3RightHalf)"/>
+          <ellipse cx="195" cy="165" rx="75" ry="70" fill="#ffffff" clip-path="url(#v3RightHalf)"/>
+          <polygon points="262,118 280,82 242,100" fill="#ffffff" clip-path="url(#v3RightHalf)"/>
+          <ellipse cx="138" cy="340" rx="26" ry="16" fill="#ffffff" clip-path="url(#v3RightHalf)"/>
+          <ellipse cx="188" cy="348" rx="28" ry="14" fill="#ffffff" clip-path="url(#v3RightHalf)"/>
+          <path d="M95 310 Q42 370 75 390 Q110 410 130 375" stroke="#ffffff" stroke-width="18" fill="none" stroke-linecap="round" clip-path="url(#v3RightHalf)"/>
+          <ellipse cx="195" cy="270" rx="120" ry="88" fill="none" stroke="#1B2A4A" stroke-width="3.5" stroke-linecap="round"/>
+          <ellipse cx="195" cy="285" rx="68" ry="58" fill="none" stroke="#1B2A4A" stroke-width="2.5"/>
+          <ellipse cx="195" cy="165" rx="75" ry="70" fill="none" stroke="#1B2A4A" stroke-width="3.5"/>
+          <polygon points="128,118 110,82 148,100" fill="none" stroke="#1B2A4A" stroke-width="3" stroke-linejoin="round"/>
+          <polygon points="262,118 280,82 242,100" fill="none" stroke="#1B2A4A" stroke-width="3" stroke-linejoin="round"/>
+          <polygon points="128,114 116,90 142,104" fill="none" stroke="#1B2A4A" stroke-width="1.5" stroke-linejoin="round"/>
+          <polygon points="262,114 274,90 248,104" fill="none" stroke="#1B2A4A" stroke-width="1.5" stroke-linejoin="round"/>
+          <path d="M148 168 Q162 156 176 168" fill="none" stroke="#1B2A4A" stroke-width="3" stroke-linecap="round"/>
+          <line x1="152" y1="167" x2="148" y2="162" stroke="#1B2A4A" stroke-width="1.8" stroke-linecap="round"/>
+          <line x1="162" y1="164" x2="160" y2="158" stroke="#1B2A4A" stroke-width="1.8" stroke-linecap="round"/>
+          <line x1="171" y1="167" x2="175" y2="162" stroke="#1B2A4A" stroke-width="1.8" stroke-linecap="round"/>
+          <path d="M214 168 Q228 156 242 168" fill="none" stroke="#1B2A4A" stroke-width="3" stroke-linecap="round"/>
+          <line x1="218" y1="167" x2="214" y2="162" stroke="#1B2A4A" stroke-width="1.8" stroke-linecap="round"/>
+          <line x1="228" y1="164" x2="226" y2="158" stroke="#1B2A4A" stroke-width="1.8" stroke-linecap="round"/>
+          <line x1="238" y1="167" x2="242" y2="162" stroke="#1B2A4A" stroke-width="1.8" stroke-linecap="round"/>
+          <path d="M188 188 Q195 194 202 188 Q195 182 188 188Z" fill="none" stroke="#1B2A4A" stroke-width="2.2" stroke-linejoin="round"/>
+          <path d="M195 194 Q190 200 184 198" fill="none" stroke="#1B2A4A" stroke-width="2" stroke-linecap="round"/>
+          <path d="M195 194 Q200 200 206 198" fill="none" stroke="#1B2A4A" stroke-width="2" stroke-linecap="round"/>
+          <line x1="152" y1="192" x2="112" y2="185" stroke="#1B2A4A" stroke-width="1.8" stroke-linecap="round"/>
+          <line x1="152" y1="198" x2="108" y2="198" stroke="#1B2A4A" stroke-width="1.8" stroke-linecap="round"/>
+          <line x1="152" y1="204" x2="112" y2="212" stroke="#1B2A4A" stroke-width="1.8" stroke-linecap="round"/>
+          <line x1="238" y1="192" x2="278" y2="185" stroke="#1B2A4A" stroke-width="1.8" stroke-linecap="round"/>
+          <line x1="238" y1="198" x2="282" y2="198" stroke="#1B2A4A" stroke-width="1.8" stroke-linecap="round"/>
+          <line x1="238" y1="204" x2="278" y2="212" stroke="#1B2A4A" stroke-width="1.8" stroke-linecap="round"/>
+          <ellipse cx="138" cy="340" rx="26" ry="16" fill="none" stroke="#1B2A4A" stroke-width="3"/>
+          <ellipse cx="252" cy="340" rx="26" ry="16" fill="none" stroke="#1B2A4A" stroke-width="3"/>
+          <line x1="126" y1="337" x2="123" y2="347" stroke="#1B2A4A" stroke-width="1.8" stroke-linecap="round"/>
+          <line x1="135" y1="334" x2="135" y2="348" stroke="#1B2A4A" stroke-width="1.8" stroke-linecap="round"/>
+          <line x1="144" y1="334" x2="146" y2="348" stroke="#1B2A4A" stroke-width="1.8" stroke-linecap="round"/>
+          <line x1="240" y1="337" x2="237" y2="347" stroke="#1B2A4A" stroke-width="1.8" stroke-linecap="round"/>
+          <line x1="249" y1="334" x2="249" y2="348" stroke="#1B2A4A" stroke-width="1.8" stroke-linecap="round"/>
+          <line x1="258" y1="334" x2="260" y2="348" stroke="#1B2A4A" stroke-width="1.8" stroke-linecap="round"/>
+          <ellipse cx="188" cy="348" rx="28" ry="14" fill="none" stroke="#1B2A4A" stroke-width="2.5"/>
+          <ellipse cx="210" cy="348" rx="24" ry="12" fill="none" stroke="#1B2A4A" stroke-width="2.5"/>
+          <path d="M95 310 Q42 370 75 390 Q110 410 130 375" fill="none" stroke="#1B2A4A" stroke-width="18" stroke-linecap="round"/>
+          <path d="M95 310 Q42 370 75 390 Q110 410 130 375" fill="none" stroke="#ffffff" stroke-width="11" stroke-linecap="round"/>
+          <path d="M95 310 Q42 370 75 390 Q110 410 130 375" fill="none" stroke="#1B2A4A" stroke-width="3.5" stroke-linecap="round"/>
+          <path d="M295 310 Q348 370 315 390 Q280 410 260 375" fill="none" stroke="#1B2A4A" stroke-width="18" stroke-linecap="round"/>
+          <path d="M295 310 Q348 370 315 390 Q280 410 260 375" fill="none" stroke="#ffffff" stroke-width="11" stroke-linecap="round"/>
+          <path d="M295 310 Q348 370 315 390 Q280 410 260 375" fill="none" stroke="#1B2A4A" stroke-width="3.5" stroke-linecap="round"/>
+          <path d="M140 255 Q155 245 165 258" fill="none" stroke="#1B2A4A" stroke-width="2" stroke-linecap="round" opacity="0.4"/>
+          <path d="M135 270 Q150 260 162 272" fill="none" stroke="#1B2A4A" stroke-width="2" stroke-linecap="round" opacity="0.4"/>
+          <path d="M248 255 Q235 245 225 258" fill="none" stroke="#1B2A4A" stroke-width="2" stroke-linecap="round" opacity="0.4"/>
+          <path d="M253 270 Q238 260 228 272" fill="none" stroke="#1B2A4A" stroke-width="2" stroke-linecap="round" opacity="0.4"/>
+          <path d="M215 120 Q205 108 195 115" fill="none" stroke="#1B2A4A" stroke-width="2.5" stroke-linecap="round" opacity="0.35"/>
+          <path d="M220 110 Q208 96 195 103" fill="none" stroke="#1B2A4A" stroke-width="2" stroke-linecap="round" opacity="0.35"/>
+          <text x="295" y="110" font-family="Nunito" font-weight="800" font-size="20" fill="#1B2A4A" opacity="0.18">z</text>
+          <text x="316" y="88" font-family="Nunito" font-weight="800" font-size="16" fill="#1B2A4A" opacity="0.14">z</text>
+          <text x="333" y="70" font-family="Nunito" font-weight="800" font-size="12" fill="#1B2A4A" opacity="0.10">z</text>
+          <ellipse cx="130" cy="240" rx="80" ry="60" fill="#F5A623" opacity="0.04"/>
+        </svg>
+
+        <!-- Overlay card -->
+        <div class="overlay">
+          <div class="time-up-card">
+            <div class="time-up-title">Time's up! ⏰</div>
+            <div class="time-up-subtitle">Passing to Max...</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Brush toolbar (dimmed) -->
+      <div class="brush-toolbar" style="opacity: 0.4;">
+        <button class="brush-btn" title="Crayon">
+          <svg viewBox="0 0 32 32" fill="none">
+            <rect x="13" y="3" width="6" height="18" rx="1.5" fill="#F5A623"/>
+            <rect x="14.5" y="3" width="2" height="18" rx="1" fill="#FFD16A" opacity="0.6"/>
+            <rect x="13" y="12" width="6" height="5" fill="#FFFDF9" opacity="0.5"/>
+            <path d="M13 21 L16 29 L19 21Z" fill="#D4811A"/>
+            <path d="M14.5 21 L16 27 L17.5 21Z" fill="#F5C842" opacity="0.6"/>
+            <rect x="13" y="1.5" width="6" height="3" rx="1.5" fill="#D4811A"/>
+          </svg>
+        </button>
+        <button class="brush-btn selected" title="Marker">
+          <svg viewBox="0 0 32 32" fill="none">
+            <rect x="12.5" y="2" width="7" height="20" rx="3.5" fill="#0EA5A0"/>
+            <rect x="14" y="2" width="2.5" height="20" rx="1.2" fill="#3ECFCA" opacity="0.5"/>
+            <rect x="12" y="18" width="8" height="3" rx="1.5" fill="#0B8A86"/>
+            <path d="M13 21 Q16 20 19 21 L18 27 Q16 30 14 27Z" fill="#0EA5A0"/>
+            <path d="M14.5 22 Q16 21.5 17.5 22 L17 26 Q16 28 15 26Z" fill="#3ECFCA" opacity="0.5"/>
+            <rect x="18" y="3" width="2.5" height="10" rx="1.2" fill="#0B8A86"/>
+            <circle cx="19.25" cy="3" r="1.5" fill="#0B8A86"/>
+          </svg>
+        </button>
+        <button class="brush-btn" title="Watercolor">
+          <svg viewBox="0 0 32 32" fill="none">
+            <rect x="14" y="2" width="4" height="18" rx="2" fill="#8FBCD4"/>
+            <rect x="15" y="2" width="1.5" height="18" rx="0.75" fill="#B8D8EC" opacity="0.6"/>
+            <rect x="12.5" y="17" width="7" height="4" rx="1" fill="#B0C4CE"/>
+            <path d="M13 21 Q11 24 10 28 Q13 27 16 28 Q19 27 22 28 Q21 24 19 21Z" fill="#6BB8E8"/>
+            <path d="M13.5 21 Q12 24.5 11.5 27 Q14 26.5 16 27 Q18 26.5 20.5 27 Q20 24.5 18.5 21Z" fill="#8DCCF0" opacity="0.6"/>
+            <ellipse cx="16" cy="29.5" rx="2" ry="1.5" fill="#6BB8E8" opacity="0.5"/>
+          </svg>
+        </button>
+        <button class="brush-btn" title="Pencil">
+          <svg viewBox="0 0 32 32" fill="none">
+            <rect x="13.5" y="2" width="5" height="22" rx="1" fill="#999"/>
+            <rect x="15" y="2" width="1.8" height="22" rx="0.9" fill="#CCC" opacity="0.6"/>
+            <rect x="13.5" y="1" width="5" height="3.5" rx="1" fill="#F5A6A6"/>
+            <rect x="13" y="21" width="6" height="3" rx="0.5" fill="#B8C5D0"/>
+            <path d="M13.5 24 L16 30 L18.5 24Z" fill="#D4956A"/>
+            <path d="M15 27 L16 30 L17 27Z" fill="#444"/>
+          </svg>
+        </button>
+        <button class="brush-btn" title="Spray">
+          <svg viewBox="0 0 32 32" fill="none">
+            <rect x="11" y="12" width="10" height="14" rx="2" fill="#7CB686"/>
+            <rect x="12" y="12" width="3" height="14" rx="1" fill="#9ED4AA" opacity="0.5"/>
+            <rect x="19" y="10" width="5" height="3" rx="1.5" fill="#5A9668"/>
+            <rect x="23" y="9" width="2" height="5" rx="1" fill="#5A9668"/>
+            <circle cx="26" cy="7"  r="1.2" fill="#7CB686" opacity="0.7"/>
+            <circle cx="28" cy="10" r="0.9" fill="#7CB686" opacity="0.5"/>
+            <circle cx="27" cy="13" r="0.8" fill="#7CB686" opacity="0.4"/>
+            <circle cx="25" cy="6"  r="0.7" fill="#7CB686" opacity="0.3"/>
+            <circle cx="29" cy="7.5" r="0.6" fill="#7CB686" opacity="0.3"/>
+            <path d="M11 12 Q16 8 21 12Z" fill="#5A9668"/>
+          </svg>
+        </button>
+        <button class="brush-btn" title="Glitter">
+          <svg viewBox="0 0 32 32" fill="none">
+            <rect x="15" y="14" width="3" height="15" rx="1.5" fill="#C8A94A" transform="rotate(20 16 22)"/>
+            <polygon points="16,2 17.8,7.4 23.5,7.4 18.9,10.6 20.7,16 16,12.8 11.3,16 13.1,10.6 8.5,7.4 14.2,7.4" fill="#F5A623"/>
+            <circle cx="24" cy="4"  r="1.5" fill="#F5A623" opacity="0.8"/>
+            <circle cx="8"  cy="6"  r="1.2" fill="#F5A623" opacity="0.6"/>
+            <circle cx="26" cy="14" r="1"   fill="#F5A623" opacity="0.5"/>
+            <circle cx="6"  cy="16" r="0.8" fill="#F5A623" opacity="0.4"/>
+            <path d="M25 8 V10 M24 9 H26" stroke="#F5A623" stroke-width="1.2" stroke-linecap="round" opacity="0.7"/>
+            <path d="M7 11 V13 M6 12 H8"  stroke="#F5A623" stroke-width="1.2" stroke-linecap="round" opacity="0.5"/>
+          </svg>
+        </button>
+        <button class="brush-btn" title="Stamp">
+          <svg viewBox="0 0 32 32" fill="none">
+            <rect x="12" y="2" width="8" height="10" rx="3" fill="#B8A9E8"/>
+            <rect x="13.5" y="2" width="3" height="10" rx="1.5" fill="#CFC4F0" opacity="0.5"/>
+            <rect x="9" y="12" width="14" height="6" rx="2" fill="#9C8DD0"/>
+            <rect x="9" y="18" width="14" height="8" rx="1.5" fill="#B8A9E8"/>
+            <rect x="8" y="24" width="16" height="3" rx="1.5" fill="#9C8DD0" opacity="0.5"/>
+            <polygon points="16,19.5 16.8,21.8 19.2,21.8 17.3,23.1 18,25.4 16,24.1 14,25.4 14.7,23.1 12.8,21.8 15.2,21.8" fill="#ffffff" opacity="0.7"/>
+          </svg>
+        </button>
+        <button class="brush-btn" title="Eraser">
+          <svg viewBox="0 0 32 32" fill="none">
+            <rect x="6" y="14" width="20" height="10" rx="3" fill="#FCBFA0" transform="rotate(-8 16 19)"/>
+            <rect x="7" y="14" width="6" height="10" rx="3" fill="#F5876E" opacity="0.6" transform="rotate(-8 16 19)"/>
+            <rect x="11" y="14" width="3" height="10" rx="0" fill="#F5A6A6" opacity="0.5" transform="rotate(-8 16 19)"/>
+            <path d="M8 26 Q14 24 18 26" stroke="#E8E0D8" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+            <circle cx="22" cy="27" r="1.2" fill="#FCBFA0" opacity="0.6"/>
+            <circle cx="25" cy="25" r="0.9" fill="#FCBFA0" opacity="0.4"/>
+            <circle cx="20" cy="28.5" r="0.7" fill="#FCBFA0" opacity="0.5"/>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Color tray (dimmed) -->
+      <div class="color-tray-wrap" style="opacity: 0.4;">
+        <div class="color-tray">
+          <div class="swatch" style="background:#E8412A;" title="Red"></div>
+          <div class="swatch" style="background:#F06449;" title="Orange Red"></div>
+          <div class="swatch" style="background:#F5A623;" title="Orange/Gold"></div>
+          <div class="swatch" style="background:#F5E642;" title="Yellow"></div>
+          <div class="swatch" style="background:#7CB686;" title="Green"></div>
+          <div class="swatch selected" style="background:#0EA5A0;" title="Teal"></div>
+          <div class="swatch" style="background:#6BB8E8;" title="Blue"></div>
+          <div class="swatch" style="background:#B8A9E8;" title="Purple"></div>
+          <div class="swatch" style="background:#F08EB0;" title="Pink"></div>
+          <div class="swatch" style="background:#FCBFA0;" title="Peach"></div>
+          <div class="swatch" style="background:#1B2A4A;" title="Navy"></div>
+          <div class="swatch" style="background:#666666;" title="Gray"></div>
+          <div class="swatch" style="background:#4A2C12;" title="Brown"></div>
+          <div class="swatch" style="background:#FFFFFF; border: 1.5px solid #E8E0D8;" title="White"></div>
+        </div>
+        <div class="tray-add-wrap">
+          <div class="swatch-add" title="Custom color">
+            <svg viewBox="0 0 14 14"><line x1="7" y1="1" x2="7" y2="13"/><line x1="1" y1="7" x2="13" y2="7"/></svg>
+          </div>
+        </div>
+      </div>
+
+      <!-- Control bar (dimmed) -->
+      <div class="control-bar" style="opacity: 0.4;">
+        <button class="ctrl-btn" title="Undo">
+          <svg viewBox="0 0 22 22">
+            <path d="M3 9 L3 3 M3 9 C3 9 6 2 13 3 C18 4 21 8 20 14 C19 18 15 21 10 20"/>
+            <polyline points="3,3 3,9 9,9"/>
+          </svg>
+        </button>
+        <div class="size-slider-wrap">
+          <div class="size-slider-track">
+            <div class="size-slider-fill"></div>
+            <div class="size-slider-thumb"></div>
+          </div>
+        </div>
+        <button class="ctrl-btn" title="Redo">
+          <svg viewBox="0 0 22 22">
+            <path d="M19 9 L19 3 M19 9 C19 9 16 2 9 3 C4 4 1 8 2 14 C3 18 7 21 12 20"/>
+            <polyline points="19,3 19,9 13,9"/>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Safe area -->
+      <div class="safe-area-bottom">
+        <div class="home-indicator"></div>
+      </div>
+
+    </div>
+  </div>
+  <div class="device-label">Time's up — transitioning to handoff</div>
+</div>
+
+</body>
+</html>

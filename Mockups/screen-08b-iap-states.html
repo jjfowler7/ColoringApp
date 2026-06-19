@@ -1,0 +1,1389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=390px, initial-scale=1.0" />
+  <title>PaperBrush — IAP Purchase States</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800&family=Nunito+Sans:wght@400;600&display=swap" rel="stylesheet" />
+  <style>
+    /* ─── Reset ─────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --cream:     #FFF8F0;
+      --canvas-bg: #FFFDF9;
+      --teal:      #0EA5A0;
+      --navy:      #1B2A4A;
+      --coral:     #F06449;
+      --gold:      #F5A623;
+      --sky:       #6BB8E8;
+      --peach:     #FCBFA0;
+      --secondary: #666666;
+      --divider:   #E8E0D8;
+    }
+
+    html, body {
+      width: 100%;
+      min-height: 100%;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 48px;
+      padding: 48px;
+      align-items: flex-start;
+      justify-content: center;
+      background: #C8C0AE;
+      font-family: 'Nunito Sans', sans-serif;
+    }
+
+    .device-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+    }
+    .device-label {
+      font-family: 'Nunito Sans', sans-serif;
+      font-size: 13px;
+      color: #888;
+      letter-spacing: 0.04em;
+    }
+
+    /* ─── iPhone shell ───────────────────────────────────── */
+    .iphone {
+      width: 390px;
+      height: 844px;
+      border-radius: 50px;
+      background: #1a1a1a;
+      box-shadow: 0 24px 80px rgba(0,0,0,0.45), inset 0 0 0 2px #3a3a3a;
+      position: relative;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+    .iphone::before {
+      content: '';
+      position: absolute;
+      top: 12px; left: 50%;
+      transform: translateX(-50%);
+      width: 120px; height: 34px;
+      background: #1a1a1a;
+      border-radius: 20px;
+      z-index: 50;
+    }
+
+    /* ─── Screen ─────────────────────────────────────────── */
+    .screen {
+      position: absolute;
+      inset: 0;
+      border-radius: 48px;
+      overflow: hidden;
+      background: var(--cream);
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Status bar */
+    .status-bar {
+      height: 54px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      padding: 0 28px 8px;
+      background: var(--canvas-bg);
+      z-index: 2;
+    }
+    .status-time {
+      font-family: 'Nunito', sans-serif;
+      font-weight: 700;
+      font-size: 15px;
+      color: var(--navy);
+    }
+    .status-icons { display: flex; align-items: center; gap: 5px; }
+    .status-icons svg { fill: var(--navy); }
+
+    /* Top bar */
+    .top-bar {
+      height: 44px;
+      flex-shrink: 0;
+      background: var(--canvas-bg);
+      border-bottom: 1px solid var(--divider);
+      display: flex;
+      align-items: center;
+      position: relative;
+      z-index: 2;
+    }
+    .bar-back {
+      width: 44px; height: 44px;
+      display: flex; align-items: center; justify-content: center;
+      margin-left: 8px; flex-shrink: 0;
+    }
+    .bar-back svg {
+      width: 18px; height: 18px;
+      stroke: var(--teal); stroke-width: 2.5;
+      stroke-linecap: round; stroke-linejoin: round; fill: none;
+    }
+    .bar-title {
+      position: absolute; left: 0; right: 0;
+      text-align: center;
+      font-family: 'Nunito', sans-serif;
+      font-weight: 700; font-size: 18px;
+      color: var(--navy); pointer-events: none;
+    }
+    .bar-right { margin-left: auto; display: flex; align-items: center; }
+    .bar-icon {
+      width: 44px; height: 44px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .bar-icon svg {
+      fill: none; stroke-width: 1.8;
+      stroke-linecap: round; stroke-linejoin: round;
+    }
+    .bar-icon.teal  svg { stroke: var(--teal); }
+    .bar-icon.muted svg { stroke: var(--secondary); }
+
+    /* Pills row */
+    .pills-row {
+      margin-top: 16px;
+      padding-left: 16px;
+      display: flex;
+      gap: 8px;
+      overflow: hidden;
+    }
+    .pill {
+      height: 36px;
+      padding: 0 14px;
+      border-radius: 9999px;
+      flex-shrink: 0;
+      display: flex; align-items: center; gap: 5px;
+      font-family: 'Nunito', sans-serif;
+      font-weight: 600; font-size: 13px;
+      white-space: nowrap;
+      border: 1px solid var(--divider);
+      background: var(--canvas-bg);
+      color: var(--navy);
+    }
+    .pill.selected {
+      background: var(--teal);
+      color: #ffffff;
+      border-color: transparent;
+      box-shadow: 0 2px 8px rgba(14,165,160,0.22);
+    }
+
+    /* Section header */
+    .section-header {
+      margin: 20px 16px 0;
+      font-family: 'Nunito', sans-serif;
+      font-weight: 700; font-size: 22px;
+      color: var(--navy);
+    }
+
+    /* Grid */
+    .page-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      padding: 16px 16px 0;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    /* Cards */
+    .g-card {
+      background: var(--canvas-bg);
+      border-radius: 16px;
+      box-shadow: 0 2px 8px rgba(27,42,74,0.06);
+      overflow: hidden;
+      position: relative;
+      height: 180px;
+    }
+    .g-card svg {
+      width: 100%; height: 100%;
+      display: block;
+    }
+    .card-overlay-bottom {
+      position: absolute;
+      left: 0; right: 0; bottom: 0;
+      height: 56px;
+      background: linear-gradient(to bottom, transparent, rgba(27,42,74,0.72));
+      display: flex; flex-direction: column;
+      justify-content: flex-end;
+      padding: 0 10px 8px;
+      z-index: 3;
+    }
+    .card-name {
+      font-family: 'Nunito', sans-serif;
+      font-weight: 600; font-size: 12px;
+      color: #ffffff; line-height: 1.2;
+    }
+    .card-tier-row {
+      display: flex; align-items: center; gap: 5px;
+      margin-top: 1px;
+    }
+    .tier-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+    .tier-lbl {
+      font-family: 'Nunito Sans', sans-serif;
+      font-weight: 400; font-size: 10px;
+    }
+    .locked-thumb { opacity: 0.45; }
+    .lock-overlay {
+      position: absolute; inset: 0;
+      display: flex; align-items: center; justify-content: center;
+      z-index: 4; pointer-events: none;
+    }
+    .lock-icon svg { width: 20px; height: 24px; fill: #666666; opacity: 0.60; }
+    .badge-new {
+      position: absolute; top: 8px; right: 8px;
+      background: var(--coral); color: #fff;
+      font-family: 'Nunito', sans-serif; font-weight: 700;
+      font-size: 9px; letter-spacing: 0.04em;
+      padding: 3px 7px; border-radius: 9999px;
+      box-shadow: 0 1px 4px rgba(240,100,73,0.35);
+      z-index: 5;
+    }
+
+    /* ════════════════════════════════════════════════════════
+       SCRIM OVERLAY
+       ════════════════════════════════════════════════════════ */
+    .scrim {
+      position: absolute;
+      inset: 0;
+      background: rgba(27,42,74,0.50);
+      z-index: 10;
+      border-radius: 48px;
+    }
+
+    /* ════════════════════════════════════════════════════════
+       BOTTOM SHEET
+       ════════════════════════════════════════════════════════ */
+    .sheet {
+      position: absolute;
+      left: 0; right: 0; bottom: 0;
+      background: #ffffff;
+      border-radius: 24px 24px 0 0;
+      box-shadow: 0 -16px 48px rgba(27,42,74,0.18);
+      z-index: 20;
+      padding: 0 0 34px;
+      animation: sheetUp 0.42s cubic-bezier(0.34,1.15,0.64,1) both;
+    }
+
+    @keyframes sheetUp {
+      from { transform: translateY(100%); opacity: 0.7; }
+      to   { transform: translateY(0);    opacity: 1; }
+    }
+
+    /* Drag handle */
+    .drag-handle {
+      width: 36px; height: 5px;
+      background: var(--divider);
+      border-radius: 9999px;
+      margin: 12px auto 0;
+    }
+
+    /* Sheet inner content */
+    .sheet-body {
+      padding: 0 24px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    /* Gap utility */
+    .gap-8  { height: 8px;  flex-shrink: 0; }
+    .gap-12 { height: 12px; flex-shrink: 0; }
+    .gap-16 { height: 16px; flex-shrink: 0; }
+    .gap-24 { height: 24px; flex-shrink: 0; }
+
+    /* Emoji icon */
+    .sheet-emoji {
+      font-size: 40px;
+      line-height: 1;
+      text-align: center;
+    }
+
+    /* Headline */
+    .sheet-headline {
+      font-family: 'Nunito', sans-serif;
+      font-weight: 700;
+      font-size: 22px;
+      color: var(--navy);
+      text-align: center;
+      line-height: 1.25;
+      letter-spacing: -0.25px;
+    }
+
+    /* Body copy */
+    .sheet-body-text {
+      font-family: 'Nunito Sans', sans-serif;
+      font-weight: 400;
+      font-size: 16px;
+      color: var(--secondary);
+      text-align: center;
+      line-height: 1.55;
+    }
+
+    /* CTA button */
+    .btn-unlock {
+      width: 100%;
+      height: 56px;
+      background: var(--coral);
+      border: none;
+      border-radius: 10px;
+      box-shadow: 0 4px 16px rgba(240,100,73,0.30);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      transition: transform 0.14s cubic-bezier(0.34,1.56,0.64,1),
+                  box-shadow 0.14s ease;
+    }
+    .btn-unlock:active {
+      transform: scale(0.97);
+      box-shadow: 0 2px 8px rgba(240,100,73,0.22);
+    }
+    .btn-unlock.disabled {
+      opacity: 0.85;
+      cursor: not-allowed;
+    }
+    .btn-unlock-label {
+      font-family: 'Nunito', sans-serif;
+      font-weight: 700;
+      font-size: 18px;
+      color: #ffffff;
+      letter-spacing: -0.1px;
+    }
+    .btn-unlock-price {
+      font-family: 'Nunito', sans-serif;
+      font-weight: 700;
+      font-size: 18px;
+      color: rgba(255,255,255,0.88);
+      padding-left: 2px;
+    }
+    .price-divider {
+      width: 1px; height: 18px;
+      background: rgba(255,255,255,0.4);
+      flex-shrink: 0;
+    }
+
+    /* Restore purchase link */
+    .btn-restore {
+      font-family: 'Nunito Sans', sans-serif;
+      font-weight: 600;
+      font-size: 14px;
+      color: var(--teal);
+      text-align: center;
+      cursor: pointer;
+      padding: 4px 0;
+    }
+    .btn-restore.dimmed {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    /* No thanks link */
+    .btn-dismiss {
+      font-family: 'Nunito Sans', sans-serif;
+      font-weight: 400;
+      font-size: 14px;
+      color: var(--secondary);
+      text-align: center;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 4px 0;
+    }
+    .btn-dismiss-x {
+      font-size: 14px;
+      opacity: 0.65;
+    }
+
+    /* Error message */
+    .error-message {
+      font-family: 'Nunito Sans', sans-serif;
+      font-size: 14px;
+      color: var(--coral);
+      text-align: center;
+      margin-top: 8px;
+      margin-bottom: 0;
+    }
+
+    /* Restore message */
+    .restore-message {
+      font-family: 'Nunito Sans', sans-serif;
+      font-size: 14px;
+      color: var(--secondary);
+      text-align: center;
+      margin-top: 6px;
+      margin-bottom: 16px;
+    }
+
+    /* Spinner animation */
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+    .spinner {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 2.5px solid rgba(255, 255, 255, 0.3);
+      border-top-color: #ffffff;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    /* Success overlay */
+    .success-overlay {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 30;
+      border-radius: 48px;
+    }
+    .success-card {
+      width: 300px;
+      background: #ffffff;
+      border-radius: 24px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+      padding: 24px 24px 32px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      position: relative;
+      animation: successPop 0.5s cubic-bezier(0.34, 1.3, 0.64, 1) both;
+    }
+    @keyframes successPop {
+      from { opacity: 0; transform: scale(0.88); }
+      to { opacity: 1; transform: scale(1); }
+    }
+    .success-emoji {
+      font-size: 48px;
+      line-height: 1;
+      margin-bottom: 24px;
+    }
+    .success-title {
+      font-family: 'Nunito', sans-serif;
+      font-weight: 800;
+      font-size: 24px;
+      color: var(--navy);
+      margin-bottom: 12px;
+    }
+    .success-hint {
+      font-family: 'Nunito Sans', sans-serif;
+      font-weight: 400;
+      font-size: 13px;
+      color: var(--secondary);
+      margin-top: 8px;
+    }
+
+    /* Confetti particles */
+    .confetti {
+      position: absolute;
+      pointer-events: none;
+    }
+    .confetti-piece {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+    }
+    @keyframes confetti-fall {
+      to {
+        transform: translateY(300px) rotate(360deg);
+        opacity: 0;
+      }
+    }
+    .confetti-piece.coral { background: var(--coral); animation: confetti-fall 2.2s ease-out forwards; }
+    .confetti-piece.teal { background: var(--teal); animation: confetti-fall 2s ease-out forwards; }
+    .confetti-piece.gold { background: var(--gold); animation: confetti-fall 2.4s ease-out forwards; }
+    .confetti-piece.lavender { background: #B8A9E8; animation: confetti-fall 2.1s ease-out forwards; }
+
+    /* ─── Content animations ────────────────────────────── */
+    @keyframes fadeUp {
+      from { opacity:0; transform:translateY(10px); }
+      to   { opacity:1; transform:translateY(0); }
+    }
+
+    .sheet-emoji    { animation: fadeUp 0.3s ease 0.3s  both; }
+    .sheet-headline { animation: fadeUp 0.3s ease 0.36s both; }
+    .sheet-body-text{ animation: fadeUp 0.3s ease 0.42s both; }
+    .btn-unlock     { animation: fadeUp 0.3s ease 0.48s both; }
+    .btn-restore    { animation: fadeUp 0.3s ease 0.53s both; }
+    .btn-dismiss    { animation: fadeUp 0.3s ease 0.58s both; }
+  </style>
+</head>
+<body>
+
+<!-- ════════════════════════════════════════════════════════
+     IPHONE 1: LOADING STATE
+     ════════════════════════════════════════════════════════ -->
+<div class="device-wrap">
+  <div class="iphone">
+    <div class="screen">
+
+      <!-- Status bar -->
+      <div class="status-bar">
+        <span class="status-time">9:41</span>
+        <div class="status-icons">
+          <svg width="17" height="12" viewBox="0 0 17 12"><rect x="0" y="8" width="3" height="4" rx="0.8"/><rect x="4.5" y="5.5" width="3" height="6.5" rx="0.8"/><rect x="9" y="3" width="3" height="9" rx="0.8"/><rect x="13.5" y="0" width="3" height="12" rx="0.8"/></svg>
+          <svg width="16" height="12" viewBox="0 0 16 12" fill="none" stroke="#1B2A4A" stroke-width="1.8" stroke-linecap="round"><path d="M1 4.5C3.8 1.8 8 1.8 10.5 4" opacity="0.3"/><path d="M2.8 6.2C4.8 4.3 7.4 4 9.2 5.5"/><path d="M4.8 7.8C5.8 6.9 7.2 6.9 8.2 7.8"/><circle cx="6.5" cy="10" r="1.2" fill="#1B2A4A" stroke="none"/></svg>
+          <svg width="25" height="12" viewBox="0 0 25 12" fill="#1B2A4A"><rect x="0" y="1" width="21" height="10" rx="2.5" stroke="#1B2A4A" stroke-width="1.2" fill="none"/><rect x="1.5" y="2.5" width="16" height="7" rx="1.5"/><path d="M22.5 4v4a2 2 0 0 0 0-4z"/></svg>
+        </div>
+      </div>
+
+      <!-- Top bar -->
+      <div class="top-bar">
+        <div class="bar-back"><svg viewBox="0 0 18 18"><polyline points="12,3 5,9 12,15"/></svg></div>
+        <span class="bar-title">PaperBrush</span>
+        <div class="bar-right">
+          <div class="bar-icon teal">
+            <svg width="22" height="20" viewBox="0 0 22 20">
+              <rect x="4" y="5" width="14" height="11" rx="2.5" stroke-width="1.7"/>
+              <rect x="2" y="3" width="14" height="11" rx="2.5" stroke-width="1.7" opacity="0.45"/>
+              <path d="M6 13 L9 8.5 L12 11.5 L14 9.5 L17 13Z" stroke-width="1.4" fill="none" opacity="0.7"/>
+              <circle cx="14.5" cy="8" r="1.2" fill="none" stroke-width="1.4" opacity="0.7"/>
+            </svg>
+          </div>
+          <div class="bar-icon muted">
+            <svg width="20" height="20" viewBox="0 0 20 20">
+              <circle cx="10" cy="10" r="3" stroke-width="1.7"/>
+              <path d="M10 1v2M10 17v2M1 10h2M17 10h2M3.22 3.22l1.42 1.42M15.36 15.36l1.42 1.42M3.22 16.78l1.42-1.42M15.36 4.64l1.42-1.42" stroke-width="1.7" stroke-linecap="round"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pills -->
+      <div class="pills-row">
+        <div class="pill selected">🐾 Animals</div>
+        <div class="pill">🚗 Vehicles</div>
+      </div>
+
+      <!-- Section header -->
+      <div class="section-header">Animals</div>
+
+      <!-- Grid — 4 cards -->
+      <div class="page-grid">
+        <div class="g-card">
+          <svg viewBox="0 0 163 180" fill="none" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
+            <defs>
+              <radialGradient id="s1g" cx="50%" cy="30%" r="70%"><stop offset="0%" stop-color="#A8D4E8"/><stop offset="100%" stop-color="#78B8D0"/></radialGradient>
+              <radialGradient id="m1g" cx="50%" cy="40%" r="55%"><stop offset="0%" stop-color="#D4811A"/><stop offset="100%" stop-color="#A05C08"/></radialGradient>
+            </defs>
+            <rect width="163" height="180" fill="url(#s1g)"/>
+            <circle cx="130" cy="28" r="18" fill="#FFF5B0" opacity="0.85"/>
+            <rect x="0" y="142" width="163" height="38" fill="#4E8E3C"/>
+            <ellipse cx="81" cy="142" rx="110" ry="30" fill="#5A9E48"/>
+            <ellipse cx="81" cy="90" rx="54" ry="52" fill="url(#m1g)"/>
+            <ellipse cx="81" cy="148" rx="48" ry="28" fill="#E8B030"/>
+            <ellipse cx="81" cy="85" rx="40" ry="38" fill="#F5D060"/>
+            <path d="M46 66 L36 48 L56 58Z" fill="#E8A828"/>
+            <path d="M116 66 L126 48 L106 58Z" fill="#E8A828"/>
+            <ellipse cx="66" cy="82" rx="9" ry="8" fill="#FFFFF0"/>
+            <ellipse cx="96" cy="82" rx="9" ry="8" fill="#FFFFF0"/>
+            <ellipse cx="66" cy="83" rx="6" ry="6" fill="#C87820"/><ellipse cx="96" cy="83" rx="6" ry="6" fill="#C87820"/>
+            <ellipse cx="66" cy="84" rx="3.5" ry="4" fill="#1B2A4A"/><ellipse cx="96" cy="84" rx="3.5" ry="4" fill="#1B2A4A"/>
+            <circle cx="68" cy="80" r="2" fill="white" opacity="0.9"/><circle cx="98" cy="80" r="2" fill="white" opacity="0.9"/>
+            <path d="M74 94 Q81 100 88 94 Q81 88 74 94Z" fill="#C84820"/>
+            <path d="M70 104 Q81 115 92 104" fill="none" stroke="#A83010" stroke-width="2" stroke-linecap="round"/>
+            <line x1="44" y1="96" x2="64" y2="98" stroke="#C8A060" stroke-width="1.2" stroke-linecap="round" opacity="0.7"/>
+            <line x1="98" y1="98" x2="118" y2="96" stroke="#C8A060" stroke-width="1.2" stroke-linecap="round" opacity="0.7"/>
+          </svg>
+          <div class="card-overlay-bottom">
+            <div class="card-name">Sleeping Lion</div>
+            <div class="card-tier-row">
+              <div class="tier-dot" style="background:#6BB8E8;"></div>
+              <span class="tier-lbl" style="color:#6BB8E8;">Explorer</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="g-card">
+          <svg viewBox="0 0 163 180" fill="none" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
+            <rect width="163" height="180" fill="#D4EAF8"/>
+            <rect x="0" y="148" width="163" height="32" fill="#7CB686"/>
+            <circle cx="46" cy="90" r="28" fill="#C8954A"/>
+            <ellipse cx="46" cy="122" rx="28" ry="18" fill="#C8954A"/>
+            <ellipse cx="46" cy="126" rx="16" ry="12" fill="#E8C07A" opacity="0.6"/>
+            <path d="M22 80 Q14 84 16 100 Q18 108 26 106" fill="#A87030" stroke="#8B5C20" stroke-width="1.5"/>
+            <path d="M70 80 Q78 84 76 100 Q74 108 66 106" fill="#A87030" stroke="#8B5C20" stroke-width="1.5"/>
+            <circle cx="38" cy="86" r="5.5" fill="#2E1A08"/><circle cx="54" cy="86" r="5.5" fill="#2E1A08"/>
+            <circle cx="40" cy="84" r="2" fill="white" opacity="0.9"/><circle cx="56" cy="84" r="2" fill="white" opacity="0.9"/>
+            <ellipse cx="46" cy="93" rx="4.5" ry="3" fill="#1A0A00"/>
+            <path d="M38 98 Q46 106 54 98" fill="none" stroke="#1A0A00" stroke-width="1.8" stroke-linecap="round"/>
+            <circle cx="116" cy="88" r="26" fill="#6BB8E8"/>
+            <ellipse cx="116" cy="118" rx="24" ry="18" fill="#6BB8E8"/>
+            <path d="M94 78 L88 60 L104 72" fill="#4A98CC" stroke="#3878AA" stroke-width="1.5" stroke-linejoin="round"/>
+            <path d="M138 78 Q146 82 144 96 Q142 102 134 100" fill="#4A98CC" stroke="#3878AA" stroke-width="1.5"/>
+            <circle cx="108" cy="84" r="5" fill="#1B2A4A"/><circle cx="124" cy="84" r="5" fill="#1B2A4A"/>
+            <circle cx="110" cy="82" r="1.8" fill="white" opacity="0.9"/><circle cx="126" cy="82" r="1.8" fill="white" opacity="0.9"/>
+            <ellipse cx="116" cy="93" rx="4" ry="2.8" fill="#1B2A4A"/>
+            <path d="M109 98 Q116 105 123 98" fill="none" stroke="#1B2A4A" stroke-width="1.8" stroke-linecap="round"/>
+            <path d="M81 55 C81 51 76 49 76 53 C76 57 81 61 81 61 C81 61 86 57 86 53 C86 49 81 51 81 55Z" fill="#F06449" opacity="0.85"/>
+          </svg>
+          <div class="badge-new">NEW</div>
+          <div class="card-overlay-bottom">
+            <div class="card-name">Puppy Friends</div>
+            <div class="card-tier-row">
+              <div class="tier-dot" style="background:#FCBFA0;"></div>
+              <span class="tier-lbl" style="color:#D4811A;">Starter</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="g-card">
+          <div class="locked-thumb">
+            <svg viewBox="0 0 163 180" fill="none" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice" style="width:100%;height:100%;display:block;">
+              <rect width="163" height="180" fill="#E8F0E0"/>
+              <path d="M0 100 Q20 75 40 90 Q20 68 30 48 Q50 58 45 78 Q60 58 70 74 Q65 55 80 45 Q90 62 80 82 Q100 67 110 87 L110 130 Z" fill="none" stroke="#C8C0B0" stroke-width="2.5" stroke-linejoin="round" opacity="0.5"/>
+              <path d="M38 62 Q38 36 60 34 Q82 36 82 62 Q82 78 60 78 Q38 78 38 62Z" fill="none" stroke="#C8C0B0" stroke-width="2.5"/>
+              <polygon points="44,44 36,22 54,38" fill="none" stroke="#C8C0B0" stroke-width="2" stroke-linejoin="round"/>
+              <polygon points="76,44 84,22 66,38" fill="none" stroke="#C8C0B0" stroke-width="2" stroke-linejoin="round"/>
+              <ellipse cx="50" cy="56" rx="4" ry="4.5" fill="none" stroke="#C8C0B0" stroke-width="1.8"/>
+              <ellipse cx="70" cy="56" rx="4" ry="4.5" fill="none" stroke="#C8C0B0" stroke-width="1.8"/>
+              <ellipse cx="60" cy="67" rx="8" ry="6" fill="none" stroke="#C8C0B0" stroke-width="1.8"/>
+              <ellipse cx="81" cy="120" rx="45" ry="32" fill="none" stroke="#C8C0B0" stroke-width="2.5"/>
+              <path d="M84 76 Q106 62 108 78 Q110 92 96 96 Q88 98 84 90" fill="none" stroke="#C8C0B0" stroke-width="2.5" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <div class="lock-overlay">
+            <div class="lock-icon">
+              <svg viewBox="0 0 22 26">
+                <path d="M5 12V8 C5 4.7 7.7 2 11 2 C14.3 2 17 4.7 17 8 V12" stroke="#666" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+                <rect x="2" y="11" width="18" height="13" rx="3" fill="#666666"/>
+                <circle cx="11" cy="17" r="2.5" fill="white" opacity="0.7"/>
+                <rect x="10" y="18.5" width="2" height="3" rx="1" fill="white" opacity="0.7"/>
+              </svg>
+            </div>
+          </div>
+          <div class="card-overlay-bottom">
+            <div class="card-name">Jungle Fox</div>
+            <div class="card-tier-row">
+              <div class="tier-dot" style="background:#B8A9E8;"></div>
+              <span class="tier-lbl" style="color:#9C8DD0;">Creator</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="g-card">
+          <svg viewBox="0 0 163 180" fill="none" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
+            <rect width="163" height="180" fill="#FFF5DC"/>
+            <rect x="0" y="148" width="163" height="32" fill="#5A9E48"/>
+            <ellipse cx="81" cy="136" rx="55" ry="34" fill="#F5A623"/>
+            <ellipse cx="81" cy="143" rx="30" ry="22" fill="#FCBFA0"/>
+            <ellipse cx="81" cy="76" rx="48" ry="44" fill="#F5A623"/>
+            <polygon points="36,44 24,20 52,36" fill="#F5A623"/><polygon points="126,44 139,20 111,36" fill="#F5A623"/>
+            <polygon points="36,42 28,24 48,36" fill="#FCBFA0" opacity="0.7"/><polygon points="126,42 134,24 114,36" fill="#FCBFA0" opacity="0.7"/>
+            <path d="M55 70 Q62 64 69 70" fill="none" stroke="#C8C0B0" stroke-width="2" stroke-linecap="round"/>
+            <path d="M93 70 Q100 64 107 70" fill="none" stroke="#C8C0B0" stroke-width="2" stroke-linecap="round"/>
+            <path d="M76 80 Q81 84 86 80 Q81 76 76 80Z" fill="#C84820"/>
+            <path d="M68 88 Q81 99 94 88" fill="none" stroke="#A83010" stroke-width="2" stroke-linecap="round"/>
+            <line x1="42" y1="80" x2="66" y2="82" stroke="#C8A060" stroke-width="1.2" stroke-linecap="round" opacity="0.7"/>
+            <line x1="96" y1="82" x2="120" y2="80" stroke="#C8A060" stroke-width="1.2" stroke-linecap="round" opacity="0.7"/>
+            <ellipse cx="50" cy="162" rx="16" ry="9" fill="#E8B030"/>
+            <ellipse cx="112" cy="162" rx="16" ry="9" fill="#E8B030"/>
+          </svg>
+          <div class="card-overlay-bottom">
+            <div class="card-name">Happy Cat</div>
+            <div class="card-tier-row">
+              <div class="tier-dot" style="background:#6BB8E8;"></div>
+              <span class="tier-lbl" style="color:#6BB8E8;">Explorer</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Scrim -->
+    <div class="scrim"></div>
+
+    <!-- Bottom sheet with loading state -->
+    <div class="sheet">
+      <div class="drag-handle"></div>
+      <div class="sheet-body">
+        <div class="gap-16"></div>
+        <div class="sheet-emoji">🎨</div>
+        <div class="gap-8"></div>
+        <div class="sheet-headline">Unlock all the colors!</div>
+        <div class="gap-12"></div>
+        <div class="sheet-body-text">
+          Get 200+ coloring pages, all brushes,<br>
+          and animations. One payment.<br>
+          No subscriptions. No ads. Ever.
+        </div>
+        <div class="gap-24"></div>
+
+        <!-- Loading button -->
+        <button class="btn-unlock disabled">
+          <div class="spinner"></div>
+        </button>
+
+        <div class="gap-12"></div>
+        <div class="btn-restore dimmed">Restore Purchase</div>
+        <div class="gap-16"></div>
+        <div class="btn-dismiss">
+          <span class="btn-dismiss-x">✕</span>
+          <span>No thanks, keep exploring free</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+  <div class="device-label">Processing payment...</div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════
+     IPHONE 2: PURCHASE FAILURE
+     ════════════════════════════════════════════════════════ -->
+<div class="device-wrap">
+  <div class="iphone">
+    <div class="screen">
+
+      <!-- Status bar -->
+      <div class="status-bar">
+        <span class="status-time">9:41</span>
+        <div class="status-icons">
+          <svg width="17" height="12" viewBox="0 0 17 12"><rect x="0" y="8" width="3" height="4" rx="0.8"/><rect x="4.5" y="5.5" width="3" height="6.5" rx="0.8"/><rect x="9" y="3" width="3" height="9" rx="0.8"/><rect x="13.5" y="0" width="3" height="12" rx="0.8"/></svg>
+          <svg width="16" height="12" viewBox="0 0 16 12" fill="none" stroke="#1B2A4A" stroke-width="1.8" stroke-linecap="round"><path d="M1 4.5C3.8 1.8 8 1.8 10.5 4" opacity="0.3"/><path d="M2.8 6.2C4.8 4.3 7.4 4 9.2 5.5"/><path d="M4.8 7.8C5.8 6.9 7.2 6.9 8.2 7.8"/><circle cx="6.5" cy="10" r="1.2" fill="#1B2A4A" stroke="none"/></svg>
+          <svg width="25" height="12" viewBox="0 0 25 12" fill="#1B2A4A"><rect x="0" y="1" width="21" height="10" rx="2.5" stroke="#1B2A4A" stroke-width="1.2" fill="none"/><rect x="1.5" y="2.5" width="16" height="7" rx="1.5"/><path d="M22.5 4v4a2 2 0 0 0 0-4z"/></svg>
+        </div>
+      </div>
+
+      <!-- Top bar -->
+      <div class="top-bar">
+        <div class="bar-back"><svg viewBox="0 0 18 18"><polyline points="12,3 5,9 12,15"/></svg></div>
+        <span class="bar-title">PaperBrush</span>
+        <div class="bar-right">
+          <div class="bar-icon teal">
+            <svg width="22" height="20" viewBox="0 0 22 20">
+              <rect x="4" y="5" width="14" height="11" rx="2.5" stroke-width="1.7"/>
+              <rect x="2" y="3" width="14" height="11" rx="2.5" stroke-width="1.7" opacity="0.45"/>
+              <path d="M6 13 L9 8.5 L12 11.5 L14 9.5 L17 13Z" stroke-width="1.4" fill="none" opacity="0.7"/>
+              <circle cx="14.5" cy="8" r="1.2" fill="none" stroke-width="1.4" opacity="0.7"/>
+            </svg>
+          </div>
+          <div class="bar-icon muted">
+            <svg width="20" height="20" viewBox="0 0 20 20">
+              <circle cx="10" cy="10" r="3" stroke-width="1.7"/>
+              <path d="M10 1v2M10 17v2M1 10h2M17 10h2M3.22 3.22l1.42 1.42M15.36 15.36l1.42 1.42M3.22 16.78l1.42-1.42M15.36 4.64l1.42-1.42" stroke-width="1.7" stroke-linecap="round"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pills -->
+      <div class="pills-row">
+        <div class="pill selected">🐾 Animals</div>
+        <div class="pill">🚗 Vehicles</div>
+      </div>
+
+      <!-- Section header -->
+      <div class="section-header">Animals</div>
+
+      <!-- Grid — 4 cards -->
+      <div class="page-grid">
+        <div class="g-card">
+          <svg viewBox="0 0 163 180" fill="none" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
+            <defs>
+              <radialGradient id="s1g2" cx="50%" cy="30%" r="70%"><stop offset="0%" stop-color="#A8D4E8"/><stop offset="100%" stop-color="#78B8D0"/></radialGradient>
+              <radialGradient id="m1g2" cx="50%" cy="40%" r="55%"><stop offset="0%" stop-color="#D4811A"/><stop offset="100%" stop-color="#A05C08"/></radialGradient>
+            </defs>
+            <rect width="163" height="180" fill="url(#s1g2)"/>
+            <circle cx="130" cy="28" r="18" fill="#FFF5B0" opacity="0.85"/>
+            <rect x="0" y="142" width="163" height="38" fill="#4E8E3C"/>
+            <ellipse cx="81" cy="142" rx="110" ry="30" fill="#5A9E48"/>
+            <ellipse cx="81" cy="90" rx="54" ry="52" fill="url(#m1g2)"/>
+            <ellipse cx="81" cy="148" rx="48" ry="28" fill="#E8B030"/>
+            <ellipse cx="81" cy="85" rx="40" ry="38" fill="#F5D060"/>
+            <path d="M46 66 L36 48 L56 58Z" fill="#E8A828"/>
+            <path d="M116 66 L126 48 L106 58Z" fill="#E8A828"/>
+            <ellipse cx="66" cy="82" rx="9" ry="8" fill="#FFFFF0"/>
+            <ellipse cx="96" cy="82" rx="9" ry="8" fill="#FFFFF0"/>
+            <ellipse cx="66" cy="83" rx="6" ry="6" fill="#C87820"/><ellipse cx="96" cy="83" rx="6" ry="6" fill="#C87820"/>
+            <ellipse cx="66" cy="84" rx="3.5" ry="4" fill="#1B2A4A"/><ellipse cx="96" cy="84" rx="3.5" ry="4" fill="#1B2A4A"/>
+            <circle cx="68" cy="80" r="2" fill="white" opacity="0.9"/><circle cx="98" cy="80" r="2" fill="white" opacity="0.9"/>
+            <path d="M74 94 Q81 100 88 94 Q81 88 74 94Z" fill="#C84820"/>
+            <path d="M70 104 Q81 115 92 104" fill="none" stroke="#A83010" stroke-width="2" stroke-linecap="round"/>
+            <line x1="44" y1="96" x2="64" y2="98" stroke="#C8A060" stroke-width="1.2" stroke-linecap="round" opacity="0.7"/>
+            <line x1="98" y1="98" x2="118" y2="96" stroke="#C8A060" stroke-width="1.2" stroke-linecap="round" opacity="0.7"/>
+          </svg>
+          <div class="card-overlay-bottom">
+            <div class="card-name">Sleeping Lion</div>
+            <div class="card-tier-row">
+              <div class="tier-dot" style="background:#6BB8E8;"></div>
+              <span class="tier-lbl" style="color:#6BB8E8;">Explorer</span>
+            </div>
+          </div>
+        </div>
+        <div class="g-card">
+          <svg viewBox="0 0 163 180" fill="none" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
+            <rect width="163" height="180" fill="#D4EAF8"/>
+            <rect x="0" y="148" width="163" height="32" fill="#7CB686"/>
+            <circle cx="46" cy="90" r="28" fill="#C8954A"/>
+            <ellipse cx="46" cy="122" rx="28" ry="18" fill="#C8954A"/>
+            <ellipse cx="46" cy="126" rx="16" ry="12" fill="#E8C07A" opacity="0.6"/>
+            <path d="M22 80 Q14 84 16 100 Q18 108 26 106" fill="#A87030" stroke="#8B5C20" stroke-width="1.5"/>
+            <path d="M70 80 Q78 84 76 100 Q74 108 66 106" fill="#A87030" stroke="#8B5C20" stroke-width="1.5"/>
+            <circle cx="38" cy="86" r="5.5" fill="#2E1A08"/><circle cx="54" cy="86" r="5.5" fill="#2E1A08"/>
+            <circle cx="40" cy="84" r="2" fill="white" opacity="0.9"/><circle cx="56" cy="84" r="2" fill="white" opacity="0.9"/>
+            <ellipse cx="46" cy="93" rx="4.5" ry="3" fill="#1A0A00"/>
+            <path d="M38 98 Q46 106 54 98" fill="none" stroke="#1A0A00" stroke-width="1.8" stroke-linecap="round"/>
+            <circle cx="116" cy="88" r="26" fill="#6BB8E8"/>
+            <ellipse cx="116" cy="118" rx="24" ry="18" fill="#6BB8E8"/>
+            <path d="M94 78 L88 60 L104 72" fill="#4A98CC" stroke="#3878AA" stroke-width="1.5" stroke-linejoin="round"/>
+            <path d="M138 78 Q146 82 144 96 Q142 102 134 100" fill="#4A98CC" stroke="#3878AA" stroke-width="1.5"/>
+            <circle cx="108" cy="84" r="5" fill="#1B2A4A"/><circle cx="124" cy="84" r="5" fill="#1B2A4A"/>
+            <circle cx="110" cy="82" r="1.8" fill="white" opacity="0.9"/><circle cx="126" cy="82" r="1.8" fill="white" opacity="0.9"/>
+            <ellipse cx="116" cy="93" rx="4" ry="2.8" fill="#1B2A4A"/>
+            <path d="M109 98 Q116 105 123 98" fill="none" stroke="#1B2A4A" stroke-width="1.8" stroke-linecap="round"/>
+            <path d="M81 55 C81 51 76 49 76 53 C76 57 81 61 81 61 C81 61 86 57 86 53 C86 49 81 51 81 55Z" fill="#F06449" opacity="0.85"/>
+          </svg>
+          <div class="badge-new">NEW</div>
+          <div class="card-overlay-bottom">
+            <div class="card-name">Puppy Friends</div>
+            <div class="card-tier-row">
+              <div class="tier-dot" style="background:#FCBFA0;"></div>
+              <span class="tier-lbl" style="color:#D4811A;">Starter</span>
+            </div>
+          </div>
+        </div>
+        <div class="g-card">
+          <div class="locked-thumb">
+            <svg viewBox="0 0 163 180" fill="none" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice" style="width:100%;height:100%;display:block;">
+              <rect width="163" height="180" fill="#E8F0E0"/>
+              <path d="M0 100 Q20 75 40 90 Q20 68 30 48 Q50 58 45 78 Q60 58 70 74 Q65 55 80 45 Q90 62 80 82 Q100 67 110 87 L110 130 Z" fill="none" stroke="#C8C0B0" stroke-width="2.5" stroke-linejoin="round" opacity="0.5"/>
+              <path d="M38 62 Q38 36 60 34 Q82 36 82 62 Q82 78 60 78 Q38 78 38 62Z" fill="none" stroke="#C8C0B0" stroke-width="2.5"/>
+              <polygon points="44,44 36,22 54,38" fill="none" stroke="#C8C0B0" stroke-width="2" stroke-linejoin="round"/>
+              <polygon points="76,44 84,22 66,38" fill="none" stroke="#C8C0B0" stroke-width="2" stroke-linejoin="round"/>
+              <ellipse cx="50" cy="56" rx="4" ry="4.5" fill="none" stroke="#C8C0B0" stroke-width="1.8"/>
+              <ellipse cx="70" cy="56" rx="4" ry="4.5" fill="none" stroke="#C8C0B0" stroke-width="1.8"/>
+              <ellipse cx="60" cy="67" rx="8" ry="6" fill="none" stroke="#C8C0B0" stroke-width="1.8"/>
+              <ellipse cx="81" cy="120" rx="45" ry="32" fill="none" stroke="#C8C0B0" stroke-width="2.5"/>
+              <path d="M84 76 Q106 62 108 78 Q110 92 96 96 Q88 98 84 90" fill="none" stroke="#C8C0B0" stroke-width="2.5" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <div class="lock-overlay">
+            <div class="lock-icon">
+              <svg viewBox="0 0 22 26">
+                <path d="M5 12V8 C5 4.7 7.7 2 11 2 C14.3 2 17 4.7 17 8 V12" stroke="#666" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+                <rect x="2" y="11" width="18" height="13" rx="3" fill="#666666"/>
+                <circle cx="11" cy="17" r="2.5" fill="white" opacity="0.7"/>
+                <rect x="10" y="18.5" width="2" height="3" rx="1" fill="white" opacity="0.7"/>
+              </svg>
+            </div>
+          </div>
+          <div class="card-overlay-bottom">
+            <div class="card-name">Jungle Fox</div>
+            <div class="card-tier-row">
+              <div class="tier-dot" style="background:#B8A9E8;"></div>
+              <span class="tier-lbl" style="color:#9C8DD0;">Creator</span>
+            </div>
+          </div>
+        </div>
+        <div class="g-card">
+          <svg viewBox="0 0 163 180" fill="none" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
+            <rect width="163" height="180" fill="#FFF5DC"/>
+            <rect x="0" y="148" width="163" height="32" fill="#5A9E48"/>
+            <ellipse cx="81" cy="136" rx="55" ry="34" fill="#F5A623"/>
+            <ellipse cx="81" cy="143" rx="30" ry="22" fill="#FCBFA0"/>
+            <ellipse cx="81" cy="76" rx="48" ry="44" fill="#F5A623"/>
+            <polygon points="36,44 24,20 52,36" fill="#F5A623"/><polygon points="126,44 139,20 111,36" fill="#F5A623"/>
+            <polygon points="36,42 28,24 48,36" fill="#FCBFA0" opacity="0.7"/><polygon points="126,42 134,24 114,36" fill="#FCBFA0" opacity="0.7"/>
+            <path d="M55 70 Q62 64 69 70" fill="none" stroke="#C8C0B0" stroke-width="2" stroke-linecap="round"/>
+            <path d="M93 70 Q100 64 107 70" fill="none" stroke="#C8C0B0" stroke-width="2" stroke-linecap="round"/>
+            <path d="M76 80 Q81 84 86 80 Q81 76 76 80Z" fill="#C84820"/>
+            <path d="M68 88 Q81 99 94 88" fill="none" stroke="#A83010" stroke-width="2" stroke-linecap="round"/>
+            <line x1="42" y1="80" x2="66" y2="82" stroke="#C8A060" stroke-width="1.2" stroke-linecap="round" opacity="0.7"/>
+            <line x1="96" y1="82" x2="120" y2="80" stroke="#C8A060" stroke-width="1.2" stroke-linecap="round" opacity="0.7"/>
+            <ellipse cx="50" cy="162" rx="16" ry="9" fill="#E8B030"/>
+            <ellipse cx="112" cy="162" rx="16" ry="9" fill="#E8B030"/>
+          </svg>
+          <div class="card-overlay-bottom">
+            <div class="card-name">Happy Cat</div>
+            <div class="card-tier-row">
+              <div class="tier-dot" style="background:#6BB8E8;"></div>
+              <span class="tier-lbl" style="color:#6BB8E8;">Explorer</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Scrim -->
+    <div class="scrim"></div>
+
+    <!-- Bottom sheet with error -->
+    <div class="sheet">
+      <div class="drag-handle"></div>
+      <div class="sheet-body">
+        <div class="gap-16"></div>
+        <div class="sheet-emoji">🎨</div>
+        <div class="gap-8"></div>
+        <div class="sheet-headline">Unlock all the colors!</div>
+        <div class="gap-12"></div>
+        <div class="sheet-body-text">
+          Get 200+ coloring pages, all brushes,<br>
+          and animations. One payment.<br>
+          No subscriptions. No ads. Ever.
+        </div>
+        <div class="gap-24"></div>
+
+        <!-- Button (re-enabled) -->
+        <button class="btn-unlock">
+          <span class="btn-unlock-label">Unlock Everything</span>
+          <div class="price-divider"></div>
+          <span class="btn-unlock-price">$14.99</span>
+        </button>
+
+        <!-- Error message -->
+        <div class="error-message">Something went wrong. Please try again.</div>
+
+        <div class="gap-16"></div>
+        <div class="btn-restore">Restore Purchase</div>
+        <div class="gap-16"></div>
+        <div class="btn-dismiss">
+          <span class="btn-dismiss-x">✕</span>
+          <span>No thanks, keep exploring free</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+  <div class="device-label">Purchase failed</div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════
+     IPHONE 3: PURCHASE SUCCESS
+     ════════════════════════════════════════════════════════ -->
+<div class="device-wrap">
+  <div class="iphone">
+    <div class="screen">
+
+      <!-- Status bar -->
+      <div class="status-bar">
+        <span class="status-time">9:41</span>
+        <div class="status-icons">
+          <svg width="17" height="12" viewBox="0 0 17 12"><rect x="0" y="8" width="3" height="4" rx="0.8"/><rect x="4.5" y="5.5" width="3" height="6.5" rx="0.8"/><rect x="9" y="3" width="3" height="9" rx="0.8"/><rect x="13.5" y="0" width="3" height="12" rx="0.8"/></svg>
+          <svg width="16" height="12" viewBox="0 0 16 12" fill="none" stroke="#1B2A4A" stroke-width="1.8" stroke-linecap="round"><path d="M1 4.5C3.8 1.8 8 1.8 10.5 4" opacity="0.3"/><path d="M2.8 6.2C4.8 4.3 7.4 4 9.2 5.5"/><path d="M4.8 7.8C5.8 6.9 7.2 6.9 8.2 7.8"/><circle cx="6.5" cy="10" r="1.2" fill="#1B2A4A" stroke="none"/></svg>
+          <svg width="25" height="12" viewBox="0 0 25 12" fill="#1B2A4A"><rect x="0" y="1" width="21" height="10" rx="2.5" stroke="#1B2A4A" stroke-width="1.2" fill="none"/><rect x="1.5" y="2.5" width="16" height="7" rx="1.5"/><path d="M22.5 4v4a2 2 0 0 0 0-4z"/></svg>
+        </div>
+      </div>
+
+      <!-- Top bar -->
+      <div class="top-bar">
+        <div class="bar-back"><svg viewBox="0 0 18 18"><polyline points="12,3 5,9 12,15"/></svg></div>
+        <span class="bar-title">PaperBrush</span>
+        <div class="bar-right">
+          <div class="bar-icon teal">
+            <svg width="22" height="20" viewBox="0 0 22 20">
+              <rect x="4" y="5" width="14" height="11" rx="2.5" stroke-width="1.7"/>
+              <rect x="2" y="3" width="14" height="11" rx="2.5" stroke-width="1.7" opacity="0.45"/>
+              <path d="M6 13 L9 8.5 L12 11.5 L14 9.5 L17 13Z" stroke-width="1.4" fill="none" opacity="0.7"/>
+              <circle cx="14.5" cy="8" r="1.2" fill="none" stroke-width="1.4" opacity="0.7"/>
+            </svg>
+          </div>
+          <div class="bar-icon muted">
+            <svg width="20" height="20" viewBox="0 0 20 20">
+              <circle cx="10" cy="10" r="3" stroke-width="1.7"/>
+              <path d="M10 1v2M10 17v2M1 10h2M17 10h2M3.22 3.22l1.42 1.42M15.36 15.36l1.42 1.42M3.22 16.78l1.42-1.42M15.36 4.64l1.42-1.42" stroke-width="1.7" stroke-linecap="round"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pills -->
+      <div class="pills-row">
+        <div class="pill selected">🐾 Animals</div>
+        <div class="pill">🚗 Vehicles</div>
+      </div>
+
+      <!-- Section header -->
+      <div class="section-header">Animals</div>
+
+      <!-- Grid — 4 cards, all unlocked now -->
+      <div class="page-grid">
+        <div class="g-card">
+          <svg viewBox="0 0 163 180" fill="none" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
+            <defs>
+              <radialGradient id="s1g3" cx="50%" cy="30%" r="70%"><stop offset="0%" stop-color="#A8D4E8"/><stop offset="100%" stop-color="#78B8D0"/></radialGradient>
+              <radialGradient id="m1g3" cx="50%" cy="40%" r="55%"><stop offset="0%" stop-color="#D4811A"/><stop offset="100%" stop-color="#A05C08"/></radialGradient>
+            </defs>
+            <rect width="163" height="180" fill="url(#s1g3)"/>
+            <circle cx="130" cy="28" r="18" fill="#FFF5B0" opacity="0.85"/>
+            <rect x="0" y="142" width="163" height="38" fill="#4E8E3C"/>
+            <ellipse cx="81" cy="142" rx="110" ry="30" fill="#5A9E48"/>
+            <ellipse cx="81" cy="90" rx="54" ry="52" fill="url(#m1g3)"/>
+            <ellipse cx="81" cy="148" rx="48" ry="28" fill="#E8B030"/>
+            <ellipse cx="81" cy="85" rx="40" ry="38" fill="#F5D060"/>
+            <path d="M46 66 L36 48 L56 58Z" fill="#E8A828"/>
+            <path d="M116 66 L126 48 L106 58Z" fill="#E8A828"/>
+            <ellipse cx="66" cy="82" rx="9" ry="8" fill="#FFFFF0"/>
+            <ellipse cx="96" cy="82" rx="9" ry="8" fill="#FFFFF0"/>
+            <ellipse cx="66" cy="83" rx="6" ry="6" fill="#C87820"/><ellipse cx="96" cy="83" rx="6" ry="6" fill="#C87820"/>
+            <ellipse cx="66" cy="84" rx="3.5" ry="4" fill="#1B2A4A"/><ellipse cx="96" cy="84" rx="3.5" ry="4" fill="#1B2A4A"/>
+            <circle cx="68" cy="80" r="2" fill="white" opacity="0.9"/><circle cx="98" cy="80" r="2" fill="white" opacity="0.9"/>
+            <path d="M74 94 Q81 100 88 94 Q81 88 74 94Z" fill="#C84820"/>
+            <path d="M70 104 Q81 115 92 104" fill="none" stroke="#A83010" stroke-width="2" stroke-linecap="round"/>
+            <line x1="44" y1="96" x2="64" y2="98" stroke="#C8A060" stroke-width="1.2" stroke-linecap="round" opacity="0.7"/>
+            <line x1="98" y1="98" x2="118" y2="96" stroke="#C8A060" stroke-width="1.2" stroke-linecap="round" opacity="0.7"/>
+          </svg>
+          <div class="card-overlay-bottom">
+            <div class="card-name">Sleeping Lion</div>
+            <div class="card-tier-row">
+              <div class="tier-dot" style="background:#6BB8E8;"></div>
+              <span class="tier-lbl" style="color:#6BB8E8;">Explorer</span>
+            </div>
+          </div>
+        </div>
+        <div class="g-card">
+          <svg viewBox="0 0 163 180" fill="none" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
+            <rect width="163" height="180" fill="#D4EAF8"/>
+            <rect x="0" y="148" width="163" height="32" fill="#7CB686"/>
+            <circle cx="46" cy="90" r="28" fill="#C8954A"/>
+            <ellipse cx="46" cy="122" rx="28" ry="18" fill="#C8954A"/>
+            <ellipse cx="46" cy="126" rx="16" ry="12" fill="#E8C07A" opacity="0.6"/>
+            <path d="M22 80 Q14 84 16 100 Q18 108 26 106" fill="#A87030" stroke="#8B5C20" stroke-width="1.5"/>
+            <path d="M70 80 Q78 84 76 100 Q74 108 66 106" fill="#A87030" stroke="#8B5C20" stroke-width="1.5"/>
+            <circle cx="38" cy="86" r="5.5" fill="#2E1A08"/><circle cx="54" cy="86" r="5.5" fill="#2E1A08"/>
+            <circle cx="40" cy="84" r="2" fill="white" opacity="0.9"/><circle cx="56" cy="84" r="2" fill="white" opacity="0.9"/>
+            <ellipse cx="46" cy="93" rx="4.5" ry="3" fill="#1A0A00"/>
+            <path d="M38 98 Q46 106 54 98" fill="none" stroke="#1A0A00" stroke-width="1.8" stroke-linecap="round"/>
+            <circle cx="116" cy="88" r="26" fill="#6BB8E8"/>
+            <ellipse cx="116" cy="118" rx="24" ry="18" fill="#6BB8E8"/>
+            <path d="M94 78 L88 60 L104 72" fill="#4A98CC" stroke="#3878AA" stroke-width="1.5" stroke-linejoin="round"/>
+            <path d="M138 78 Q146 82 144 96 Q142 102 134 100" fill="#4A98CC" stroke="#3878AA" stroke-width="1.5"/>
+            <circle cx="108" cy="84" r="5" fill="#1B2A4A"/><circle cx="124" cy="84" r="5" fill="#1B2A4A"/>
+            <circle cx="110" cy="82" r="1.8" fill="white" opacity="0.9"/><circle cx="126" cy="82" r="1.8" fill="white" opacity="0.9"/>
+            <ellipse cx="116" cy="93" rx="4" ry="2.8" fill="#1B2A4A"/>
+            <path d="M109 98 Q116 105 123 98" fill="none" stroke="#1B2A4A" stroke-width="1.8" stroke-linecap="round"/>
+            <path d="M81 55 C81 51 76 49 76 53 C76 57 81 61 81 61 C81 61 86 57 86 53 C86 49 81 51 81 55Z" fill="#F06449" opacity="0.85"/>
+          </svg>
+          <div class="badge-new">NEW</div>
+          <div class="card-overlay-bottom">
+            <div class="card-name">Puppy Friends</div>
+            <div class="card-tier-row">
+              <div class="tier-dot" style="background:#FCBFA0;"></div>
+              <span class="tier-lbl" style="color:#D4811A;">Starter</span>
+            </div>
+          </div>
+        </div>
+        <div class="g-card">
+          <svg viewBox="0 0 163 180" fill="none" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice" style="width:100%;height:100%;display:block;">
+            <rect width="163" height="180" fill="#E8F0E0"/>
+            <path d="M0 100 Q20 75 40 90 Q20 68 30 48 Q50 58 45 78 Q60 58 70 74 Q65 55 80 45 Q90 62 80 82 Q100 67 110 87 L110 130 Z" fill="none" stroke="#C8C0B0" stroke-width="2.5" stroke-linejoin="round" opacity="0.5"/>
+            <path d="M38 62 Q38 36 60 34 Q82 36 82 62 Q82 78 60 78 Q38 78 38 62Z" fill="none" stroke="#C8C0B0" stroke-width="2.5"/>
+            <polygon points="44,44 36,22 54,38" fill="none" stroke="#C8C0B0" stroke-width="2" stroke-linejoin="round"/>
+            <polygon points="76,44 84,22 66,38" fill="none" stroke="#C8C0B0" stroke-width="2" stroke-linejoin="round"/>
+            <ellipse cx="50" cy="56" rx="4" ry="4.5" fill="none" stroke="#C8C0B0" stroke-width="1.8"/>
+            <ellipse cx="70" cy="56" rx="4" ry="4.5" fill="none" stroke="#C8C0B0" stroke-width="1.8"/>
+            <ellipse cx="60" cy="67" rx="8" ry="6" fill="none" stroke="#C8C0B0" stroke-width="1.8"/>
+            <ellipse cx="81" cy="120" rx="45" ry="32" fill="none" stroke="#C8C0B0" stroke-width="2.5"/>
+            <path d="M84 76 Q106 62 108 78 Q110 92 96 96 Q88 98 84 90" fill="none" stroke="#C8C0B0" stroke-width="2.5" stroke-linecap="round"/>
+          </svg>
+          <div class="card-overlay-bottom">
+            <div class="card-name">Jungle Fox</div>
+            <div class="card-tier-row">
+              <div class="tier-dot" style="background:#B8A9E8;"></div>
+              <span class="tier-lbl" style="color:#9C8DD0;">Creator</span>
+            </div>
+          </div>
+        </div>
+        <div class="g-card">
+          <svg viewBox="0 0 163 180" fill="none" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
+            <rect width="163" height="180" fill="#FFF5DC"/>
+            <rect x="0" y="148" width="163" height="32" fill="#5A9E48"/>
+            <ellipse cx="81" cy="136" rx="55" ry="34" fill="#F5A623"/>
+            <ellipse cx="81" cy="143" rx="30" ry="22" fill="#FCBFA0"/>
+            <ellipse cx="81" cy="76" rx="48" ry="44" fill="#F5A623"/>
+            <polygon points="36,44 24,20 52,36" fill="#F5A623"/><polygon points="126,44 139,20 111,36" fill="#F5A623"/>
+            <polygon points="36,42 28,24 48,36" fill="#FCBFA0" opacity="0.7"/><polygon points="126,42 134,24 114,36" fill="#FCBFA0" opacity="0.7"/>
+            <path d="M55 70 Q62 64 69 70" fill="none" stroke="#C8C0B0" stroke-width="2" stroke-linecap="round"/>
+            <path d="M93 70 Q100 64 107 70" fill="none" stroke="#C8C0B0" stroke-width="2" stroke-linecap="round"/>
+            <path d="M76 80 Q81 84 86 80 Q81 76 76 80Z" fill="#C84820"/>
+            <path d="M68 88 Q81 99 94 88" fill="none" stroke="#A83010" stroke-width="2" stroke-linecap="round"/>
+            <line x1="42" y1="80" x2="66" y2="82" stroke="#C8A060" stroke-width="1.2" stroke-linecap="round" opacity="0.7"/>
+            <line x1="96" y1="82" x2="120" y2="80" stroke="#C8A060" stroke-width="1.2" stroke-linecap="round" opacity="0.7"/>
+            <ellipse cx="50" cy="162" rx="16" ry="9" fill="#E8B030"/>
+            <ellipse cx="112" cy="162" rx="16" ry="9" fill="#E8B030"/>
+          </svg>
+          <div class="card-overlay-bottom">
+            <div class="card-name">Happy Cat</div>
+            <div class="card-tier-row">
+              <div class="tier-dot" style="background:#6BB8E8;"></div>
+              <span class="tier-lbl" style="color:#6BB8E8;">Explorer</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Success overlay with scrim -->
+    <div class="scrim" style="background: rgba(27,42,74,0.40);"></div>
+
+    <!-- Confetti -->
+    <div class="confetti" style="top: 150px; left: 80px;">
+      <div class="confetti-piece coral" style="animation-delay: 0.1s;"></div>
+    </div>
+    <div class="confetti" style="top: 140px; right: 100px;">
+      <div class="confetti-piece teal" style="animation-delay: 0.15s;"></div>
+    </div>
+    <div class="confetti" style="top: 180px; left: 60px;">
+      <div class="confetti-piece gold" style="animation-delay: 0.2s;"></div>
+    </div>
+    <div class="confetti" style="top: 160px; right: 80px;">
+      <div class="confetti-piece lavender" style="animation-delay: 0.05s;"></div>
+    </div>
+    <div class="confetti" style="top: 200px; left: 150px;">
+      <div class="confetti-piece coral" style="animation-delay: 0.25s;"></div>
+    </div>
+    <div class="confetti" style="top: 120px; right: 60px;">
+      <div class="confetti-piece teal" style="animation-delay: 0.12s;"></div>
+    </div>
+
+    <!-- Success card -->
+    <div class="success-overlay">
+      <div class="success-card">
+        <div class="success-emoji">🎉</div>
+        <div class="success-title">Everything is unlocked!</div>
+        <div class="success-hint">Tap anywhere to continue</div>
+      </div>
+    </div>
+
+  </div>
+  <div class="device-label">Purchase success!</div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════
+     IPHONE 4: RESTORE — NOTHING FOUND
+     ════════════════════════════════════════════════════════ -->
+<div class="device-wrap">
+  <div class="iphone">
+    <div class="screen">
+
+      <!-- Status bar -->
+      <div class="status-bar">
+        <span class="status-time">9:41</span>
+        <div class="status-icons">
+          <svg width="17" height="12" viewBox="0 0 17 12"><rect x="0" y="8" width="3" height="4" rx="0.8"/><rect x="4.5" y="5.5" width="3" height="6.5" rx="0.8"/><rect x="9" y="3" width="3" height="9" rx="0.8"/><rect x="13.5" y="0" width="3" height="12" rx="0.8"/></svg>
+          <svg width="16" height="12" viewBox="0 0 16 12" fill="none" stroke="#1B2A4A" stroke-width="1.8" stroke-linecap="round"><path d="M1 4.5C3.8 1.8 8 1.8 10.5 4" opacity="0.3"/><path d="M2.8 6.2C4.8 4.3 7.4 4 9.2 5.5"/><path d="M4.8 7.8C5.8 6.9 7.2 6.9 8.2 7.8"/><circle cx="6.5" cy="10" r="1.2" fill="#1B2A4A" stroke="none"/></svg>
+          <svg width="25" height="12" viewBox="0 0 25 12" fill="#1B2A4A"><rect x="0" y="1" width="21" height="10" rx="2.5" stroke="#1B2A4A" stroke-width="1.2" fill="none"/><rect x="1.5" y="2.5" width="16" height="7" rx="1.5"/><path d="M22.5 4v4a2 2 0 0 0 0-4z"/></svg>
+        </div>
+      </div>
+
+      <!-- Top bar -->
+      <div class="top-bar">
+        <div class="bar-back"><svg viewBox="0 0 18 18"><polyline points="12,3 5,9 12,15"/></svg></div>
+        <span class="bar-title">PaperBrush</span>
+        <div class="bar-right">
+          <div class="bar-icon teal">
+            <svg width="22" height="20" viewBox="0 0 22 20">
+              <rect x="4" y="5" width="14" height="11" rx="2.5" stroke-width="1.7"/>
+              <rect x="2" y="3" width="14" height="11" rx="2.5" stroke-width="1.7" opacity="0.45"/>
+              <path d="M6 13 L9 8.5 L12 11.5 L14 9.5 L17 13Z" stroke-width="1.4" fill="none" opacity="0.7"/>
+              <circle cx="14.5" cy="8" r="1.2" fill="none" stroke-width="1.4" opacity="0.7"/>
+            </svg>
+          </div>
+          <div class="bar-icon muted">
+            <svg width="20" height="20" viewBox="0 0 20 20">
+              <circle cx="10" cy="10" r="3" stroke-width="1.7"/>
+              <path d="M10 1v2M10 17v2M1 10h2M17 10h2M3.22 3.22l1.42 1.42M15.36 15.36l1.42 1.42M3.22 16.78l1.42-1.42M15.36 4.64l1.42-1.42" stroke-width="1.7" stroke-linecap="round"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pills -->
+      <div class="pills-row">
+        <div class="pill selected">🐾 Animals</div>
+        <div class="pill">🚗 Vehicles</div>
+      </div>
+
+      <!-- Section header -->
+      <div class="section-header">Animals</div>
+
+      <!-- Grid — 4 cards -->
+      <div class="page-grid">
+        <div class="g-card">
+          <svg viewBox="0 0 163 180" fill="none" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
+            <defs>
+              <radialGradient id="s1g4" cx="50%" cy="30%" r="70%"><stop offset="0%" stop-color="#A8D4E8"/><stop offset="100%" stop-color="#78B8D0"/></radialGradient>
+              <radialGradient id="m1g4" cx="50%" cy="40%" r="55%"><stop offset="0%" stop-color="#D4811A"/><stop offset="100%" stop-color="#A05C08"/></radialGradient>
+            </defs>
+            <rect width="163" height="180" fill="url(#s1g4)"/>
+            <circle cx="130" cy="28" r="18" fill="#FFF5B0" opacity="0.85"/>
+            <rect x="0" y="142" width="163" height="38" fill="#4E8E3C"/>
+            <ellipse cx="81" cy="142" rx="110" ry="30" fill="#5A9E48"/>
+            <ellipse cx="81" cy="90" rx="54" ry="52" fill="url(#m1g4)"/>
+            <ellipse cx="81" cy="148" rx="48" ry="28" fill="#E8B030"/>
+            <ellipse cx="81" cy="85" rx="40" ry="38" fill="#F5D060"/>
+            <path d="M46 66 L36 48 L56 58Z" fill="#E8A828"/>
+            <path d="M116 66 L126 48 L106 58Z" fill="#E8A828"/>
+            <ellipse cx="66" cy="82" rx="9" ry="8" fill="#FFFFF0"/>
+            <ellipse cx="96" cy="82" rx="9" ry="8" fill="#FFFFF0"/>
+            <ellipse cx="66" cy="83" rx="6" ry="6" fill="#C87820"/><ellipse cx="96" cy="83" rx="6" ry="6" fill="#C87820"/>
+            <ellipse cx="66" cy="84" rx="3.5" ry="4" fill="#1B2A4A"/><ellipse cx="96" cy="84" rx="3.5" ry="4" fill="#1B2A4A"/>
+            <circle cx="68" cy="80" r="2" fill="white" opacity="0.9"/><circle cx="98" cy="80" r="2" fill="white" opacity="0.9"/>
+            <path d="M74 94 Q81 100 88 94 Q81 88 74 94Z" fill="#C84820"/>
+            <path d="M70 104 Q81 115 92 104" fill="none" stroke="#A83010" stroke-width="2" stroke-linecap="round"/>
+            <line x1="44" y1="96" x2="64" y2="98" stroke="#C8A060" stroke-width="1.2" stroke-linecap="round" opacity="0.7"/>
+            <line x1="98" y1="98" x2="118" y2="96" stroke="#C8A060" stroke-width="1.2" stroke-linecap="round" opacity="0.7"/>
+          </svg>
+          <div class="card-overlay-bottom">
+            <div class="card-name">Sleeping Lion</div>
+            <div class="card-tier-row">
+              <div class="tier-dot" style="background:#6BB8E8;"></div>
+              <span class="tier-lbl" style="color:#6BB8E8;">Explorer</span>
+            </div>
+          </div>
+        </div>
+        <div class="g-card">
+          <svg viewBox="0 0 163 180" fill="none" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
+            <rect width="163" height="180" fill="#D4EAF8"/>
+            <rect x="0" y="148" width="163" height="32" fill="#7CB686"/>
+            <circle cx="46" cy="90" r="28" fill="#C8954A"/>
+            <ellipse cx="46" cy="122" rx="28" ry="18" fill="#C8954A"/>
+            <ellipse cx="46" cy="126" rx="16" ry="12" fill="#E8C07A" opacity="0.6"/>
+            <path d="M22 80 Q14 84 16 100 Q18 108 26 106" fill="#A87030" stroke="#8B5C20" stroke-width="1.5"/>
+            <path d="M70 80 Q78 84 76 100 Q74 108 66 106" fill="#A87030" stroke="#8B5C20" stroke-width="1.5"/>
+            <circle cx="38" cy="86" r="5.5" fill="#2E1A08"/><circle cx="54" cy="86" r="5.5" fill="#2E1A08"/>
+            <circle cx="40" cy="84" r="2" fill="white" opacity="0.9"/><circle cx="56" cy="84" r="2" fill="white" opacity="0.9"/>
+            <ellipse cx="46" cy="93" rx="4.5" ry="3" fill="#1A0A00"/>
+            <path d="M38 98 Q46 106 54 98" fill="none" stroke="#1A0A00" stroke-width="1.8" stroke-linecap="round"/>
+            <circle cx="116" cy="88" r="26" fill="#6BB8E8"/>
+            <ellipse cx="116" cy="118" rx="24" ry="18" fill="#6BB8E8"/>
+            <path d="M94 78 L88 60 L104 72" fill="#4A98CC" stroke="#3878AA" stroke-width="1.5" stroke-linejoin="round"/>
+            <path d="M138 78 Q146 82 144 96 Q142 102 134 100" fill="#4A98CC" stroke="#3878AA" stroke-width="1.5"/>
+            <circle cx="108" cy="84" r="5" fill="#1B2A4A"/><circle cx="124" cy="84" r="5" fill="#1B2A4A"/>
+            <circle cx="110" cy="82" r="1.8" fill="white" opacity="0.9"/><circle cx="126" cy="82" r="1.8" fill="white" opacity="0.9"/>
+            <ellipse cx="116" cy="93" rx="4" ry="2.8" fill="#1B2A4A"/>
+            <path d="M109 98 Q116 105 123 98" fill="none" stroke="#1B2A4A" stroke-width="1.8" stroke-linecap="round"/>
+            <path d="M81 55 C81 51 76 49 76 53 C76 57 81 61 81 61 C81 61 86 57 86 53 C86 49 81 51 81 55Z" fill="#F06449" opacity="0.85"/>
+          </svg>
+          <div class="badge-new">NEW</div>
+          <div class="card-overlay-bottom">
+            <div class="card-name">Puppy Friends</div>
+            <div class="card-tier-row">
+              <div class="tier-dot" style="background:#FCBFA0;"></div>
+              <span class="tier-lbl" style="color:#D4811A;">Starter</span>
+            </div>
+          </div>
+        </div>
+        <div class="g-card">
+          <div class="locked-thumb">
+            <svg viewBox="0 0 163 180" fill="none" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice" style="width:100%;height:100%;display:block;">
+              <rect width="163" height="180" fill="#E8F0E0"/>
+              <path d="M0 100 Q20 75 40 90 Q20 68 30 48 Q50 58 45 78 Q60 58 70 74 Q65 55 80 45 Q90 62 80 82 Q100 67 110 87 L110 130 Z" fill="none" stroke="#C8C0B0" stroke-width="2.5" stroke-linejoin="round" opacity="0.5"/>
+              <path d="M38 62 Q38 36 60 34 Q82 36 82 62 Q82 78 60 78 Q38 78 38 62Z" fill="none" stroke="#C8C0B0" stroke-width="2.5"/>
+              <polygon points="44,44 36,22 54,38" fill="none" stroke="#C8C0B0" stroke-width="2" stroke-linejoin="round"/>
+              <polygon points="76,44 84,22 66,38" fill="none" stroke="#C8C0B0" stroke-width="2" stroke-linejoin="round"/>
+              <ellipse cx="50" cy="56" rx="4" ry="4.5" fill="none" stroke="#C8C0B0" stroke-width="1.8"/>
+              <ellipse cx="70" cy="56" rx="4" ry="4.5" fill="none" stroke="#C8C0B0" stroke-width="1.8"/>
+              <ellipse cx="60" cy="67" rx="8" ry="6" fill="none" stroke="#C8C0B0" stroke-width="1.8"/>
+              <ellipse cx="81" cy="120" rx="45" ry="32" fill="none" stroke="#C8C0B0" stroke-width="2.5"/>
+              <path d="M84 76 Q106 62 108 78 Q110 92 96 96 Q88 98 84 90" fill="none" stroke="#C8C0B0" stroke-width="2.5" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <div class="lock-overlay">
+            <div class="lock-icon">
+              <svg viewBox="0 0 22 26">
+                <path d="M5 12V8 C5 4.7 7.7 2 11 2 C14.3 2 17 4.7 17 8 V12" stroke="#666" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+                <rect x="2" y="11" width="18" height="13" rx="3" fill="#666666"/>
+                <circle cx="11" cy="17" r="2.5" fill="white" opacity="0.7"/>
+                <rect x="10" y="18.5" width="2" height="3" rx="1" fill="white" opacity="0.7"/>
+              </svg>
+            </div>
+          </div>
+          <div class="card-overlay-bottom">
+            <div class="card-name">Jungle Fox</div>
+            <div class="card-tier-row">
+              <div class="tier-dot" style="background:#B8A9E8;"></div>
+              <span class="tier-lbl" style="color:#9C8DD0;">Creator</span>
+            </div>
+          </div>
+        </div>
+        <div class="g-card">
+          <svg viewBox="0 0 163 180" fill="none" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
+            <rect width="163" height="180" fill="#FFF5DC"/>
+            <rect x="0" y="148" width="163" height="32" fill="#5A9E48"/>
+            <ellipse cx="81" cy="136" rx="55" ry="34" fill="#F5A623"/>
+            <ellipse cx="81" cy="143" rx="30" ry="22" fill="#FCBFA0"/>
+            <ellipse cx="81" cy="76" rx="48" ry="44" fill="#F5A623"/>
+            <polygon points="36,44 24,20 52,36" fill="#F5A623"/><polygon points="126,44 139,20 111,36" fill="#F5A623"/>
+            <polygon points="36,42 28,24 48,36" fill="#FCBFA0" opacity="0.7"/><polygon points="126,42 134,24 114,36" fill="#FCBFA0" opacity="0.7"/>
+            <path d="M55 70 Q62 64 69 70" fill="none" stroke="#C8C0B0" stroke-width="2" stroke-linecap="round"/>
+            <path d="M93 70 Q100 64 107 70" fill="none" stroke="#C8C0B0" stroke-width="2" stroke-linecap="round"/>
+            <path d="M76 80 Q81 84 86 80 Q81 76 76 80Z" fill="#C84820"/>
+            <path d="M68 88 Q81 99 94 88" fill="none" stroke="#A83010" stroke-width="2" stroke-linecap="round"/>
+            <line x1="42" y1="80" x2="66" y2="82" stroke="#C8A060" stroke-width="1.2" stroke-linecap="round" opacity="0.7"/>
+            <line x1="96" y1="82" x2="120" y2="80" stroke="#C8A060" stroke-width="1.2" stroke-linecap="round" opacity="0.7"/>
+            <ellipse cx="50" cy="162" rx="16" ry="9" fill="#E8B030"/>
+            <ellipse cx="112" cy="162" rx="16" ry="9" fill="#E8B030"/>
+          </svg>
+          <div class="card-overlay-bottom">
+            <div class="card-name">Happy Cat</div>
+            <div class="card-tier-row">
+              <div class="tier-dot" style="background:#6BB8E8;"></div>
+              <span class="tier-lbl" style="color:#6BB8E8;">Explorer</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Scrim -->
+    <div class="scrim"></div>
+
+    <!-- Bottom sheet with restore message -->
+    <div class="sheet">
+      <div class="drag-handle"></div>
+      <div class="sheet-body">
+        <div class="gap-16"></div>
+        <div class="sheet-emoji">🎨</div>
+        <div class="gap-8"></div>
+        <div class="sheet-headline">Unlock all the colors!</div>
+        <div class="gap-12"></div>
+        <div class="sheet-body-text">
+          Get 200+ coloring pages, all brushes,<br>
+          and animations. One payment.<br>
+          No subscriptions. No ads. Ever.
+        </div>
+        <div class="gap-24"></div>
+
+        <!-- Button -->
+        <button class="btn-unlock">
+          <span class="btn-unlock-label">Unlock Everything</span>
+          <div class="price-divider"></div>
+          <span class="btn-unlock-price">$14.99</span>
+        </button>
+
+        <div class="gap-12"></div>
+        <div class="btn-restore">Restore Purchase</div>
+
+        <!-- Restore message -->
+        <div class="restore-message">No previous purchases found for this Apple ID.</div>
+
+        <div class="gap-16"></div>
+        <div class="btn-dismiss">
+          <span class="btn-dismiss-x">✕</span>
+          <span>No thanks, keep exploring free</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+  <div class="device-label">Restore: nothing found</div>
+</div>
+
+</body>
+</html>

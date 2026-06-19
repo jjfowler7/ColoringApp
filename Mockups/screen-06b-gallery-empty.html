@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=390px, initial-scale=1.0" />
+  <title>PaperBrush — Gallery Empty State</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800&family=Nunito+Sans:wght@400;600&display=swap" rel="stylesheet" />
+  <style>
+    /* ─── Reset ─────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    /* ─── Design tokens ──────────────────────────────────── */
+    :root {
+      --cream:     #FFF8F0;
+      --canvas-bg: #FFFDF9;
+      --teal:      #0EA5A0;
+      --navy:      #1B2A4A;
+      --coral:     #F06449;
+      --gold:      #F5A623;
+      --sage:      #7CB686;
+      --lavender:  #B8A9E8;
+      --sky:       #6BB8E8;
+      --peach:     #FCBFA0;
+      --secondary: #666666;
+      --divider:   #E8E0D8;
+    }
+
+    /* ─── Page shell ─────────────────────────────────────── */
+    html, body {
+      width: 100%;
+      min-height: 100%;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 48px;
+      padding: 48px;
+      align-items: flex-start;
+      justify-content: center;
+      background: #C8C0AE;
+      font-family: 'Nunito Sans', sans-serif;
+    }
+
+    .device-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+    }
+    .device-label {
+      font-family: 'Nunito Sans', sans-serif;
+      font-size: 13px;
+      color: #888;
+      letter-spacing: 0.04em;
+      max-width: 220px;
+      text-align: center;
+    }
+
+    /* ─── iPhone shell ───────────────────────────────────── */
+    .iphone {
+      width: 390px;
+      height: 844px;
+      border-radius: 50px;
+      background: #1a1a1a;
+      box-shadow: 0 24px 80px rgba(0,0,0,0.45), inset 0 0 0 2px #3a3a3a;
+      position: relative;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+    .iphone::before {
+      content: '';
+      position: absolute;
+      top: 12px; left: 50%;
+      transform: translateX(-50%);
+      width: 120px; height: 34px;
+      background: #1a1a1a;
+      border-radius: 20px;
+      z-index: 30;
+    }
+
+    /* ─── Screen ─────────────────────────────────────────── */
+    .screen {
+      position: absolute;
+      inset: 0;
+      border-radius: 48px;
+      overflow: hidden;
+      background: var(--cream);
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ─── Status bar ─────────────────────────────────────── */
+    .status-bar {
+      height: 54px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      padding: 0 28px 8px;
+      background: var(--canvas-bg);
+      z-index: 20;
+    }
+    .status-time {
+      font-family: 'Nunito', sans-serif;
+      font-weight: 700;
+      font-size: 15px;
+      color: var(--navy);
+    }
+    .status-icons { display: flex; align-items: center; gap: 5px; }
+    .status-icons svg { fill: var(--navy); }
+
+    /* ─── TOP BAR ────────────────────────────────────────── */
+    .top-bar {
+      height: 44px;
+      flex-shrink: 0;
+      background: var(--canvas-bg);
+      border-bottom: 1px solid var(--divider);
+      display: flex;
+      align-items: center;
+      padding: 0 16px;
+      position: relative;
+      z-index: 10;
+      justify-content: space-between;
+    }
+    .bar-back {
+      width: 44px; height: 44px;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+      border-radius: 9999px;
+    }
+    .bar-back svg {
+      width: 18px; height: 18px;
+      stroke: var(--teal);
+      stroke-width: 2.5;
+      stroke-linecap: round; stroke-linejoin: round;
+      fill: none;
+    }
+    .bar-title {
+      font-family: 'Nunito', sans-serif;
+      font-weight: 700;
+      font-size: 18px;
+      color: var(--navy);
+      letter-spacing: -0.2px;
+    }
+    .bar-right {
+      width: 44px; height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      border-radius: 9999px;
+    }
+    .bar-right svg {
+      width: 20px; height: 20px;
+      stroke: var(--teal);
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      fill: none;
+    }
+
+    /* ─── SCROLLABLE BODY ────────────────────────────────── */
+    .scroll-body {
+      flex: 1;
+      overflow-y: auto;
+      overflow-x: hidden;
+      scrollbar-width: none;
+      min-height: 0;
+    }
+    .scroll-body::-webkit-scrollbar { display: none; }
+
+    /* ─── Empty state ────────────────────────────────────── */
+    .empty-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      flex: 1;
+      padding: 40px 32px;
+      text-align: center;
+    }
+    .empty-icon {
+      width: 160px;
+      height: 160px;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .empty-title {
+      font-family: 'Nunito', sans-serif;
+      font-weight: 700;
+      font-size: 22px;
+      color: var(--navy);
+      margin-bottom: 8px;
+    }
+    .empty-subtitle {
+      font-family: 'Nunito Sans', sans-serif;
+      font-weight: 400;
+      font-size: 15px;
+      color: var(--secondary);
+      margin-bottom: 32px;
+      line-height: 1.4;
+    }
+    .browse-btn {
+      background: var(--teal);
+      color: #ffffff;
+      font-family: 'Nunito', sans-serif;
+      font-weight: 700;
+      font-size: 16px;
+      border: none;
+      border-radius: 10px;
+      padding: 0 24px;
+      height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      width: calc(100% - 64px);
+      max-width: 280px;
+      transition: transform 0.14s cubic-bezier(0.34,1.56,0.64,1),
+                  box-shadow 0.14s ease;
+      box-shadow: 0 4px 12px rgba(14,165,160,0.25);
+    }
+    .browse-btn:active {
+      transform: scale(0.96);
+    }
+    .browse-btn:hover {
+      box-shadow: 0 6px 16px rgba(14,165,160,0.32);
+    }
+
+    /* ─── PAGE GRID (for context menu example) ────────────– */
+    .page-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      padding: 16px 16px 32px;
+    }
+
+    .page-card {
+      background: var(--canvas-bg);
+      border-radius: 16px;
+      box-shadow: 0 2px 8px rgba(27,42,74,0.06);
+      overflow: hidden;
+      cursor: pointer;
+      position: relative;
+      transition: transform 0.18s cubic-bezier(0.34,1.56,0.64,1),
+                  box-shadow 0.18s ease;
+    }
+    .page-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 16px rgba(27,42,74,0.10);
+    }
+    .page-card.pressed {
+      transform: scale(1.02);
+      box-shadow: 0 8px 24px rgba(27,42,74,0.15);
+    }
+
+    .card-thumb {
+      width: 100%;
+      aspect-ratio: 3 / 3.6;
+      background: #ffffff;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .card-thumb svg {
+      width: 86%;
+      height: 86%;
+    }
+
+    .card-info {
+      padding: 10px 12px 11px;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+    .card-title {
+      font-family: 'Nunito', sans-serif;
+      font-weight: 600;
+      font-size: 13px;
+      color: var(--navy);
+      line-height: 1.2;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .card-tier {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .tier-dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .tier-label {
+      font-family: 'Nunito Sans', sans-serif;
+      font-weight: 400;
+      font-size: 11px;
+      line-height: 1;
+    }
+
+    /* ─── Context Menu ───────────────────────────────────── */
+    .context-menu {
+      position: absolute;
+      background: #ffffff;
+      border-radius: 14px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+      z-index: 20;
+      min-width: 180px;
+      overflow: hidden;
+    }
+
+    .context-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.15);
+      backdrop-filter: blur(4px);
+      z-index: 15;
+    }
+
+    .context-item {
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      height: 44px;
+      font-family: 'Nunito Sans', sans-serif;
+      font-size: 16px;
+      color: var(--navy);
+      cursor: pointer;
+      border-bottom: 0.5px solid var(--divider);
+    }
+    .context-item:last-child {
+      border-bottom: none;
+    }
+    .context-item.destructive {
+      color: var(--coral);
+    }
+
+    .context-icon {
+      width: 18px;
+      height: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+    }
+
+    /* ─── Bottom safe area ───────────────────────────────── */
+    .safe-area {
+      height: 34px; flex-shrink: 0;
+      background: var(--cream);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .home-indicator {
+      width: 120px; height: 5px;
+      background: var(--navy);
+      border-radius: 9999px;
+      opacity: 0.18;
+    }
+
+    /* ─── Entrance animations ────────────────────────────– */
+    @keyframes fadeDown { from { opacity:0; transform:translateY(-8px) } to { opacity:1; transform:translateY(0) } }
+    @keyframes fadeIn   { from { opacity:0 } to { opacity:1 } }
+    @keyframes popIn    { from { opacity:0; transform:scale(0.94) } to { opacity:1; transform:scale(1) } }
+
+    .top-bar       { animation: fadeDown 0.3s ease 0.05s both; }
+
+    .page-card:nth-child(1) { animation: popIn 0.4s cubic-bezier(0.34,1.3,0.64,1) 0.22s both; }
+    .page-card:nth-child(2) { animation: popIn 0.4s cubic-bezier(0.34,1.3,0.64,1) 0.28s both; }
+    .page-card:nth-child(3) { animation: popIn 0.4s cubic-bezier(0.34,1.3,0.64,1) 0.34s both; }
+    .page-card:nth-child(4) { animation: popIn 0.4s cubic-bezier(0.34,1.3,0.64,1) 0.40s both; }
+  </style>
+</head>
+<body>
+
+<!-- ════════════════════════════════════════════════════════════════ -->
+<!-- iPhone 1: Gallery Empty State -->
+<!-- ════════════════════════════════════════════════════════════════ -->
+<div class="device-wrap">
+  <div class="iphone">
+    <div class="screen">
+
+      <!-- Status bar -->
+      <div class="status-bar">
+        <span class="status-time">9:41</span>
+        <div class="status-icons">
+          <svg width="17" height="12" viewBox="0 0 17 12"><rect x="0" y="8" width="3" height="4" rx="0.8"/><rect x="4.5" y="5.5" width="3" height="6.5" rx="0.8"/><rect x="9" y="3" width="3" height="9" rx="0.8"/><rect x="13.5" y="0" width="3" height="12" rx="0.8"/></svg>
+          <svg width="16" height="12" viewBox="0 0 16 12" fill="none" stroke="#1B2A4A" stroke-width="1.8" stroke-linecap="round"><path d="M1 4.5C3.8 1.8 8 1.8 10.5 4" opacity="0.3"/><path d="M2.8 6.2C4.8 4.3 7.4 4 9.2 5.5"/><path d="M4.8 7.8C5.8 6.9 7.2 6.9 8.2 7.8"/><circle cx="6.5" cy="10" r="1.2" fill="#1B2A4A" stroke="none"/></svg>
+          <svg width="25" height="12" viewBox="0 0 25 12" fill="#1B2A4A"><rect x="0" y="1" width="21" height="10" rx="2.5" stroke="#1B2A4A" stroke-width="1.2" fill="none"/><rect x="1.5" y="2.5" width="16" height="7" rx="1.5"/><path d="M22.5 4v4a2 2 0 0 0 0-4z"/></svg>
+        </div>
+      </div>
+
+      <!-- ══ TOP BAR ══ -->
+      <div class="top-bar">
+        <div class="bar-back">
+          <svg viewBox="0 0 18 18"><polyline points="12,3 5,9 12,15"/></svg>
+        </div>
+        <span class="bar-title">My Gallery</span>
+        <div class="bar-right">
+          <svg viewBox="0 0 20 20"><path d="M10 4 v12 M4 10 h12" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+      </div>
+
+      <!-- ══ SCROLLABLE BODY ══ -->
+      <div class="scroll-body">
+
+        <!-- Empty state -->
+        <div class="empty-state">
+          <div class="empty-icon">
+            <svg width="160" height="160" viewBox="0 0 160 160" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <!-- Easel legs -->
+              <line x1="40" y1="145" x2="25" y2="30" stroke="#C8C0B0" stroke-width="4" stroke-linecap="round"/>
+              <line x1="120" y1="145" x2="135" y2="30" stroke="#C8C0B0" stroke-width="4" stroke-linecap="round"/>
+              <line x1="40" y1="145" x2="120" y2="145" stroke="#C8C0B0" stroke-width="4" stroke-linecap="round"/>
+              <!-- Canvas -->
+              <rect x="45" y="35" width="70" height="85" rx="4" fill="none" stroke="#C8C0B0" stroke-width="3"/>
+              <!-- Watercolor washes on canvas -->
+              <rect x="48" y="40" width="30" height="28" rx="3" fill="#FCBFA0" opacity="0.4"/>
+              <ellipse cx="90" cy="65" rx="16" ry="18" fill="#6BB8E8" opacity="0.35"/>
+              <path d="M48 75 Q52 85 65 80 Q70 92 80 85" fill="none" stroke="#FCBFA0" stroke-width="2" opacity="0.35" stroke-linecap="round"/>
+              <!-- Paintbrush leaning -->
+              <line x1="125" y1="110" x2="145" y2="40" stroke="#C8C0B0" stroke-width="4.5" stroke-linecap="round"/>
+              <circle cx="145" cy="37" r="5.5" fill="#C8C0B0"/>
+              <!-- Brush bristles -->
+              <line x1="143" y1="40" x2="147" y2="32" stroke="#C8C0B0" stroke-width="2" opacity="0.6" stroke-linecap="round"/>
+              <line x1="145" y1="38" x2="150" y2="28" stroke="#C8C0B0" stroke-width="2" opacity="0.6" stroke-linecap="round"/>
+              <line x1="147" y1="40" x2="153" y2="32" stroke="#C8C0B0" stroke-width="2" opacity="0.6" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <div class="empty-title">Your gallery is empty!</div>
+          <div class="empty-subtitle">Start coloring to fill it up</div>
+          <button class="browse-btn">Browse Pages</button>
+        </div>
+
+      </div><!-- /scroll-body -->
+
+      <!-- Bottom safe area -->
+      <div class="safe-area"><div class="home-indicator"></div></div>
+
+    </div><!-- /screen -->
+  </div><!-- /iphone -->
+  <div class="device-label">First visit — no artworks yet</div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════ -->
+<!-- iPhone 2: Gallery with Context Menu -->
+<!-- ════════════════════════════════════════════════════════════════ -->
+<div class="device-wrap">
+  <div class="iphone">
+    <div class="screen">
+
+      <!-- Status bar -->
+      <div class="status-bar">
+        <span class="status-time">9:41</span>
+        <div class="status-icons">
+          <svg width="17" height="12" viewBox="0 0 17 12"><rect x="0" y="8" width="3" height="4" rx="0.8"/><rect x="4.5" y="5.5" width="3" height="6.5" rx="0.8"/><rect x="9" y="3" width="3" height="9" rx="0.8"/><rect x="13.5" y="0" width="3" height="12" rx="0.8"/></svg>
+          <svg width="16" height="12" viewBox="0 0 16 12" fill="none" stroke="#1B2A4A" stroke-width="1.8" stroke-linecap="round"><path d="M1 4.5C3.8 1.8 8 1.8 10.5 4" opacity="0.3"/><path d="M2.8 6.2C4.8 4.3 7.4 4 9.2 5.5"/><path d="M4.8 7.8C5.8 6.9 7.2 6.9 8.2 7.8"/><circle cx="6.5" cy="10" r="1.2" fill="#1B2A4A" stroke="none"/></svg>
+          <svg width="25" height="12" viewBox="0 0 25 12" fill="#1B2A4A"><rect x="0" y="1" width="21" height="10" rx="2.5" stroke="#1B2A4A" stroke-width="1.2" fill="none"/><rect x="1.5" y="2.5" width="16" height="7" rx="1.5"/><path d="M22.5 4v4a2 2 0 0 0 0-4z"/></svg>
+        </div>
+      </div>
+
+      <!-- ══ TOP BAR ══ -->
+      <div class="top-bar">
+        <div class="bar-back">
+          <svg viewBox="0 0 18 18"><polyline points="12,3 5,9 12,15"/></svg>
+        </div>
+        <span class="bar-title">My Gallery</span>
+        <div class="bar-right">
+          <svg viewBox="0 0 20 20"><path d="M10 4 v12 M4 10 h12" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+      </div>
+
+      <!-- ══ SCROLLABLE BODY ══ -->
+      <div class="scroll-body">
+
+        <!-- 2-column grid with images -->
+        <div class="page-grid">
+
+          <!-- Card 1: Sleeping Lion (PRESSED for context menu) -->
+          <div class="page-card pressed">
+            <div class="card-thumb">
+              <svg viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="60" cy="65" r="38" fill="none" stroke="#C8C0B0" stroke-width="3.5"/>
+                <circle cx="60" cy="65" r="30" fill="none" stroke="#C8C0B0" stroke-width="2"/>
+                <ellipse cx="60" cy="90" rx="28" ry="18" fill="none" stroke="#C8C0B0" stroke-width="3"/>
+                <ellipse cx="60" cy="60" rx="22" ry="20" fill="none" stroke="#C8C0B0" stroke-width="3"/>
+                <path d="M50 57 Q54 53 58 57" fill="none" stroke="#C8C0B0" stroke-width="2.2" stroke-linecap="round"/>
+                <path d="M62 57 Q66 53 70 57" fill="none" stroke="#C8C0B0" stroke-width="2.2" stroke-linecap="round"/>
+                <path d="M88 82 Q102 75 100 88 Q98 96 90 94" fill="none" stroke="#C8C0B0" stroke-width="2.5" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <div class="card-info">
+              <div class="card-title">Sleeping Lion</div>
+              <div class="card-tier">
+                <div class="tier-dot" style="background:#6BB8E8;"></div>
+                <span class="tier-label" style="color:#6BB8E8;">Explorer</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card 2: Puppy Friends -->
+          <div class="page-card">
+            <div class="card-thumb">
+              <svg viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <ellipse cx="38" cy="82" rx="20" ry="15" fill="none" stroke="#C8C0B0" stroke-width="3"/>
+                <circle cx="38" cy="58" r="17" fill="none" stroke="#C8C0B0" stroke-width="3"/>
+                <path d="M57 32 C57 28 52 26 52 30 C52 34 57 38 57 38 C57 38 62 34 62 30 C62 26 57 28 57 32Z" fill="none" stroke="#C8C0B0" stroke-width="1.8" stroke-linejoin="round"/>
+                <ellipse cx="84" cy="82" rx="20" ry="15" fill="none" stroke="#C8C0B0" stroke-width="3"/>
+                <circle cx="84" cy="56" r="17" fill="none" stroke="#C8C0B0" stroke-width="3"/>
+              </svg>
+            </div>
+            <div class="card-info">
+              <div class="card-title">Puppy Friends</div>
+              <div class="card-tier">
+                <div class="tier-dot" style="background:#FCBFA0;"></div>
+                <span class="tier-label" style="color:#D4811A;">Starter</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card 3: Happy Cat -->
+          <div class="page-card">
+            <div class="card-thumb">
+              <svg viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <ellipse cx="60" cy="88" rx="28" ry="22" fill="none" stroke="#C8C0B0" stroke-width="3"/>
+                <ellipse cx="60" cy="54" rx="24" ry="22" fill="none" stroke="#C8C0B0" stroke-width="3"/>
+                <polygon points="40,38 32,22 50,32" fill="none" stroke="#C8C0B0" stroke-width="2.5" stroke-linejoin="round"/>
+                <polygon points="80,38 88,22 70,32" fill="none" stroke="#C8C0B0" stroke-width="2.5" stroke-linejoin="round"/>
+                <path d="M52 63 Q60 70 68 63" fill="none" stroke="#C8C0B0" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <div class="card-info">
+              <div class="card-title">Happy Cat</div>
+              <div class="card-tier">
+                <div class="tier-dot" style="background:#6BB8E8;"></div>
+                <span class="tier-label" style="color:#6BB8E8;">Explorer</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card 4: Jungle Bird -->
+          <div class="page-card">
+            <div class="card-thumb">
+              <svg viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <!-- Bird body -->
+                <ellipse cx="60" cy="80" rx="22" ry="18" fill="none" stroke="#C8C0B0" stroke-width="3"/>
+                <!-- Bird head -->
+                <circle cx="60" cy="50" r="16" fill="none" stroke="#C8C0B0" stroke-width="3"/>
+                <!-- Beak -->
+                <path d="M73 52 L88 50 L73 56Z" fill="none" stroke="#C8C0B0" stroke-width="2.5" stroke-linejoin="round"/>
+                <!-- Wings -->
+                <path d="M42 75 Q30 70 28 85 Q30 90 45 88" fill="none" stroke="#C8C0B0" stroke-width="2.5" stroke-linecap="round"/>
+                <!-- Feathers on tail -->
+                <path d="M78 85 Q95 82 100 95" fill="none" stroke="#C8C0B0" stroke-width="2.5" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <div class="card-info">
+              <div class="card-title">Jungle Bird</div>
+              <div class="card-tier">
+                <div class="tier-dot" style="background:#B8A9E8;"></div>
+                <span class="tier-label" style="color:#9C8DD0;">Creator</span>
+              </div>
+            </div>
+          </div>
+
+        </div><!-- /page-grid -->
+
+      </div><!-- /scroll-body -->
+
+      <!-- ══ CONTEXT MENU BACKDROP ══ -->
+      <div class="context-backdrop"></div>
+
+      <!-- ══ CONTEXT MENU ══ -->
+      <div class="context-menu" style="top: 180px; left: 50%; transform: translateX(-50%);">
+        <div class="context-item">
+          <div class="context-icon">📤</div>
+          <span>Share</span>
+        </div>
+        <div class="context-item">
+          <div class="context-icon">🖨</div>
+          <span>Print</span>
+        </div>
+        <div class="context-item destructive">
+          <div class="context-icon">🗑</div>
+          <span>Delete</span>
+        </div>
+      </div>
+
+      <!-- Bottom safe area -->
+      <div class="safe-area"><div class="home-indicator"></div></div>
+
+    </div><!-- /screen -->
+  </div><!-- /iphone -->
+  <div class="device-label">Long-press context menu</div>
+</div>
+
+</body>
+</html>

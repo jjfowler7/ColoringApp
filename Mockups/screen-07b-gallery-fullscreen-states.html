@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=390px, initial-scale=1.0" />
+  <title>PaperBrush — Gallery Fullscreen States</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800&family=Nunito+Sans:wght@400;600&display=swap" rel="stylesheet" />
+  <style>
+    /* ─── Reset ─────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    /* ─── Design tokens ──────────────────────────────────── */
+    :root {
+      --cream:     #FFF8F0;
+      --canvas-bg: #FFFDF9;
+      --teal:      #0EA5A0;
+      --navy:      #1B2A4A;
+      --coral:     #F06449;
+      --gold:      #F5A623;
+      --sage:      #7CB686;
+      --lavender:  #B8A9E8;
+      --sky:       #6BB8E8;
+      --peach:     #FCBFA0;
+      --secondary: #666666;
+      --divider:   #E8E0D8;
+    }
+
+    /* ─── Page shell ─────────────────────────────────────── */
+    html, body {
+      width: 100%;
+      min-height: 100%;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 48px;
+      padding: 48px;
+      align-items: flex-start;
+      justify-content: center;
+      background: #C8C0AE;
+      font-family: 'Nunito Sans', sans-serif;
+    }
+
+    .device-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+    }
+    .device-label {
+      font-family: 'Nunito Sans', sans-serif;
+      font-size: 13px;
+      color: #888;
+      letter-spacing: 0.04em;
+      max-width: 220px;
+      text-align: center;
+    }
+
+    /* ─── iPhone shell ───────────────────────────────────── */
+    .iphone {
+      width: 390px;
+      height: 844px;
+      border-radius: 50px;
+      background: #1a1a1a;
+      box-shadow: 0 24px 80px rgba(0,0,0,0.45), inset 0 0 0 2px #3a3a3a;
+      position: relative;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+    .iphone::before {
+      content: '';
+      position: absolute;
+      top: 12px; left: 50%;
+      transform: translateX(-50%);
+      width: 120px; height: 34px;
+      background: #1a1a1a;
+      border-radius: 20px;
+      z-index: 30;
+    }
+
+    /* ─── Screen ─────────────────────────────────────────── */
+    .screen {
+      position: absolute;
+      inset: 0;
+      border-radius: 48px;
+      overflow: hidden;
+      background: #ffffff;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ─── Status bar ─────────────────────────────────────── */
+    .status-bar {
+      height: 54px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      padding: 0 28px 8px;
+      background: #ffffff;
+      border-bottom: 1px solid var(--divider);
+      z-index: 20;
+    }
+    .status-time {
+      font-family: 'Nunito', sans-serif;
+      font-weight: 700;
+      font-size: 15px;
+      color: var(--navy);
+    }
+    .status-icons { display: flex; align-items: center; gap: 5px; }
+    .status-icons svg { fill: var(--navy); }
+
+    /* ─── TOP BAR (Fullscreen viewer toolbar) ─────────────── */
+    .top-bar {
+      height: 44px;
+      flex-shrink: 0;
+      background: #ffffff;
+      border-bottom: 1px solid var(--divider);
+      display: flex;
+      align-items: center;
+      padding: 0 16px;
+      position: relative;
+      z-index: 10;
+      justify-content: space-between;
+    }
+    .bar-back {
+      width: 44px; height: 44px;
+      display: flex; align-items: center; justify-content: center;
+      margin: -16px 0 -16px -16px;
+      cursor: pointer;
+      border-radius: 9999px;
+    }
+    .bar-back svg {
+      width: 18px; height: 18px;
+      stroke: var(--navy);
+      stroke-width: 2.5;
+      stroke-linecap: round; stroke-linejoin: round;
+      fill: none;
+    }
+    .bar-icons {
+      margin-left: auto;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .bar-icon {
+      width: 44px; height: 44px;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; border-radius: 9999px;
+      margin: -16px -16px -16px 0;
+    }
+    .bar-icon svg {
+      width: 18px; height: 18px;
+      stroke: var(--navy);
+      stroke-width: 2;
+      stroke-linecap: round; stroke-linejoin: round;
+      fill: none;
+    }
+    .bar-icon.muted svg {
+      stroke: var(--secondary);
+      opacity: 0.4;
+    }
+
+    /* ─── ARTWORK AREA ───────────────────────────────────── */
+    .artwork-area {
+      flex: 1;
+      overflow-y: auto;
+      overflow-x: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #ffffff;
+    }
+    .artwork-area::-webkit-scrollbar { display: none; }
+
+    .artwork-container {
+      width: 100%;
+      aspect-ratio: 1 / 1.2;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 32px;
+    }
+
+    .artwork-svg {
+      width: 100%;
+      height: 100%;
+      border-radius: 12px;
+      box-shadow: 0 4px 16px rgba(27,42,74,0.12);
+    }
+
+    /* Half-colored variant */
+    .artwork-svg.half-colored {
+      background: linear-gradient(90deg, #e8e0d8 50%, transparent 50%);
+    }
+
+    /* ─── BOTTOM INFO STRIP ──────────────────────────────── */
+    .info-strip {
+      height: 120px;
+      flex-shrink: 0;
+      background: linear-gradient(
+        to bottom,
+        rgba(27,42,74,0.3) 0%,
+        rgba(27,42,74,0.7) 60%,
+        #1B2A4A 100%
+      );
+      padding: 24px 16px 16px;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      z-index: 5;
+    }
+
+    .info-title {
+      font-family: 'Nunito', sans-serif;
+      font-weight: 700;
+      font-size: 18px;
+      color: var(--navy);
+      margin-bottom: 4px;
+    }
+
+    .info-meta {
+      font-family: 'Nunito Sans', sans-serif;
+      font-weight: 400;
+      font-size: 13px;
+      color: var(--secondary);
+      margin-bottom: 8px;
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .info-bottom {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .info-status {
+      font-family: 'Nunito Sans', sans-serif;
+      font-weight: 400;
+      font-size: 13px;
+      color: var(--secondary);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .status-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--teal);
+    }
+
+    .continue-btn {
+      background: var(--teal);
+      color: #ffffff;
+      font-family: 'Nunito', sans-serif;
+      font-weight: 700;
+      font-size: 14px;
+      border: none;
+      border-radius: 10px;
+      padding: 8px 16px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: transform 0.14s cubic-bezier(0.34,1.56,0.64,1),
+                  box-shadow 0.14s ease;
+      box-shadow: 0 4px 12px rgba(14,165,160,0.25);
+    }
+    .continue-btn:active {
+      transform: scale(0.96);
+    }
+
+    /* ─── ALERT DIALOG ───────────────────────────────────── */
+    .alert-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.35);
+      z-index: 50;
+    }
+
+    .alert-dialog {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 51;
+    }
+
+    .alert-content {
+      background: #ffffff;
+      border-radius: 14px;
+      box-shadow: 0 24px 80px rgba(0,0,0,0.25);
+      width: 270px;
+      overflow: hidden;
+    }
+
+    .alert-body {
+      padding: 24px 20px;
+      text-align: center;
+    }
+
+    .alert-title {
+      font-family: 'Nunito', sans-serif;
+      font-weight: 700;
+      font-size: 17px;
+      color: var(--navy);
+      margin-bottom: 8px;
+    }
+
+    .alert-message {
+      font-family: 'Nunito Sans', sans-serif;
+      font-weight: 400;
+      font-size: 13px;
+      color: var(--secondary);
+      line-height: 1.4;
+    }
+
+    .alert-divider {
+      height: 1px;
+      background: var(--divider);
+    }
+
+    .alert-buttons {
+      display: flex;
+    }
+
+    .alert-button {
+      flex: 1;
+      padding: 12px;
+      border: none;
+      background: none;
+      cursor: pointer;
+      font-family: 'Nunito', sans-serif;
+      font-weight: 700;
+      font-size: 17px;
+      color: var(--teal);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-right: 1px solid var(--divider);
+    }
+    .alert-button:last-child {
+      border-right: none;
+    }
+    .alert-button.destructive {
+      color: var(--coral);
+    }
+
+    /* ─── Entrance animations ────────────────────────────– */
+    @keyframes fadeIn   { from { opacity:0 } to { opacity:1 } }
+    @keyframes scaleUp   { from { opacity:0; transform:scale(0.95) } to { opacity:1; transform:scale(1) } }
+
+    .top-bar       { animation: fadeIn  0.3s ease 0.05s both; }
+    .artwork-area  { animation: fadeIn  0.35s ease 0.1s both; }
+    .info-strip    { animation: fadeIn  0.35s ease 0.15s both; }
+  </style>
+</head>
+<body>
+
+<!-- ════════════════════════════════════════════════════════════════ -->
+<!-- iPhone 1: In-Progress Artwork + Continue Button -->
+<!-- ════════════════════════════════════════════════════════════════ -->
+<div class="device-wrap">
+  <div class="iphone">
+    <div class="screen">
+
+      <!-- Status bar -->
+      <div class="status-bar">
+        <span class="status-time">9:41</span>
+        <div class="status-icons">
+          <svg width="17" height="12" viewBox="0 0 17 12"><rect x="0" y="8" width="3" height="4" rx="0.8"/><rect x="4.5" y="5.5" width="3" height="6.5" rx="0.8"/><rect x="9" y="3" width="3" height="9" rx="0.8"/><rect x="13.5" y="0" width="3" height="12" rx="0.8"/></svg>
+          <svg width="16" height="12" viewBox="0 0 16 12" fill="none" stroke="#1B2A4A" stroke-width="1.8" stroke-linecap="round"><path d="M1 4.5C3.8 1.8 8 1.8 10.5 4" opacity="0.3"/><path d="M2.8 6.2C4.8 4.3 7.4 4 9.2 5.5"/><path d="M4.8 7.8C5.8 6.9 7.2 6.9 8.2 7.8"/><circle cx="6.5" cy="10" r="1.2" fill="#1B2A4A" stroke="none"/></svg>
+          <svg width="25" height="12" viewBox="0 0 25 12" fill="#1B2A4A"><rect x="0" y="1" width="21" height="10" rx="2.5" stroke="#1B2A4A" stroke-width="1.2" fill="none"/><rect x="1.5" y="2.5" width="16" height="7" rx="1.5"/><path d="M22.5 4v4a2 2 0 0 0 0-4z"/></svg>
+        </div>
+      </div>
+
+      <!-- ══ TOP BAR ══ -->
+      <div class="top-bar">
+        <div class="bar-back">
+          <svg viewBox="0 0 18 18"><polyline points="12,3 5,9 12,15"/></svg>
+        </div>
+        <div class="bar-icons">
+          <!-- Replay (disabled/grayed out) -->
+          <div class="bar-icon muted" title="Replay">
+            <svg viewBox="0 0 20 20">
+              <path d="M14.5 5.5 A7 7 0 1 0 16 10"/>
+              <polyline points="13,3 16,5.5 13.5,8.5"/>
+            </svg>
+          </div>
+          <!-- Share -->
+          <div class="bar-icon" title="Share">
+            <svg viewBox="0 0 20 20">
+              <circle cx="16" cy="5" r="2.5"/>
+              <circle cx="4" cy="10" r="2.5"/>
+              <circle cx="16" cy="15" r="2.5"/>
+              <line x1="6" y1="9.5" x2="14" y2="5.5"/>
+              <line x1="6" y1="10.5" x2="14" y2="14.5"/>
+            </svg>
+          </div>
+          <!-- Print -->
+          <div class="bar-icon" title="Print">
+            <svg viewBox="0 0 20 20">
+              <rect x="2" y="5" width="16" height="13" rx="1.5" fill="none" stroke-width="1.5"/>
+              <path d="M2 9 h16 M5 14 h10" stroke-width="1.5" fill="none"/>
+              <circle cx="10" cy="11" r="1.5" fill="currentColor"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ ARTWORK AREA ══ -->
+      <div class="artwork-area">
+        <div class="artwork-container">
+          <svg class="artwork-svg half-colored" viewBox="0 0 120 140" xmlns="http://www.w3.org/2000/svg">
+            <!-- LEFT HALF: Colored Puppy -->
+            <g clip-path="url(#leftClip)">
+              <!-- Left puppy body -->
+              <ellipse cx="35" cy="95" rx="18" ry="14" fill="#F5D060"/>
+              <!-- Left puppy head -->
+              <circle cx="35" cy="68" r="16" fill="#F5D060"/>
+              <!-- Left floppy ears -->
+              <path d="M22 62 Q16 63 18 74 Q20 77 26 75" fill="#E8B030"/>
+              <!-- Left eye -->
+              <circle cx="31" cy="66" r="2" fill="#1B2A4A"/>
+              <!-- Left nose -->
+              <ellipse cx="35" cy="72" rx="2.5" ry="2" fill="#C87820"/>
+              <!-- Smile -->
+              <path d="M32 76 Q35 79 38 76" fill="none" stroke="#C87820" stroke-width="1.2" stroke-linecap="round"/>
+            </g>
+            <!-- RIGHT HALF: Outline only -->
+            <defs>
+              <clipPath id="leftClip">
+                <rect x="0" y="0" width="60" height="140"/>
+              </clipPath>
+            </defs>
+            <!-- Right puppy body outline -->
+            <ellipse cx="85" cy="95" rx="18" ry="14" fill="none" stroke="#C8C0B0" stroke-width="2.5"/>
+            <!-- Right puppy head outline -->
+            <circle cx="85" cy="68" r="16" fill="none" stroke="#C8C0B0" stroke-width="2.5"/>
+            <!-- Right floppy ears outline -->
+            <path d="M72 62 Q66 63 68 74 Q70 77 76 75" fill="none" stroke="#C8C0B0" stroke-width="2" stroke-linecap="round"/>
+            <!-- Right ear outline -->
+            <path d="M98 62 Q104 63 102 74 Q100 77 94 75" fill="none" stroke="#C8C0B0" stroke-width="2" stroke-linecap="round"/>
+            <!-- Right eye outline -->
+            <circle cx="81" cy="66" r="2" fill="none" stroke="#C8C0B0" stroke-width="1.5"/>
+            <circle cx="89" cy="66" r="2" fill="none" stroke="#C8C0B0" stroke-width="1.5"/>
+            <!-- Right nose outline -->
+            <ellipse cx="85" cy="72" rx="2.5" ry="2" fill="none" stroke="#C8C0B0" stroke-width="1.5"/>
+            <!-- Smile outline -->
+            <path d="M82 76 Q85 79 88 76" fill="none" stroke="#C8C0B0" stroke-width="1.2" stroke-linecap="round"/>
+          </svg>
+        </div>
+      </div>
+
+      <!-- ══ INFO STRIP ══ -->
+      <div class="info-strip">
+        <div class="info-title">Puppy Friends</div>
+        <div class="info-meta">
+          <span>Starter tier · March 17, 2026</span>
+        </div>
+        <div class="info-bottom">
+          <div class="info-status">
+            <div class="status-dot"></div>
+            <span>In Progress</span>
+          </div>
+          <button class="continue-btn">Continue Coloring</button>
+        </div>
+      </div>
+
+    </div><!-- /screen -->
+  </div><!-- /iphone -->
+  <div class="device-label">In-progress — Continue Coloring button</div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════ -->
+<!-- iPhone 2: Delete Confirmation Alert -->
+<!-- ════════════════════════════════════════════════════════════════ -->
+<div class="device-wrap">
+  <div class="iphone">
+    <div class="screen">
+
+      <!-- Status bar -->
+      <div class="status-bar">
+        <span class="status-time">9:41</span>
+        <div class="status-icons">
+          <svg width="17" height="12" viewBox="0 0 17 12"><rect x="0" y="8" width="3" height="4" rx="0.8"/><rect x="4.5" y="5.5" width="3" height="6.5" rx="0.8"/><rect x="9" y="3" width="3" height="9" rx="0.8"/><rect x="13.5" y="0" width="3" height="12" rx="0.8"/></svg>
+          <svg width="16" height="12" viewBox="0 0 16 12" fill="none" stroke="#1B2A4A" stroke-width="1.8" stroke-linecap="round"><path d="M1 4.5C3.8 1.8 8 1.8 10.5 4" opacity="0.3"/><path d="M2.8 6.2C4.8 4.3 7.4 4 9.2 5.5"/><path d="M4.8 7.8C5.8 6.9 7.2 6.9 8.2 7.8"/><circle cx="6.5" cy="10" r="1.2" fill="#1B2A4A" stroke="none"/></svg>
+          <svg width="25" height="12" viewBox="0 0 25 12" fill="#1B2A4A"><rect x="0" y="1" width="21" height="10" rx="2.5" stroke="#1B2A4A" stroke-width="1.2" fill="none"/><rect x="1.5" y="2.5" width="16" height="7" rx="1.5"/><path d="M22.5 4v4a2 2 0 0 0 0-4z"/></svg>
+        </div>
+      </div>
+
+      <!-- ══ TOP BAR ══ -->
+      <div class="top-bar">
+        <div class="bar-back">
+          <svg viewBox="0 0 18 18"><polyline points="12,3 5,9 12,15"/></svg>
+        </div>
+        <div class="bar-icons">
+          <!-- Replay -->
+          <div class="bar-icon" title="Replay">
+            <svg viewBox="0 0 20 20">
+              <path d="M14.5 5.5 A7 7 0 1 0 16 10"/>
+              <polyline points="13,3 16,5.5 13.5,8.5"/>
+            </svg>
+          </div>
+          <!-- Share -->
+          <div class="bar-icon" title="Share">
+            <svg viewBox="0 0 20 20">
+              <circle cx="16" cy="5" r="2.5"/>
+              <circle cx="4" cy="10" r="2.5"/>
+              <circle cx="16" cy="15" r="2.5"/>
+              <line x1="6" y1="9.5" x2="14" y2="5.5"/>
+              <line x1="6" y1="10.5" x2="14" y2="14.5"/>
+            </svg>
+          </div>
+          <!-- Print -->
+          <div class="bar-icon" title="Print">
+            <svg viewBox="0 0 20 20">
+              <rect x="2" y="5" width="16" height="13" rx="1.5" fill="none" stroke-width="1.5"/>
+              <path d="M2 9 h16 M5 14 h10" stroke-width="1.5" fill="none"/>
+              <circle cx="10" cy="11" r="1.5" fill="currentColor"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ ARTWORK AREA (dimmed) ══ -->
+      <div class="artwork-area">
+        <div class="artwork-container" style="opacity: 0.25;">
+          <svg class="artwork-svg" viewBox="0 0 120 140" xmlns="http://www.w3.org/2000/svg">
+            <!-- Lion sketch -->
+            <circle cx="60" cy="50" r="30" fill="none" stroke="#C8C0B0" stroke-width="2.5"/>
+            <ellipse cx="60" cy="85" rx="25" ry="20" fill="none" stroke="#C8C0B0" stroke-width="2.5"/>
+            <path d="M45 45 L38 35 L50 42Z" fill="none" stroke="#C8C0B0" stroke-width="2"/>
+            <path d="M75 45 L82 35 L70 42Z" fill="none" stroke="#C8C0B0" stroke-width="2"/>
+          </svg>
+        </div>
+      </div>
+
+      <!-- ══ INFO STRIP (dimmed) ══ -->
+      <div class="info-strip" style="opacity: 0.25;">
+        <div class="info-title">Sleeping Lion</div>
+        <div class="info-meta">Explorer tier</div>
+      </div>
+
+      <!-- ══ ALERT BACKDROP ══ -->
+      <div class="alert-backdrop"></div>
+
+      <!-- ══ ALERT DIALOG ══ -->
+      <div class="alert-dialog">
+        <div class="alert-content">
+          <div class="alert-body">
+            <div class="alert-title">Delete this artwork?</div>
+            <div class="alert-message">This will remove 'Sleeping Lion' from your gallery. This can't be undone.</div>
+          </div>
+          <div class="alert-divider"></div>
+          <div class="alert-buttons">
+            <button class="alert-button">Cancel</button>
+            <button class="alert-button destructive">Delete</button>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /screen -->
+  </div><!-- /iphone -->
+  <div class="device-label">Delete confirmation alert</div>
+</div>
+
+</body>
+</html>

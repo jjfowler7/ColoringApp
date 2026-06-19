@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=390px, initial-scale=1.0" />
+  <title>PaperBrush — Pass & Play Pause & End</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800&family=Nunito+Sans:wght@400;600&display=swap" rel="stylesheet" />
+  <style>
+    /* ─── Reset ─────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --cream:     #FFF8F0;
+      --canvas-bg: #FFFDF9;
+      --teal:      #0EA5A0;
+      --navy:      #1B2A4A;
+      --coral:     #F06449;
+      --gold:      #F5A623;
+      --sky:       #6BB8E8;
+      --sage:      #7CB686;
+      --secondary: #666666;
+      --divider:   #E8E0D8;
+      --peach:     #FCBFA0;
+    }
+
+    html, body {
+      width: 100%;
+      min-height: 100%;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 48px;
+      padding: 48px;
+      align-items: flex-start;
+      justify-content: center;
+      background: #C8C0AE;
+      font-family: 'Nunito Sans', sans-serif;
+    }
+
+    .device-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+    }
+    .device-label {
+      font-family: 'Nunito Sans', sans-serif;
+      font-size: 13px;
+      color: #888;
+      letter-spacing: 0.04em;
+    }
+
+    /* ─── iPhone shell ───────────────────────────────────── */
+    .iphone {
+      width: 390px;
+      height: 844px;
+      border-radius: 50px;
+      background: #1a1a1a;
+      box-shadow: 0 24px 80px rgba(0,0,0,0.45), inset 0 0 0 2px #3a3a3a;
+      position: relative;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+    .iphone::before {
+      content: '';
+      position: absolute;
+      top: 12px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 120px;
+      height: 34px;
+      background: #1a1a1a;
+      border-radius: 20px;
+      z-index: 30;
+    }
+
+    /* ─── Screen ─────────────────────────────────────────── */
+    .screen {
+      position: absolute;
+      inset: 0;
+      border-radius: 48px;
+      overflow: hidden;
+      background: var(--canvas-bg);
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ─── Status bar ─────────────────────────────────────── */
+    .status-bar {
+      height: 54px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      padding: 0 28px 8px;
+      background: var(--canvas-bg);
+      z-index: 20;
+    }
+    .status-time {
+      font-family: 'Nunito', sans-serif;
+      font-weight: 700;
+      font-size: 15px;
+      color: var(--navy);
+    }
+    .status-icons { display: flex; align-items: center; gap: 5px; }
+    .status-icons svg { fill: var(--navy); }
+
+    /* ─── Canvas area (visible behind overlays) ──────────── */
+    .canvas-area {
+      position: absolute;
+      top: 54px;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: #ffffff;
+      overflow: hidden;
+    }
+
+    .canvas-area svg {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    /* ─── PAUSE OVERLAY (Variant 1) ────────────────────── */
+    .pause-overlay {
+      position: absolute;
+      inset: 54px 0 0 0;
+      background: rgba(27, 42, 74, 0.80);
+      z-index: 100;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .pause-content {
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .pause-title {
+      font-family: 'Nunito', sans-serif;
+      font-weight: 700;
+      font-size: 32px;
+      color: #ffffff;
+    }
+
+    .pause-timer {
+      font-family: 'Nunito', sans-serif;
+      font-weight: 700;
+      font-size: 48px;
+      color: #ffffff;
+      margin-bottom: 32px;
+    }
+
+    .pause-button {
+      width: 100%;
+      max-width: 300px;
+      height: 56px;
+      background: var(--teal);
+      border: none;
+      border-radius: 10px;
+      font-family: 'Nunito', sans-serif;
+      font-weight: 700;
+      font-size: 16px;
+      color: #ffffff;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .pause-button:active {
+      transform: scale(0.98);
+      box-shadow: 0 2px 8px rgba(14, 165, 160, 0.15);
+    }
+
+    .end-game-link {
+      font-family: 'Nunito Sans', sans-serif;
+      font-weight: 600;
+      font-size: 15px;
+      color: var(--coral);
+      text-align: center;
+      cursor: pointer;
+      margin-top: 16px;
+      text-decoration: none;
+    }
+
+    /* Sound toggle row */
+    .sound-toggle-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    .sound-label {
+      font-family: 'Nunito Sans', sans-serif;
+      font-weight: 400;
+      font-size: 14px;
+      color: #ffffff;
+    }
+
+    /* iOS-style toggle */
+    .toggle-switch {
+      width: 48px;
+      height: 28px;
+      border-radius: 14px;
+      background: var(--teal);
+      border: none;
+      position: relative;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    .toggle-switch::after {
+      content: '';
+      position: absolute;
+      top: 2px;
+      right: 2px;
+      width: 24px;
+      height: 24px;
+      background: #ffffff;
+      border-radius: 12px;
+      transition: left 0.3s;
+    }
+
+    /* ─── ALERT DIALOG (Variant 2) ──────────────────────── */
+    .alert-scrim {
+      position: absolute;
+      inset: 54px 0 0 0;
+      background: rgba(27, 42, 74, 0.90);
+      z-index: 101;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 32px;
+    }
+
+    .alert-dialog {
+      background: #ffffff;
+      border-radius: 14px;
+      width: 100%;
+      max-width: 280px;
+      box-shadow: 0 20px 64px rgba(27, 42, 74, 0.30);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .alert-title-section {
+      padding: 20px 16px 12px;
+      text-align: center;
+    }
+
+    .alert-title {
+      font-family: 'Nunito', sans-serif;
+      font-weight: 700;
+      font-size: 17px;
+      color: var(--navy);
+      margin-bottom: 4px;
+    }
+
+    .alert-message {
+      font-family: 'Nunito Sans', sans-serif;
+      font-weight: 400;
+      font-size: 13px;
+      color: var(--secondary);
+      line-height: 1.5;
+    }
+
+    .alert-divider {
+      height: 0.5px;
+      background: var(--divider);
+    }
+
+    .alert-buttons {
+      display: flex;
+      height: 44px;
+    }
+
+    .alert-btn {
+      flex: 1;
+      border: none;
+      background: transparent;
+      font-family: 'Nunito', sans-serif;
+      font-weight: 700;
+      font-size: 17px;
+      cursor: pointer;
+      transition: background 0.15s;
+      color: var(--navy);
+    }
+
+    .alert-btn:active {
+      background: rgba(14, 165, 160, 0.05);
+    }
+
+    .alert-btn.primary {
+      color: var(--teal);
+      border-right: 0.5px solid var(--divider);
+    }
+
+    .alert-btn.destructive {
+      color: var(--navy);
+    }
+
+    /* ─── CELEBRATION SCREEN (Variant 3) ──────────────────── */
+    .celebration-area {
+      flex: 1;
+      background: linear-gradient(135deg, #FFF8F0 0%, #FFFDF9 100%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 32px;
+      text-align: center;
+    }
+
+    .celebration-art {
+      width: 200px;
+      height: 200px;
+      background: #ffffff;
+      border-radius: 16px;
+      margin-bottom: 24px;
+      box-shadow: 0 8px 32px rgba(27, 42, 74, 0.10);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    .celebration-art svg {
+      width: 100%;
+      height: 100%;
+    }
+
+    .celebration-title {
+      font-family: 'Nunito', sans-serif;
+      font-weight: 800;
+      font-size: 28px;
+      color: var(--navy);
+      margin-bottom: 8px;
+    }
+
+    .celebration-credits {
+      font-family: 'Nunito Sans', sans-serif;
+      font-weight: 600;
+      font-size: 14px;
+      color: var(--secondary);
+      font-style: italic;
+      margin-bottom: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .credit-avatar {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+    }
+
+    .credit-avatar.cat { background: #E8854A; }
+    .credit-avatar.lion { background: #F5A623; }
+
+    .celebration-buttons {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+    }
+
+    .share-btn {
+      height: 44px;
+      padding: 0 24px;
+      background: var(--teal);
+      border: none;
+      border-radius: 10px;
+      font-family: 'Nunito', sans-serif;
+      font-weight: 700;
+      font-size: 14px;
+      color: #ffffff;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .share-btn:active {
+      transform: scale(0.95);
+    }
+
+    .save-btn {
+      height: 44px;
+      padding: 0 24px;
+      background: transparent;
+      border: 2px solid var(--teal);
+      border-radius: 10px;
+      font-family: 'Nunito', sans-serif;
+      font-weight: 700;
+      font-size: 14px;
+      color: var(--teal);
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .save-btn:active {
+      transform: scale(0.95);
+    }
+
+    /* Hidden by default, shown in variants */
+    .pause-overlay { display: none; }
+    .alert-scrim { display: none; }
+    .celebration-area { display: none; }
+
+    .variant-1 .pause-overlay { display: flex; }
+    .variant-2 .alert-scrim { display: flex; }
+    .variant-3 .celebration-area { display: flex; }
+    .variant-3 .canvas-area { display: none; }
+
+    /* ─── Bottom safe area ───────────────────────────────– */
+    .safe-area-bottom {
+      height: 34px;
+      flex-shrink: 0;
+      background: var(--canvas-bg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 10;
+    }
+    .home-indicator {
+      width: 120px;
+      height: 5px;
+      background: var(--navy);
+      border-radius: 9999px;
+      opacity: 0.18;
+    }
+  </style>
+</head>
+<body>
+
+<!-- VARIANT 1: Pause Overlay ───────────────────────────────────── -->
+<div class="device-wrap">
+  <div class="iphone variant-1">
+    <div class="screen">
+
+      <!-- Status bar -->
+      <div class="status-bar">
+        <span class="status-time">9:41</span>
+        <div class="status-icons">
+          <svg width="17" height="12" viewBox="0 0 17 12"><rect x="0" y="8" width="3" height="4" rx="0.8"/><rect x="4.5" y="5.5" width="3" height="6.5" rx="0.8"/><rect x="9" y="3" width="3" height="9" rx="0.8"/><rect x="13.5" y="0" width="3" height="12" rx="0.8"/></svg>
+          <svg width="16" height="12" viewBox="0 0 16 12" fill="none" stroke="#1B2A4A" stroke-width="1.8" stroke-linecap="round"><path d="M1 4.5C3.8 1.8 8 1.8 10.5 4" opacity="0.3"/><path d="M2.8 6.2C4.8 4.3 7.4 4 9.2 5.5"/><path d="M4.8 7.8C5.8 6.9 7.2 6.9 8.2 7.8"/><circle cx="6.5" cy="10" r="1.2" fill="#1B2A4A" stroke="none"/></svg>
+          <svg width="25" height="12" viewBox="0 0 25 12" fill="#1B2A4A"><rect x="0" y="1" width="21" height="10" rx="2.5" stroke="#1B2A4A" stroke-width="1.2" fill="none"/><rect x="1.5" y="2.5" width="16" height="7" rx="1.5"/><path d="M22.5 4v4a2 2 0 0 0 0-4z"/></svg>
+        </div>
+      </div>
+
+      <!-- Canvas (behind pause overlay) -->
+      <div class="canvas-area">
+        <svg viewBox="0 0 390 400" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">
+          <rect width="390" height="400" fill="#ffffff"/>
+          <defs>
+            <clipPath id="v1LeftHalf"><rect x="0" y="0" width="195" height="400"/></clipPath>
+          </defs>
+          <ellipse cx="195" cy="270" rx="120" ry="88" fill="#F5A623" clip-path="url(#v1LeftHalf)"/>
+          <ellipse cx="195" cy="285" rx="68" ry="58" fill="#FCBFA0" clip-path="url(#v1LeftHalf)"/>
+        </svg>
+      </div>
+
+      <!-- Pause overlay -->
+      <div class="pause-overlay">
+        <div class="pause-content">
+          <div class="pause-title">Paused</div>
+          <div class="pause-timer">0:38</div>
+          <button class="pause-button">Resume</button>
+          <div class="end-game-link">End Game</div>
+          <div class="sound-toggle-row">
+            <span class="sound-label">Sound</span>
+            <button class="toggle-switch"></button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Safe area -->
+      <div class="safe-area-bottom">
+        <div class="home-indicator"></div>
+      </div>
+
+    </div>
+  </div>
+  <div class="device-label">Paused overlay</div>
+</div>
+
+<!-- VARIANT 2: End Session Confirmation ─────────────────────────── -->
+<div class="device-wrap">
+  <div class="iphone variant-2">
+    <div class="screen">
+
+      <!-- Status bar -->
+      <div class="status-bar">
+        <span class="status-time">9:41</span>
+        <div class="status-icons">
+          <svg width="17" height="12" viewBox="0 0 17 12"><rect x="0" y="8" width="3" height="4" rx="0.8"/><rect x="4.5" y="5.5" width="3" height="6.5" rx="0.8"/><rect x="9" y="3" width="3" height="9" rx="0.8"/><rect x="13.5" y="0" width="3" height="12" rx="0.8"/></svg>
+          <svg width="16" height="12" viewBox="0 0 16 12" fill="none" stroke="#1B2A4A" stroke-width="1.8" stroke-linecap="round"><path d="M1 4.5C3.8 1.8 8 1.8 10.5 4" opacity="0.3"/><path d="M2.8 6.2C4.8 4.3 7.4 4 9.2 5.5"/><path d="M4.8 7.8C5.8 6.9 7.2 6.9 8.2 7.8"/><circle cx="6.5" cy="10" r="1.2" fill="#1B2A4A" stroke="none"/></svg>
+          <svg width="25" height="12" viewBox="0 0 25 12" fill="#1B2A4A"><rect x="0" y="1" width="21" height="10" rx="2.5" stroke="#1B2A4A" stroke-width="1.2" fill="none"/><rect x="1.5" y="2.5" width="16" height="7" rx="1.5"/><path d="M22.5 4v4a2 2 0 0 0 0-4z"/></svg>
+        </div>
+      </div>
+
+      <!-- Canvas (very dimmed behind scrim) -->
+      <div class="canvas-area">
+        <svg viewBox="0 0 390 400" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">
+          <rect width="390" height="400" fill="#ffffff"/>
+          <defs>
+            <clipPath id="v2LeftHalf"><rect x="0" y="0" width="195" height="400"/></clipPath>
+          </defs>
+          <ellipse cx="195" cy="270" rx="120" ry="88" fill="#F5A623" clip-path="url(#v2LeftHalf)"/>
+        </svg>
+      </div>
+
+      <!-- Alert scrim and dialog -->
+      <div class="alert-scrim">
+        <div class="alert-dialog">
+          <div class="alert-title-section">
+            <div class="alert-title">End this session?</div>
+            <div class="alert-message">The artwork will be saved to the gallery.</div>
+          </div>
+          <div class="alert-divider"></div>
+          <div class="alert-buttons">
+            <button class="alert-btn primary">Keep Playing</button>
+            <div style="width: 0.5px; background: var(--divider);"></div>
+            <button class="alert-btn destructive">End & Save</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Safe area -->
+      <div class="safe-area-bottom">
+        <div class="home-indicator"></div>
+      </div>
+
+    </div>
+  </div>
+  <div class="device-label">End session confirmation</div>
+</div>
+
+<!-- VARIANT 3: Pass & Play Completion – Gallery Attribution ───────── -->
+<div class="device-wrap">
+  <div class="iphone variant-3">
+    <div class="screen">
+
+      <!-- Status bar -->
+      <div class="status-bar">
+        <span class="status-time">9:41</span>
+        <div class="status-icons">
+          <svg width="17" height="12" viewBox="0 0 17 12"><rect x="0" y="8" width="3" height="4" rx="0.8"/><rect x="4.5" y="5.5" width="3" height="6.5" rx="0.8"/><rect x="9" y="3" width="3" height="9" rx="0.8"/><rect x="13.5" y="0" width="3" height="12" rx="0.8"/></svg>
+          <svg width="16" height="12" viewBox="0 0 16 12" fill="none" stroke="#1B2A4A" stroke-width="1.8" stroke-linecap="round"><path d="M1 4.5C3.8 1.8 8 1.8 10.5 4" opacity="0.3"/><path d="M2.8 6.2C4.8 4.3 7.4 4 9.2 5.5"/><path d="M4.8 7.8C5.8 6.9 7.2 6.9 8.2 7.8"/><circle cx="6.5" cy="10" r="1.2" fill="#1B2A4A" stroke="none"/></svg>
+          <svg width="25" height="12" viewBox="0 0 25 12" fill="#1B2A4A"><rect x="0" y="1" width="21" height="10" rx="2.5" stroke="#1B2A4A" stroke-width="1.2" fill="none"/><rect x="1.5" y="2.5" width="16" height="7" rx="1.5"/><path d="M22.5 4v4a2 2 0 0 0 0-4z"/></svg>
+        </div>
+      </div>
+
+      <!-- Celebration screen -->
+      <div class="celebration-area">
+
+        <!-- Artwork display -->
+        <div class="celebration-art">
+          <svg viewBox="0 0 390 400" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">
+            <defs>
+              <clipPath id="v3LeftHalf"><rect x="0" y="0" width="195" height="400"/></clipPath>
+              <clipPath id="v3RightHalf"><rect x="195" y="0" width="195" height="400"/></clipPath>
+            </defs>
+            <!-- Colored left side -->
+            <ellipse cx="195" cy="270" rx="120" ry="88" fill="#F5A623" clip-path="url(#v3LeftHalf)"/>
+            <ellipse cx="195" cy="285" rx="68" ry="58" fill="#FCBFA0" clip-path="url(#v3LeftHalf)"/>
+            <ellipse cx="195" cy="165" rx="75" ry="70" fill="#F5A623" clip-path="url(#v3LeftHalf)"/>
+            <polygon points="128,118 110,82 148,100" fill="#F5A623" clip-path="url(#v3LeftHalf)"/>
+            <polygon points="128,114 116,90 142,104" fill="#FCBFA0" clip-path="url(#v3LeftHalf)"/>
+            <ellipse cx="162" cy="168" rx="22" ry="16" fill="#0EA5A0" opacity="0.25" clip-path="url(#v3LeftHalf)"/>
+            <!-- Uncolored right side -->
+            <ellipse cx="195" cy="270" rx="120" ry="88" fill="#ffffff" clip-path="url(#v3RightHalf)"/>
+            <ellipse cx="195" cy="285" rx="68" ry="58" fill="#ffffff" clip-path="url(#v3RightHalf)"/>
+            <ellipse cx="195" cy="165" rx="75" ry="70" fill="#ffffff" clip-path="url(#v3RightHalf)"/>
+            <polygon points="262,118 280,82 242,100" fill="#ffffff" clip-path="url(#v3RightHalf)"/>
+            <!-- Outlines on both sides -->
+            <ellipse cx="195" cy="270" rx="120" ry="88" fill="none" stroke="#1B2A4A" stroke-width="3.5"/>
+            <ellipse cx="195" cy="165" rx="75" ry="70" fill="none" stroke="#1B2A4A" stroke-width="3.5"/>
+            <polygon points="128,118 110,82 148,100" fill="none" stroke="#1B2A4A" stroke-width="3"/>
+            <polygon points="262,118 280,82 242,100" fill="none" stroke="#1B2A4A" stroke-width="3"/>
+          </svg>
+        </div>
+
+        <!-- Title -->
+        <div class="celebration-title">Amazing work!</div>
+
+        <!-- Credits line -->
+        <div class="celebration-credits">
+          <span>By</span>
+          <div class="credit-avatar cat"><svg viewBox="0 0 20 20" width="20" height="20"><circle cx="10" cy="10" r="10" fill="#E8854A"/><polygon points="6,2 4,6 7,5" fill="#E8854A"/><polygon points="14,2 16,6 13,5" fill="#E8854A"/><circle cx="7.5" cy="9" r="1.2" fill="#ffffff"/><circle cx="7" cy="8.5" r="0.5" fill="#000000"/><circle cx="12.5" cy="9" r="1.2" fill="#ffffff"/><circle cx="13" cy="8.5" r="0.5" fill="#000000"/><polygon points="10,11 9,12 11,12" fill="#ffffff"/><line x1="5" y1="13" x2="3" y2="12" stroke="#ffffff" stroke-width="0.5" stroke-linecap="round"/><line x1="5" y1="13.5" x2="2.5" y2="13.5" stroke="#ffffff" stroke-width="0.5" stroke-linecap="round"/><line x1="5" y1="14" x2="3" y2="15" stroke="#ffffff" stroke-width="0.5" stroke-linecap="round"/><line x1="15" y1="13" x2="17" y2="12" stroke="#ffffff" stroke-width="0.5" stroke-linecap="round"/><line x1="15" y1="13.5" x2="17.5" y2="13.5" stroke="#ffffff" stroke-width="0.5" stroke-linecap="round"/><line x1="15" y1="14" x2="17" y2="15" stroke="#ffffff" stroke-width="0.5" stroke-linecap="round"/></svg></div>
+          <span>Sarah &</span>
+          <div class="credit-avatar lion"><svg viewBox="0 0 20 20" width="20" height="20"><circle cx="10" cy="10" r="10" fill="#D4A84A"/><circle cx="10" cy="10" r="9" fill="none" stroke="#B8942D" stroke-width="1.5" opacity="0.6"/><circle cx="7.5" cy="9" r="1.2" fill="#ffffff"/><circle cx="12.5" cy="9" r="1.2" fill="#ffffff"/><polygon points="10,11.5 9,13 11,13" fill="#000000"/><path d="M 8.5 14 Q 10 15 11.5 14" stroke="#ffffff" stroke-width="0.8" fill="none" stroke-linecap="round"/></svg></div>
+          <span>Max</span>
+        </div>
+
+        <!-- Save/Share buttons -->
+        <div class="celebration-buttons">
+          <button class="save-btn">Save</button>
+          <button class="share-btn">Share</button>
+        </div>
+
+      </div>
+
+      <!-- Safe area -->
+      <div class="safe-area-bottom">
+        <div class="home-indicator"></div>
+      </div>
+
+    </div>
+  </div>
+  <div class="device-label">Pass & Play completion — multi-player credit</div>
+</div>
+
+</body>
+</html>

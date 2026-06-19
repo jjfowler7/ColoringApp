@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=390px, initial-scale=1.0" />
+  <title>PaperBrush — Pass & Play Setup</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800&family=Nunito+Sans:wght@400;600&display=swap" rel="stylesheet" />
+  <style>
+    /* ─── Reset ─────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --cream:     #FFF8F0;
+      --canvas-bg: #FFFDF9;
+      --teal:      #0EA5A0;
+      --navy:      #1B2A4A;
+      --coral:     #F06449;
+      --gold:      #F5A623;
+      --sky:       #6BB8E8;
+      --sage:      #7CB686;
+      --secondary: #666666;
+      --divider:   #E8E0D8;
+      --peach:     #FCBFA0;
+    }
+
+    html, body {
+      width: 100%;
+      min-height: 100%;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 48px;
+      padding: 48px;
+      align-items: flex-start;
+      justify-content: center;
+      background: #C8C0AE;
+      font-family: 'Nunito Sans', sans-serif;
+    }
+
+    .device-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+    }
+    .device-label {
+      font-family: 'Nunito Sans', sans-serif;
+      font-size: 13px;
+      color: #888;
+      letter-spacing: 0.04em;
+    }
+
+    /* ─── iPhone shell ───────────────────────────────────── */
+    .iphone {
+      width: 390px;
+      height: 844px;
+      border-radius: 50px;
+      background: #1a1a1a;
+      box-shadow: 0 24px 80px rgba(0,0,0,0.45), inset 0 0 0 2px #3a3a3a;
+      position: relative;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+    .iphone::before {
+      content: '';
+      position: absolute;
+      top: 12px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 120px;
+      height: 34px;
+      background: #1a1a1a;
+      border-radius: 20px;
+      z-index: 30;
+    }
+
+    /* ─── Screen ─────────────────────────────────────────── */
+    .screen {
+      position: absolute;
+      inset: 0;
+      border-radius: 48px;
+      overflow: hidden;
+      background: var(--canvas-bg);
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ─── Status bar ─────────────────────────────────────── */
+    .status-bar {
+      height: 54px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      padding: 0 28px 8px;
+      background: var(--canvas-bg);
+      z-index: 20;
+    }
+    .status-time {
+      font-family: 'Nunito', sans-serif;
+      font-weight: 700;
+      font-size: 15px;
+      color: var(--navy);
+    }
+    .status-icons { display: flex; align-items: center; gap: 5px; }
+    .status-icons svg { fill: var(--navy); }
+
+    /* ─── Canvas area background ─────────────────────────── */
+    .canvas-bg {
+      position: absolute;
+      inset: 54px 0 0 0;
+      background: #ffffff;
+      z-index: -1;
+      overflow: hidden;
+    }
+    .canvas-bg svg {
+      width: 100%;
+      height: 100%;
+      display: block;
+      opacity: 0.3;
+    }
+
+    /* Overlay dimming */
+    .dimmed-overlay {
+      position: absolute;
+      inset: 54px 0 0 0;
+      background: rgba(27, 42, 74, 0.30);
+      z-index: 1;
+    }
+
+    /* ─── Bottom Sheet (Modal) ────────────────────────────── */
+    .bottom-sheet {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 80%;
+      background: #ffffff;
+      border-radius: 24px 24px 0 0;
+      z-index: 5;
+      display: flex;
+      flex-direction: column;
+      padding: 16px;
+      gap: 0;
+    }
+
+    .drag-handle {
+      width: 36px;
+      height: 5px;
+      background: var(--divider);
+      border-radius: 9999px;
+      margin: 0 auto 16px;
+      flex-shrink: 0;
+    }
+
+    /* ─── Sheet Title ─────────────────────────────────────── */
+    .sheet-title {
+      font-family: 'Nunito', sans-serif;
+      font-weight: 700;
+      font-size: 24px;
+      color: var(--navy);
+      padding: 0 0 20px 0;
+      flex-shrink: 0;
+    }
+
+    /* ─── Player Section ──────────────────────────────────── */
+    .player-section {
+      flex-shrink: 0;
+      margin-bottom: 16px;
+    }
+
+    .player-label {
+      font-family: 'Nunito Sans', sans-serif;
+      font-weight: 600;
+      font-size: 13px;
+      color: var(--secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 12px;
+    }
+
+    .avatar-grid {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+    }
+
+    .avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      border: 2px solid transparent;
+      cursor: pointer;
+      transition: transform 0.15s, border-color 0.15s;
+      flex-shrink: 0;
+    }
+
+    .avatar:active { transform: scale(0.9); }
+
+    .avatar.bear { background: #8B6F47; }
+    .avatar.cat { background: #E8854A; }
+    .avatar.owl { background: #9B7C9B; }
+    .avatar.fox { background: #ED8936; }
+    .avatar.rabbit { background: #F0A8D0; }
+    .avatar.penguin { background: #5B7C99; }
+    .avatar.lion { background: #F5A623; }
+    .avatar.frog { background: #7CB686; }
+
+    .avatar.selected {
+      border-color: var(--teal);
+      box-shadow: 0 0 0 1px rgba(14, 165, 160, 0.3);
+    }
+
+    .player-input {
+      width: 100%;
+      padding: 0 16px;
+      height: 44px;
+      border: 1px solid var(--divider);
+      border-radius: 10px;
+      font-family: 'Nunito Sans', sans-serif;
+      font-size: 16px;
+      color: var(--navy);
+      background: #ffffff;
+      font-weight: 400;
+    }
+
+    .player-input::placeholder {
+      color: #999;
+    }
+
+    .player-input:focus {
+      outline: none;
+      border-color: var(--teal);
+      box-shadow: 0 0 0 3px rgba(14, 165, 160, 0.1);
+    }
+
+    /* ─── Add Player ───────────────────────────────────────── */
+    .add-player-link {
+      font-family: 'Nunito', sans-serif;
+      font-weight: 700;
+      font-size: 14px;
+      color: var(--teal);
+      text-align: center;
+      cursor: pointer;
+      padding: 12px 0;
+      margin-bottom: 16px;
+    }
+
+    .add-player-count {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      background: var(--teal);
+      color: #ffffff;
+      border-radius: 50%;
+      font-size: 12px;
+      font-weight: 700;
+      line-height: 20px;
+      text-align: center;
+      margin-left: 4px;
+    }
+
+    /* ─── Turn Time ───────────────────────────────────────– */
+    .turn-time-section {
+      flex-shrink: 0;
+      margin-bottom: 20px;
+    }
+
+    .turn-time-label {
+      font-family: 'Nunito Sans', sans-serif;
+      font-weight: 600;
+      font-size: 13px;
+      color: var(--secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 8px;
+    }
+
+    .segmented-control {
+      display: flex;
+      gap: 0;
+      height: 40px;
+      border-radius: 10px;
+      overflow: hidden;
+      border: 1px solid var(--divider);
+    }
+
+    .seg-button {
+      flex: 1;
+      border: none;
+      background: #ffffff;
+      border-right: 1px solid var(--divider);
+      font-family: 'Nunito Sans', sans-serif;
+      font-weight: 600;
+      font-size: 14px;
+      color: var(--secondary);
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s;
+    }
+
+    .seg-button:last-child {
+      border-right: none;
+    }
+
+    .seg-button.selected {
+      background: var(--teal);
+      color: #ffffff;
+    }
+
+    /* ─── Start Button ────────────────────────────────────── */
+    .start-button {
+      width: 100%;
+      height: 48px;
+      margin-top: auto;
+      flex-shrink: 0;
+      border: none;
+      border-radius: 10px;
+      font-family: 'Nunito', sans-serif;
+      font-weight: 700;
+      font-size: 16px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .start-button.enabled {
+      background: var(--teal);
+      color: #ffffff;
+      box-shadow: 0 4px 16px rgba(14, 165, 160, 0.25);
+    }
+
+    .start-button.enabled:active {
+      transform: scale(0.98);
+      box-shadow: 0 2px 8px rgba(14, 165, 160, 0.15);
+    }
+
+    .start-button.disabled {
+      background: transparent;
+      color: #999;
+      opacity: 0.4;
+      cursor: not-allowed;
+      border: 1px solid var(--divider);
+    }
+
+    /* ─── Bottom safe area ───────────────────────────────– */
+    .safe-area-bottom {
+      height: 34px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .home-indicator {
+      width: 120px;
+      height: 5px;
+      background: var(--navy);
+      border-radius: 9999px;
+      opacity: 0.18;
+    }
+  </style>
+</head>
+<body>
+
+<!-- VARIANT 1: Setup in progress, Player 2 incomplete -->
+<div class="device-wrap">
+  <div class="iphone">
+    <div class="screen">
+
+      <!-- Status bar -->
+      <div class="status-bar">
+        <span class="status-time">9:41</span>
+        <div class="status-icons">
+          <svg width="17" height="12" viewBox="0 0 17 12"><rect x="0" y="8" width="3" height="4" rx="0.8"/><rect x="4.5" y="5.5" width="3" height="6.5" rx="0.8"/><rect x="9" y="3" width="3" height="9" rx="0.8"/><rect x="13.5" y="0" width="3" height="12" rx="0.8"/></svg>
+          <svg width="16" height="12" viewBox="0 0 16 12" fill="none" stroke="#1B2A4A" stroke-width="1.8" stroke-linecap="round"><path d="M1 4.5C3.8 1.8 8 1.8 10.5 4" opacity="0.3"/><path d="M2.8 6.2C4.8 4.3 7.4 4 9.2 5.5"/><path d="M4.8 7.8C5.8 6.9 7.2 6.9 8.2 7.8"/><circle cx="6.5" cy="10" r="1.2" fill="#1B2A4A" stroke="none"/></svg>
+          <svg width="25" height="12" viewBox="0 0 25 12" fill="#1B2A4A"><rect x="0" y="1" width="21" height="10" rx="2.5" stroke="#1B2A4A" stroke-width="1.2" fill="none"/><rect x="1.5" y="2.5" width="16" height="7" rx="1.5"/><path d="M22.5 4v4a2 2 0 0 0 0-4z"/></svg>
+        </div>
+      </div>
+
+      <!-- Canvas background (dimmed) -->
+      <div class="canvas-bg">
+        <svg viewBox="0 0 390 400" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">
+          <rect width="390" height="400" fill="#ffffff"/>
+          <defs>
+            <clipPath id="leftHalf"><rect x="0" y="0" width="195" height="400"/></clipPath>
+            <clipPath id="rightHalf"><rect x="195" y="0" width="195" height="400"/></clipPath>
+          </defs>
+          <ellipse cx="195" cy="270" rx="120" ry="88" fill="#F5A623" clip-path="url(#leftHalf)"/>
+          <ellipse cx="195" cy="285" rx="68" ry="58" fill="#FCBFA0" clip-path="url(#leftHalf)"/>
+          <ellipse cx="195" cy="165" rx="75" ry="70" fill="#F5A623" clip-path="url(#leftHalf)"/>
+          <polygon points="128,118 110,82 148,100" fill="#F5A623" clip-path="url(#leftHalf)"/>
+          <polygon points="128,114 116,90 142,104" fill="#FCBFA0" clip-path="url(#leftHalf)"/>
+          <ellipse cx="162" cy="168" rx="22" ry="16" fill="#0EA5A0" opacity="0.25" clip-path="url(#leftHalf)"/>
+          <path d="M175 120 Q185 108 195 115" stroke="#D4811A" stroke-width="3.5" fill="none" stroke-linecap="round" clip-path="url(#leftHalf)"/>
+          <path d="M170 110 Q182 96 195 103" stroke="#D4811A" stroke-width="3" fill="none" stroke-linecap="round" clip-path="url(#leftHalf)"/>
+          <ellipse cx="138" cy="340" rx="26" ry="16" fill="#F5A623" clip-path="url(#leftHalf)"/>
+          <ellipse cx="188" cy="348" rx="28" ry="14" fill="#FCBFA0" clip-path="url(#leftHalf)"/>
+          <path d="M95 310 Q42 370 75 390 Q110 410 130 375" stroke="#F5A623" stroke-width="18" fill="none" stroke-linecap="round" clip-path="url(#leftHalf)"/>
+          <path d="M95 310 Q42 370 75 390 Q110 410 130 375" stroke="#FCBFA0" stroke-width="8" fill="none" stroke-linecap="round" opacity="0.6" clip-path="url(#leftHalf)"/>
+        </svg>
+      </div>
+
+      <div class="dimmed-overlay"></div>
+
+      <!-- Bottom Sheet -->
+      <div class="bottom-sheet">
+
+        <div class="drag-handle"></div>
+
+        <div class="sheet-title">Who's playing?</div>
+
+        <!-- PLAYER 1 -->
+        <div class="player-section">
+          <div class="player-label">Player 1</div>
+          <div class="avatar-grid">
+            <div class="avatar bear"><svg viewBox="0 0 40 40" width="40" height="40"><circle cx="20" cy="20" r="20" fill="#8B6F47"/><circle cx="12" cy="10" r="3" fill="#8B6F47"/><circle cx="28" cy="10" r="3" fill="#8B6F47"/><circle cx="15" cy="18" r="2.5" fill="#ffffff"/><circle cx="25" cy="18" r="2.5" fill="#ffffff"/><ellipse cx="20" cy="22" rx="3" ry="2" fill="#ffffff"/><path d="M 17 25 Q 20 27 23 25" stroke="#ffffff" stroke-width="1.5" fill="none" stroke-linecap="round"/></svg></div>
+            <div class="avatar cat selected"><svg viewBox="0 0 40 40" width="40" height="40"><circle cx="20" cy="20" r="20" fill="#E8854A"/><polygon points="12,6 8,14 14,10" fill="#E8854A"/><polygon points="28,6 32,14 26,10" fill="#E8854A"/><circle cx="15" cy="18" r="2.5" fill="#ffffff"/><circle cx="14" cy="17.5" r="1" fill="#000000"/><circle cx="25" cy="18" r="2.5" fill="#ffffff"/><circle cx="26" cy="17.5" r="1" fill="#000000"/><polygon points="20,22 18,24 22,24" fill="#ffffff"/><line x1="10" y1="24" x2="6" y2="22" stroke="#ffffff" stroke-width="1" stroke-linecap="round"/><line x1="10" y1="26" x2="5" y2="26" stroke="#ffffff" stroke-width="1" stroke-linecap="round"/><line x1="10" y1="28" x2="6" y2="30" stroke="#ffffff" stroke-width="1" stroke-linecap="round"/><line x1="30" y1="24" x2="34" y2="22" stroke="#ffffff" stroke-width="1" stroke-linecap="round"/><line x1="30" y1="26" x2="35" y2="26" stroke="#ffffff" stroke-width="1" stroke-linecap="round"/><line x1="30" y1="28" x2="34" y2="30" stroke="#ffffff" stroke-width="1" stroke-linecap="round"/></svg></div>
+            <div class="avatar owl"><svg viewBox="0 0 40 40" width="40" height="40"><circle cx="20" cy="20" r="20" fill="#9B7C9B"/><circle cx="13" cy="16" r="6" fill="#ffffff"/><circle cx="13" cy="16" r="3" fill="#4A3C4A"/><circle cx="27" cy="16" r="6" fill="#ffffff"/><circle cx="27" cy="16" r="3" fill="#4A3C4A"/><polygon points="20,24 18,28 22,28" fill="#D4A84A"/><polygon points="10,8 8,5 12,6" fill="#9B7C9B"/><polygon points="30,8 32,5 28,6" fill="#9B7C9B"/></svg></div>
+            <div class="avatar fox"><svg viewBox="0 0 40 40" width="40" height="40"><circle cx="20" cy="20" r="20" fill="#D4724A"/><polygon points="12,5 8,12 14,10" fill="#D4724A"/><polygon points="28,5 32,12 26,10" fill="#D4724A"/><circle cx="15" cy="18" r="2.5" fill="#ffffff"/><circle cx="25" cy="18" r="2.5" fill="#ffffff"/><circle cx="20" cy="22" r="1.5" fill="#000000"/><circle cx="12" cy="26" r="2.5" fill="#ffffff"/><circle cx="28" cy="26" r="2.5" fill="#ffffff"/></svg></div>
+            <div class="avatar rabbit"><svg viewBox="0 0 40 40" width="40" height="40"><circle cx="20" cy="20" r="20" fill="#E8A0B8"/><ellipse cx="16" cy="4" rx="3" ry="8" fill="#E8A0B8"/><ellipse cx="16" cy="4" rx="2" ry="6" fill="#F0C4D8"/><ellipse cx="24" cy="4" rx="3" ry="8" fill="#E8A0B8"/><ellipse cx="24" cy="4" rx="2" ry="6" fill="#F0C4D8"/><circle cx="15" cy="18" r="2.5" fill="#ffffff"/><circle cx="25" cy="18" r="2.5" fill="#ffffff"/><circle cx="20" cy="22" r="2" fill="#E8A0B8"/><rect x="19" y="25" width="2" height="3" fill="#ffffff"/><rect x="18" y="26" width="1.5" height="2" fill="#ffffff"/><rect x="20.5" y="26" width="1.5" height="2" fill="#ffffff"/></svg></div>
+            <div class="avatar penguin"><svg viewBox="0 0 40 40" width="40" height="40"><circle cx="20" cy="20" r="20" fill="#4A6880"/><ellipse cx="20" cy="24" rx="10" ry="12" fill="#ffffff"/><circle cx="15" cy="14" r="2.5" fill="#ffffff"/><circle cx="25" cy="14" r="2.5" fill="#ffffff"/><circle cx="14.5" cy="13.5" r="1.2" fill="#000000"/><circle cx="25.5" cy="13.5" r="1.2" fill="#000000"/><polygon points="20,20 18,23 22,23" fill="#FF9844"/><path d="M 10 22 Q 10 24 12 25" stroke="#ffffff" stroke-width="2" fill="none" stroke-linecap="round"/><path d="M 30 22 Q 30 24 28 25" stroke="#ffffff" stroke-width="2" fill="none" stroke-linecap="round"/></svg></div>
+            <div class="avatar lion"><svg viewBox="0 0 40 40" width="40" height="40"><circle cx="20" cy="20" r="20" fill="#D4A84A"/><circle cx="20" cy="20" r="18" fill="none" stroke="#B8942D" stroke-width="3" opacity="0.6"/><circle cx="15" cy="18" r="2.5" fill="#ffffff"/><circle cx="25" cy="18" r="2.5" fill="#ffffff"/><polygon points="20,23 18,26 22,26" fill="#000000"/><path d="M 17 27 Q 20 29 23 27" stroke="#ffffff" stroke-width="1.5" fill="none" stroke-linecap="round"/></svg></div>
+            <div class="avatar frog"><svg viewBox="0 0 40 40" width="40" height="40"><circle cx="20" cy="20" r="20" fill="#6AAA5E"/><circle cx="14" cy="10" r="5" fill="#ffffff"/><circle cx="14" cy="10" r="2.5" fill="#000000"/><circle cx="26" cy="10" r="5" fill="#ffffff"/><circle cx="26" cy="10" r="2.5" fill="#000000"/><path d="M 12 25 Q 20 28 28 25" stroke="#ffffff" stroke-width="2" fill="none" stroke-linecap="round"/></svg></div>
+          </div>
+          <input type="text" class="player-input" value="Sarah" />
+        </div>
+
+        <!-- PLAYER 2 -->
+        <div class="player-section">
+          <div class="player-label">Player 2</div>
+          <div class="avatar-grid">
+            <div class="avatar bear"><svg viewBox="0 0 40 40" width="40" height="40"><circle cx="20" cy="20" r="20" fill="#8B6F47"/><circle cx="12" cy="10" r="3" fill="#8B6F47"/><circle cx="28" cy="10" r="3" fill="#8B6F47"/><circle cx="15" cy="18" r="2.5" fill="#ffffff"/><circle cx="25" cy="18" r="2.5" fill="#ffffff"/><ellipse cx="20" cy="22" rx="3" ry="2" fill="#ffffff"/><path d="M 17 25 Q 20 27 23 25" stroke="#ffffff" stroke-width="1.5" fill="none" stroke-linecap="round"/></svg></div>
+            <div class="avatar cat"><svg viewBox="0 0 40 40" width="40" height="40"><circle cx="20" cy="20" r="20" fill="#E8854A"/><polygon points="12,6 8,14 14,10" fill="#E8854A"/><polygon points="28,6 32,14 26,10" fill="#E8854A"/><circle cx="15" cy="18" r="2.5" fill="#ffffff"/><circle cx="14" cy="17.5" r="1" fill="#000000"/><circle cx="25" cy="18" r="2.5" fill="#ffffff"/><circle cx="26" cy="17.5" r="1" fill="#000000"/><polygon points="20,22 18,24 22,24" fill="#ffffff"/><line x1="10" y1="24" x2="6" y2="22" stroke="#ffffff" stroke-width="1" stroke-linecap="round"/><line x1="10" y1="26" x2="5" y2="26" stroke="#ffffff" stroke-width="1" stroke-linecap="round"/><line x1="10" y1="28" x2="6" y2="30" stroke="#ffffff" stroke-width="1" stroke-linecap="round"/><line x1="30" y1="24" x2="34" y2="22" stroke="#ffffff" stroke-width="1" stroke-linecap="round"/><line x1="30" y1="26" x2="35" y2="26" stroke="#ffffff" stroke-width="1" stroke-linecap="round"/><line x1="30" y1="28" x2="34" y2="30" stroke="#ffffff" stroke-width="1" stroke-linecap="round"/></svg></div>
+            <div class="avatar owl"><svg viewBox="0 0 40 40" width="40" height="40"><circle cx="20" cy="20" r="20" fill="#9B7C9B"/><circle cx="13" cy="16" r="6" fill="#ffffff"/><circle cx="13" cy="16" r="3" fill="#4A3C4A"/><circle cx="27" cy="16" r="6" fill="#ffffff"/><circle cx="27" cy="16" r="3" fill="#4A3C4A"/><polygon points="20,24 18,28 22,28" fill="#D4A84A"/><polygon points="10,8 8,5 12,6" fill="#9B7C9B"/><polygon points="30,8 32,5 28,6" fill="#9B7C9B"/></svg></div>
+            <div class="avatar fox"><svg viewBox="0 0 40 40" width="40" height="40"><circle cx="20" cy="20" r="20" fill="#D4724A"/><polygon points="12,5 8,12 14,10" fill="#D4724A"/><polygon points="28,5 32,12 26,10" fill="#D4724A"/><circle cx="15" cy="18" r="2.5" fill="#ffffff"/><circle cx="25" cy="18" r="2.5" fill="#ffffff"/><circle cx="20" cy="22" r="1.5" fill="#000000"/><circle cx="12" cy="26" r="2.5" fill="#ffffff"/><circle cx="28" cy="26" r="2.5" fill="#ffffff"/></svg></div>
+            <div class="avatar rabbit"><svg viewBox="0 0 40 40" width="40" height="40"><circle cx="20" cy="20" r="20" fill="#E8A0B8"/><ellipse cx="16" cy="4" rx="3" ry="8" fill="#E8A0B8"/><ellipse cx="16" cy="4" rx="2" ry="6" fill="#F0C4D8"/><ellipse cx="24" cy="4" rx="3" ry="8" fill="#E8A0B8"/><ellipse cx="24" cy="4" rx="2" ry="6" fill="#F0C4D8"/><circle cx="15" cy="18" r="2.5" fill="#ffffff"/><circle cx="25" cy="18" r="2.5" fill="#ffffff"/><circle cx="20" cy="22" r="2" fill="#E8A0B8"/><rect x="19" y="25" width="2" height="3" fill="#ffffff"/><rect x="18" y="26" width="1.5" height="2" fill="#ffffff"/><rect x="20.5" y="26" width="1.5" height="2" fill="#ffffff"/></svg></div>
+            <div class="avatar penguin"><svg viewBox="0 0 40 40" width="40" height="40"><circle cx="20" cy="20" r="20" fill="#4A6880"/><ellipse cx="20" cy="24" rx="10" ry="12" fill="#ffffff"/><circle cx="15" cy="14" r="2.5" fill="#ffffff"/><circle cx="25" cy="14" r="2.5" fill="#ffffff"/><circle cx="14.5" cy="13.5" r="1.2" fill="#000000"/><circle cx="25.5" cy="13.5" r="1.2" fill="#000000"/><polygon points="20,20 18,23 22,23" fill="#FF9844"/><path d="M 10 22 Q 10 24 12 25" stroke="#ffffff" stroke-width="2" fill="none" stroke-linecap="round"/><path d="M 30 22 Q 30 24 28 25" stroke="#ffffff" stroke-width="2" fill="none" stroke-linecap="round"/></svg></div>
+            <div class="avatar lion"><svg viewBox="0 0 40 40" width="40" height="40"><circle cx="20" cy="20" r="20" fill="#D4A84A"/><circle cx="20" cy="20" r="18" fill="none" stroke="#B8942D" stroke-width="3" opacity="0.6"/><circle cx="15" cy="18" r="2.5" fill="#ffffff"/><circle cx="25" cy="18" r="2.5" fill="#ffffff"/><polygon points="20,23 18,26 22,26" fill="#000000"/><path d="M 17 27 Q 20 29 23 27" stroke="#ffffff" stroke-width="1.5" fill="none" stroke-linecap="round"/></svg></div>
+            <div class="avatar frog"><svg viewBox="0 0 40 40" width="40" height="40"><circle cx="20" cy="20" r="20" fill="#6AAA5E"/><circle cx="14" cy="10" r="5" fill="#ffffff"/><circle cx="14" cy="10" r="2.5" fill="#000000"/><circle cx="26" cy="10" r="5" fill="#ffffff"/><circle cx="26" cy="10" r="2.5" fill="#000000"/><path d="M 12 25 Q 20 28 28 25" stroke="#ffffff" stroke-width="2" fill="none" stroke-linecap="round"/></svg></div>
+          </div>
+          <input type="text" class="player-input" placeholder="Player 2" />
+        </div>
+
+        <div class="add-player-link">+ Add player</div>
+
+        <!-- TURN TIME -->
+        <div class="turn-time-section">
+          <div class="turn-time-label">Turn time:</div>
+          <div class="segmented-control">
+            <button class="seg-button">30s</button>
+            <button class="seg-button selected">60s</button>
+            <button class="seg-button">90s</button>
+          </div>
+        </div>
+
+        <!-- START BUTTON (disabled) -->
+        <button class="start-button disabled">Start Coloring!</button>
+
+        <!-- Safe area -->
+        <div class="safe-area-bottom">
+          <div class="home-indicator"></div>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+  <div class="device-label">Setup — Player 2 name required (Start disabled)</div>
+</div>
+
+<!-- VARIANT 2: Setup complete, ready to start -->
+<div class="device-wrap">
+  <div class="iphone">
+    <div class="screen">
+
+      <!-- Status bar -->
+      <div class="status-bar">
+        <span class="status-time">9:41</span>
+        <div class="status-icons">
+          <svg width="17" height="12" viewBox="0 0 17 12"><rect x="0" y="8" width="3" height="4" rx="0.8"/><rect x="4.5" y="5.5" width="3" height="6.5" rx="0.8"/><rect x="9" y="3" width="3" height="9" rx="0.8"/><rect x="13.5" y="0" width="3" height="12" rx="0.8"/></svg>
+          <svg width="16" height="12" viewBox="0 0 16 12" fill="none" stroke="#1B2A4A" stroke-width="1.8" stroke-linecap="round"><path d="M1 4.5C3.8 1.8 8 1.8 10.5 4" opacity="0.3"/><path d="M2.8 6.2C4.8 4.3 7.4 4 9.2 5.5"/><path d="M4.8 7.8C5.8 6.9 7.2 6.9 8.2 7.8"/><circle cx="6.5" cy="10" r="1.2" fill="#1B2A4A" stroke="none"/></svg>
+          <svg width="25" height="12" viewBox="0 0 25 12" fill="#1B2A4A"><rect x="0" y="1" width="21" height="10" rx="2.5" stroke="#1B2A4A" stroke-width="1.2" fill="none"/><rect x="1.5" y="2.5" width="16" height="7" rx="1.5"/><path d="M22.5 4v4a2 2 0 0 0 0-4z"/></svg>
+        </div>
+      </div>
+
+      <!-- Canvas background (dimmed) -->
+      <div class="canvas-bg">
+        <svg viewBox="0 0 390 400" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">
+          <rect width="390" height="400" fill="#ffffff"/>
+          <defs>
+            <clipPath id="leftHalf2"><rect x="0" y="0" width="195" height="400"/></clipPath>
+            <clipPath id="rightHalf2"><rect x="195" y="0" width="195" height="400"/></clipPath>
+          </defs>
+          <ellipse cx="195" cy="270" rx="120" ry="88" fill="#F5A623" clip-path="url(#leftHalf2)"/>
+          <ellipse cx="195" cy="285" rx="68" ry="58" fill="#FCBFA0" clip-path="url(#leftHalf2)"/>
+          <ellipse cx="195" cy="165" rx="75" ry="70" fill="#F5A623" clip-path="url(#leftHalf2)"/>
+          <polygon points="128,118 110,82 148,100" fill="#F5A623" clip-path="url(#leftHalf2)"/>
+          <polygon points="128,114 116,90 142,104" fill="#FCBFA0" clip-path="url(#leftHalf2)"/>
+          <ellipse cx="162" cy="168" rx="22" ry="16" fill="#0EA5A0" opacity="0.25" clip-path="url(#leftHalf2)"/>
+          <path d="M175 120 Q185 108 195 115" stroke="#D4811A" stroke-width="3.5" fill="none" stroke-linecap="round" clip-path="url(#leftHalf2)"/>
+          <path d="M170 110 Q182 96 195 103" stroke="#D4811A" stroke-width="3" fill="none" stroke-linecap="round" clip-path="url(#leftHalf2)"/>
+          <ellipse cx="138" cy="340" rx="26" ry="16" fill="#F5A623" clip-path="url(#leftHalf2)"/>
+          <ellipse cx="188" cy="348" rx="28" ry="14" fill="#FCBFA0" clip-path="url(#leftHalf2)"/>
+          <path d="M95 310 Q42 370 75 390 Q110 410 130 375" stroke="#F5A623" stroke-width="18" fill="none" stroke-linecap="round" clip-path="url(#leftHalf2)"/>
+          <path d="M95 310 Q42 370 75 390 Q110 410 130 375" stroke="#FCBFA0" stroke-width="8" fill="none" stroke-linecap="round" opacity="0.6" clip-path="url(#leftHalf2)"/>
+        </svg>
+      </div>
+
+      <div class="dimmed-overlay"></div>
+
+      <!-- Bottom Sheet -->
+      <div class="bottom-sheet">
+
+        <div class="drag-handle"></div>
+
+        <div class="sheet-title">Who's playing?</div>
+
+        <!-- PLAYER 1 -->
+        <div class="player-section">
+          <div class="player-label">Player 1</div>
+          <div class="avatar-grid">
+            <div class="avatar bear"><svg viewBox="0 0 40 40" width="40" height="40"><circle cx="20" cy="20" r="20" fill="#8B6F47"/><circle cx="12" cy="10" r="3" fill="#8B6F47"/><circle cx="28" cy="10" r="3" fill="#8B6F47"/><circle cx="15" cy="18" r="2.5" fill="#ffffff"/><circle cx="25" cy="18" r="2.5" fill="#ffffff"/><ellipse cx="20" cy="22" rx="3" ry="2" fill="#ffffff"/><path d="M 17 25 Q 20 27 23 25" stroke="#ffffff" stroke-width="1.5" fill="none" stroke-linecap="round"/></svg></div>
+            <div class="avatar cat selected"><svg viewBox="0 0 40 40" width="40" height="40"><circle cx="20" cy="20" r="20" fill="#E8854A"/><polygon points="12,6 8,14 14,10" fill="#E8854A"/><polygon points="28,6 32,14 26,10" fill="#E8854A"/><circle cx="15" cy="18" r="2.5" fill="#ffffff"/><circle cx="14" cy="17.5" r="1" fill="#000000"/><circle cx="25" cy="18" r="2.5" fill="#ffffff"/><circle cx="26" cy="17.5" r="1" fill="#000000"/><polygon points="20,22 18,24 22,24" fill="#ffffff"/><line x1="10" y1="24" x2="6" y2="22" stroke="#ffffff" stroke-width="1" stroke-linecap="round"/><line x1="10" y1="26" x2="5" y2="26" stroke="#ffffff" stroke-width="1" stroke-linecap="round"/><line x1="10" y1="28" x2="6" y2="30" stroke="#ffffff" stroke-width="1" stroke-linecap="round"/><line x1="30" y1="24" x2="34" y2="22" stroke="#ffffff" stroke-width="1" stroke-linecap="round"/><line x1="30" y1="26" x2="35" y2="26" stroke="#ffffff" stroke-width="1" stroke-linecap="round"/><line x1="30" y1="28" x2="34" y2="30" stroke="#ffffff" stroke-width="1" stroke-linecap="round"/></svg></div>
+            <div class="avatar owl"><svg viewBox="0 0 40 40" width="40" height="40"><circle cx="20" cy="20" r="20" fill="#9B7C9B"/><circle cx="13" cy="16" r="6" fill="#ffffff"/><circle cx="13" cy="16" r="3" fill="#4A3C4A"/><circle cx="27" cy="16" r="6" fill="#ffffff"/><circle cx="27" cy="16" r="3" fill="#4A3C4A"/><polygon points="20,24 18,28 22,28" fill="#D4A84A"/><polygon points="10,8 8,5 12,6" fill="#9B7C9B"/><polygon points="30,8 32,5 28,6" fill="#9B7C9B"/></svg></div>
+            <div class="avatar fox"><svg viewBox="0 0 40 40" width="40" height="40"><circle cx="20" cy="20" r="20" fill="#D4724A"/><polygon points="12,5 8,12 14,10" fill="#D4724A"/><polygon points="28,5 32,12 26,10" fill="#D4724A"/><circle cx="15" cy="18" r="2.5" fill="#ffffff"/><circle cx="25" cy="18" r="2.5" fill="#ffffff"/><circle cx="20" cy="22" r="1.5" fill="#000000"/><circle cx="12" cy="26" r="2.5" fill="#ffffff"/><circle cx="28" cy="26" r="2.5" fill="#ffffff"/></svg></div>
+            <div class="avatar rabbit"><svg viewBox="0 0 40 40" width="40" height="40"><circle cx="20" cy="20" r="20" fill="#E8A0B8"/><ellipse cx="16" cy="4" rx="3" ry="8" fill="#E8A0B8"/><ellipse cx="16" cy="4" rx="2" ry="6" fill="#F0C4D8"/><ellipse cx="24" cy="4" rx="3" ry="8" fill="#E8A0B8"/><ellipse cx="24" cy="4" rx="2" ry="6" fill="#F0C4D8"/><circle cx="15" cy="18" r="2.5" fill="#ffffff"/><circle cx="25" cy="18" r="2.5" fill="#ffffff"/><circle cx="20" cy="22" r="2" fill="#E8A0B8"/><rect x="19" y="25" width="2" height="3" fill="#ffffff"/><rect x="18" y="26" width="1.5" height="2" fill="#ffffff"/><rect x="20.5" y="26" width="1.5" height="2" fill="#ffffff"/></svg></div>
+            <div class="avatar penguin"><svg viewBox="0 0 40 40" width="40" height="40"><circle cx="20" cy="20" r="20" fill="#4A6880"/><ellipse cx="20" cy="24" rx="10" ry="12" fill="#ffffff"/><circle cx="15" cy="14" r="2.5" fill="#ffffff"/><circle cx="25" cy="14" r="2.5" fill="#ffffff"/><circle cx="14.5" cy="13.5" r="1.2" fill="#000000"/><circle cx="25.5" cy="13.5" r="1.2" fill="#000000"/><polygon points="20,20 18,23 22,23" fill="#FF9844"/><path d="M 10 22 Q 10 24 12 25" stroke="#ffffff" stroke-width="2" fill="none" stroke-linecap="round"/><path d="M 30 22 Q 30 24 28 25" stroke="#ffffff" stroke-width="2" fill="none" stroke-linecap="round"/></svg></div>
+            <div class="avatar lion"><svg viewBox="0 0 40 40" width="40" height="40"><circle cx="20" cy="20" r="20" fill="#D4A84A"/><circle cx="20" cy="20" r="18" fill="none" stroke="#B8942D" stroke-width="3" opacity="0.6"/><circle cx="15" cy="18" r="2.5" fill="#ffffff"/><circle cx="25" cy="18" r="2.5" fill="#ffffff"/><polygon points="20,23 18,26 22,26" fill="#000000"/><path d="M 17 27 Q 20 29 23 27" stroke="#ffffff" stroke-width="1.5" fill="none" stroke-linecap="round"/></svg></div>
+            <div class="avatar frog"><svg viewBox="0 0 40 40" width="40" height="40"><circle cx="20" cy="20" r="20" fill="#6AAA5E"/><circle cx="14" cy="10" r="5" fill="#ffffff"/><circle cx="14" cy="10" r="2.5" fill="#000000"/><circle cx="26" cy="10" r="5" fill="#ffffff"/><circle cx="26" cy="10" r="2.5" fill="#000000"/><path d="M 12 25 Q 20 28 28 25" stroke="#ffffff" stroke-width="2" fill="none" stroke-linecap="round"/></svg></div>
+          </div>
+          <input type="text" class="player-input" value="Sarah" />
+        </div>
+
+        <!-- PLAYER 2 -->
+        <div class="player-section">
+          <div class="player-label">Player 2</div>
+          <div class="avatar-grid">
+            <div class="avatar bear"><svg viewBox="0 0 40 40" width="40" height="40"><circle cx="20" cy="20" r="20" fill="#8B6F47"/><circle cx="12" cy="10" r="3" fill="#8B6F47"/><circle cx="28" cy="10" r="3" fill="#8B6F47"/><circle cx="15" cy="18" r="2.5" fill="#ffffff"/><circle cx="25" cy="18" r="2.5" fill="#ffffff"/><ellipse cx="20" cy="22" rx="3" ry="2" fill="#ffffff"/><path d="M 17 25 Q 20 27 23 25" stroke="#ffffff" stroke-width="1.5" fill="none" stroke-linecap="round"/></svg></div>
+            <div class="avatar cat"><svg viewBox="0 0 40 40" width="40" height="40"><circle cx="20" cy="20" r="20" fill="#E8854A"/><polygon points="12,6 8,14 14,10" fill="#E8854A"/><polygon points="28,6 32,14 26,10" fill="#E8854A"/><circle cx="15" cy="18" r="2.5" fill="#ffffff"/><circle cx="14" cy="17.5" r="1" fill="#000000"/><circle cx="25" cy="18" r="2.5" fill="#ffffff"/><circle cx="26" cy="17.5" r="1" fill="#000000"/><polygon points="20,22 18,24 22,24" fill="#ffffff"/><line x1="10" y1="24" x2="6" y2="22" stroke="#ffffff" stroke-width="1" stroke-linecap="round"/><line x1="10" y1="26" x2="5" y2="26" stroke="#ffffff" stroke-width="1" stroke-linecap="round"/><line x1="10" y1="28" x2="6" y2="30" stroke="#ffffff" stroke-width="1" stroke-linecap="round"/><line x1="30" y1="24" x2="34" y2="22" stroke="#ffffff" stroke-width="1" stroke-linecap="round"/><line x1="30" y1="26" x2="35" y2="26" stroke="#ffffff" stroke-width="1" stroke-linecap="round"/><line x1="30" y1="28" x2="34" y2="30" stroke="#ffffff" stroke-width="1" stroke-linecap="round"/></svg></div>
+            <div class="avatar owl"><svg viewBox="0 0 40 40" width="40" height="40"><circle cx="20" cy="20" r="20" fill="#9B7C9B"/><circle cx="13" cy="16" r="6" fill="#ffffff"/><circle cx="13" cy="16" r="3" fill="#4A3C4A"/><circle cx="27" cy="16" r="6" fill="#ffffff"/><circle cx="27" cy="16" r="3" fill="#4A3C4A"/><polygon points="20,24 18,28 22,28" fill="#D4A84A"/><polygon points="10,8 8,5 12,6" fill="#9B7C9B"/><polygon points="30,8 32,5 28,6" fill="#9B7C9B"/></svg></div>
+            <div class="avatar fox"><svg viewBox="0 0 40 40" width="40" height="40"><circle cx="20" cy="20" r="20" fill="#D4724A"/><polygon points="12,5 8,12 14,10" fill="#D4724A"/><polygon points="28,5 32,12 26,10" fill="#D4724A"/><circle cx="15" cy="18" r="2.5" fill="#ffffff"/><circle cx="25" cy="18" r="2.5" fill="#ffffff"/><circle cx="20" cy="22" r="1.5" fill="#000000"/><circle cx="12" cy="26" r="2.5" fill="#ffffff"/><circle cx="28" cy="26" r="2.5" fill="#ffffff"/></svg></div>
+            <div class="avatar rabbit"><svg viewBox="0 0 40 40" width="40" height="40"><circle cx="20" cy="20" r="20" fill="#E8A0B8"/><ellipse cx="16" cy="4" rx="3" ry="8" fill="#E8A0B8"/><ellipse cx="16" cy="4" rx="2" ry="6" fill="#F0C4D8"/><ellipse cx="24" cy="4" rx="3" ry="8" fill="#E8A0B8"/><ellipse cx="24" cy="4" rx="2" ry="6" fill="#F0C4D8"/><circle cx="15" cy="18" r="2.5" fill="#ffffff"/><circle cx="25" cy="18" r="2.5" fill="#ffffff"/><circle cx="20" cy="22" r="2" fill="#E8A0B8"/><rect x="19" y="25" width="2" height="3" fill="#ffffff"/><rect x="18" y="26" width="1.5" height="2" fill="#ffffff"/><rect x="20.5" y="26" width="1.5" height="2" fill="#ffffff"/></svg></div>
+            <div class="avatar penguin"><svg viewBox="0 0 40 40" width="40" height="40"><circle cx="20" cy="20" r="20" fill="#4A6880"/><ellipse cx="20" cy="24" rx="10" ry="12" fill="#ffffff"/><circle cx="15" cy="14" r="2.5" fill="#ffffff"/><circle cx="25" cy="14" r="2.5" fill="#ffffff"/><circle cx="14.5" cy="13.5" r="1.2" fill="#000000"/><circle cx="25.5" cy="13.5" r="1.2" fill="#000000"/><polygon points="20,20 18,23 22,23" fill="#FF9844"/><path d="M 10 22 Q 10 24 12 25" stroke="#ffffff" stroke-width="2" fill="none" stroke-linecap="round"/><path d="M 30 22 Q 30 24 28 25" stroke="#ffffff" stroke-width="2" fill="none" stroke-linecap="round"/></svg></div>
+            <div class="avatar lion selected"><svg viewBox="0 0 40 40" width="40" height="40"><circle cx="20" cy="20" r="20" fill="#D4A84A"/><circle cx="20" cy="20" r="18" fill="none" stroke="#B8942D" stroke-width="3" opacity="0.6"/><circle cx="15" cy="18" r="2.5" fill="#ffffff"/><circle cx="25" cy="18" r="2.5" fill="#ffffff"/><polygon points="20,23 18,26 22,26" fill="#000000"/><path d="M 17 27 Q 20 29 23 27" stroke="#ffffff" stroke-width="1.5" fill="none" stroke-linecap="round"/></svg></div>
+            <div class="avatar frog"><svg viewBox="0 0 40 40" width="40" height="40"><circle cx="20" cy="20" r="20" fill="#6AAA5E"/><circle cx="14" cy="10" r="5" fill="#ffffff"/><circle cx="14" cy="10" r="2.5" fill="#000000"/><circle cx="26" cy="10" r="5" fill="#ffffff"/><circle cx="26" cy="10" r="2.5" fill="#000000"/><path d="M 12 25 Q 20 28 28 25" stroke="#ffffff" stroke-width="2" fill="none" stroke-linecap="round"/></svg></div>
+          </div>
+          <input type="text" class="player-input" value="Max" />
+        </div>
+
+        <div class="add-player-link">+ Add player <span class="add-player-count">3</span></div>
+
+        <!-- TURN TIME -->
+        <div class="turn-time-section">
+          <div class="turn-time-label">Turn time:</div>
+          <div class="segmented-control">
+            <button class="seg-button">30s</button>
+            <button class="seg-button selected">60s</button>
+            <button class="seg-button">90s</button>
+          </div>
+        </div>
+
+        <!-- START BUTTON (enabled) -->
+        <button class="start-button enabled">Start Coloring!</button>
+
+        <!-- Safe area -->
+        <div class="safe-area-bottom">
+          <div class="home-indicator"></div>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+  <div class="device-label">Setup complete — ready to start</div>
+</div>
+
+</body>
+</html>

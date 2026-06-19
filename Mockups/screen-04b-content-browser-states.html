@@ -1,0 +1,959 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=390px, initial-scale=1.0" />
+  <title>PaperBrush — Content Browser States</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800&family=Nunito+Sans:wght@400;600&display=swap" rel="stylesheet" />
+  <style>
+    /* ─── Reset ─────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    /* ─── Design tokens ──────────────────────────────────── */
+    :root {
+      --cream:     #FFF8F0;
+      --canvas-bg: #FFFDF9;
+      --teal:      #0EA5A0;
+      --navy:      #1B2A4A;
+      --coral:     #F06449;
+      --gold:      #F5A623;
+      --sage:      #7CB686;
+      --lavender:  #B8A9E8;
+      --sky:       #6BB8E8;
+      --peach:     #FCBFA0;
+      --secondary: #666666;
+      --divider:   #E8E0D8;
+    }
+
+    /* ─── Page shell ─────────────────────────────────────── */
+    html, body {
+      width: 100%;
+      min-height: 100%;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 48px;
+      padding: 48px;
+      align-items: flex-start;
+      justify-content: center;
+      background: #C8C0AE;
+      font-family: 'Nunito Sans', sans-serif;
+    }
+
+    .device-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+    }
+    .device-label {
+      font-family: 'Nunito Sans', sans-serif;
+      font-size: 13px;
+      color: #888;
+      letter-spacing: 0.04em;
+      max-width: 220px;
+      text-align: center;
+    }
+
+    /* ─── iPhone shell ───────────────────────────────────── */
+    .iphone {
+      width: 390px;
+      height: 844px;
+      border-radius: 50px;
+      background: #1a1a1a;
+      box-shadow: 0 24px 80px rgba(0,0,0,0.45), inset 0 0 0 2px #3a3a3a;
+      position: relative;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+    .iphone::before {
+      content: '';
+      position: absolute;
+      top: 12px; left: 50%;
+      transform: translateX(-50%);
+      width: 120px; height: 34px;
+      background: #1a1a1a;
+      border-radius: 20px;
+      z-index: 30;
+    }
+
+    /* ─── Screen ─────────────────────────────────────────── */
+    .screen {
+      position: absolute;
+      inset: 0;
+      border-radius: 48px;
+      overflow: hidden;
+      background: var(--cream);
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ─── Status bar ─────────────────────────────────────── */
+    .status-bar {
+      height: 54px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      padding: 0 28px 8px;
+      background: var(--canvas-bg);
+      z-index: 20;
+    }
+    .status-time {
+      font-family: 'Nunito', sans-serif;
+      font-weight: 700;
+      font-size: 15px;
+      color: var(--navy);
+    }
+    .status-icons { display: flex; align-items: center; gap: 5px; }
+    .status-icons svg { fill: var(--navy); }
+
+    /* ─── TOP BAR ────────────────────────────────────────── */
+    .top-bar {
+      height: 44px;
+      flex-shrink: 0;
+      background: var(--canvas-bg);
+      border-bottom: 1px solid var(--divider);
+      display: flex;
+      align-items: center;
+      padding: 0;
+      position: relative;
+      z-index: 10;
+    }
+    .bar-back {
+      width: 44px; height: 44px;
+      display: flex; align-items: center; justify-content: center;
+      margin-left: 8px;
+      flex-shrink: 0;
+      cursor: pointer;
+      border-radius: 9999px;
+    }
+    .bar-back svg {
+      width: 18px; height: 18px;
+      stroke: var(--teal);
+      stroke-width: 2.5;
+      stroke-linecap: round; stroke-linejoin: round;
+      fill: none;
+    }
+    .bar-title {
+      position: absolute;
+      left: 0; right: 0;
+      text-align: center;
+      font-family: 'Nunito', sans-serif;
+      font-weight: 700;
+      font-size: 18px;
+      color: var(--navy);
+      pointer-events: none;
+      letter-spacing: -0.2px;
+    }
+    .bar-right {
+      margin-left: auto;
+      display: flex;
+      align-items: center;
+    }
+    .bar-icon {
+      width: 44px; height: 44px;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; border-radius: 9999px;
+    }
+    .bar-icon svg {
+      fill: none;
+      stroke-width: 1.8;
+      stroke-linecap: round; stroke-linejoin: round;
+    }
+    .bar-icon.teal svg   { stroke: var(--teal); }
+    .bar-icon.muted svg  { stroke: var(--secondary); }
+
+    /* ─── SCROLLABLE BODY ────────────────────────────────── */
+    .scroll-body {
+      flex: 1;
+      overflow-y: auto;
+      overflow-x: hidden;
+      scrollbar-width: none;
+      min-height: 0;
+    }
+    .scroll-body::-webkit-scrollbar { display: none; }
+
+    /* ─── CATEGORY PILLS ROW ─────────────────────────────── */
+    .pills-row {
+      margin-top: 16px;
+      padding-left: 16px;
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      overflow-y: hidden;
+      scrollbar-width: none;
+    }
+    .pills-row::-webkit-scrollbar { display: none; }
+
+    .pill {
+      height: 36px;
+      padding: 0 14px;
+      border-radius: 9999px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-family: 'Nunito', sans-serif;
+      font-weight: 600;
+      font-size: 13px;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: transform 0.15s ease;
+      border: 1px solid var(--divider);
+      background: var(--canvas-bg);
+      color: var(--navy);
+    }
+    .pill:active { transform: scale(0.95); }
+
+    .pill.selected {
+      background: var(--teal);
+      color: #ffffff;
+      border-color: transparent;
+      box-shadow: 0 2px 8px rgba(14,165,160,0.22);
+    }
+
+    /* ─── SECTION HEADER ─────────────────────────────────── */
+    .section-header {
+      margin: 20px 16px 0;
+      font-family: 'Nunito', sans-serif;
+      font-weight: 700;
+      font-size: 22px;
+      color: var(--navy);
+      letter-spacing: -0.3px;
+    }
+
+    /* ─── PAGE GRID ──────────────────────────────────────── */
+    .page-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      padding: 16px 16px 24px;
+    }
+
+    /* ─── PAGE CARD ──────────────────────────────────────── */
+    .page-card {
+      background: var(--canvas-bg);
+      border-radius: 16px;
+      box-shadow: 0 2px 8px rgba(27,42,74,0.06);
+      overflow: hidden;
+      cursor: pointer;
+      position: relative;
+      transition: transform 0.18s cubic-bezier(0.34,1.56,0.64,1),
+                  box-shadow 0.18s ease;
+    }
+    .page-card:active {
+      transform: scale(0.97);
+      box-shadow: 0 1px 4px rgba(27,42,74,0.06);
+    }
+    .page-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 16px rgba(27,42,74,0.10);
+    }
+
+    /* Thumbnail zone — 3:4 ratio approximated */
+    .card-thumb {
+      width: 100%;
+      aspect-ratio: 3 / 3.6;
+      background: #ffffff;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .card-thumb svg {
+      width: 86%;
+      height: 86%;
+    }
+
+    /* Locked state */
+    .page-card.locked .card-thumb {
+      opacity: 0.5;
+    }
+    .lock-overlay {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      pointer-events: none;
+      z-index: 4;
+    }
+    .lock-icon {
+      width: 36px; height: 36px;
+      display: flex; align-items: center; justify-content: center;
+      opacity: 0.60;
+    }
+    .lock-icon svg {
+      width: 22px; height: 22px;
+      fill: var(--secondary);
+    }
+
+    /* NEW badge */
+    .badge-new {
+      position: absolute;
+      top: 8px; right: 8px;
+      background: var(--coral);
+      color: #ffffff;
+      font-family: 'Nunito', sans-serif;
+      font-weight: 700;
+      font-size: 9px;
+      letter-spacing: 0.04em;
+      padding: 3px 7px;
+      border-radius: 9999px;
+      z-index: 5;
+      box-shadow: 0 1px 4px rgba(240,100,73,0.35);
+    }
+
+    /* CONTINUE badge */
+    .badge-continue {
+      position: absolute;
+      top: 8px; right: 8px;
+      background: var(--teal);
+      color: #ffffff;
+      font-family: 'Nunito', sans-serif;
+      font-weight: 700;
+      font-size: 9px;
+      letter-spacing: 0.04em;
+      padding: 3px 7px;
+      border-radius: 9999px;
+      z-index: 5;
+      box-shadow: 0 1px 4px rgba(14,165,160,0.35);
+    }
+
+    /* Card info strip */
+    .card-info {
+      padding: 10px 12px 11px;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+    .card-title {
+      font-family: 'Nunito', sans-serif;
+      font-weight: 600;
+      font-size: 13px;
+      color: var(--navy);
+      line-height: 1.2;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .card-tier {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .tier-dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .tier-label {
+      font-family: 'Nunito Sans', sans-serif;
+      font-weight: 400;
+      font-size: 11px;
+      line-height: 1;
+    }
+
+    /* ─── Tier divider line with label ─────────────────── */
+    .tier-divider {
+      margin: 20px 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .tier-divider::before,
+    .tier-divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--divider);
+    }
+    .tier-divider-text {
+      font-family: 'Nunito Sans', sans-serif;
+      font-weight: 400;
+      font-size: 13px;
+      color: var(--secondary);
+      white-space: nowrap;
+    }
+
+    /* ─── Empty state ────────────────────────────────────── */
+    .empty-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      flex: 1;
+      padding: 40px 32px;
+      text-align: center;
+    }
+    .empty-icon {
+      width: 120px;
+      height: 120px;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .empty-title {
+      font-family: 'Nunito', sans-serif;
+      font-weight: 700;
+      font-size: 18px;
+      color: var(--navy);
+      margin-bottom: 8px;
+    }
+    .empty-subtitle {
+      font-family: 'Nunito Sans', sans-serif;
+      font-weight: 400;
+      font-size: 14px;
+      color: var(--secondary);
+      margin-bottom: 24px;
+      line-height: 1.4;
+    }
+    .empty-link {
+      font-family: 'Nunito Sans', sans-serif;
+      font-weight: 600;
+      font-size: 15px;
+      color: var(--teal);
+      cursor: pointer;
+      text-decoration: none;
+    }
+
+    /* ─── Bottom safe area ───────────────────────────────── */
+    .safe-area {
+      height: 34px; flex-shrink: 0;
+      background: var(--cream);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .home-indicator {
+      width: 120px; height: 5px;
+      background: var(--navy);
+      border-radius: 9999px;
+      opacity: 0.18;
+    }
+
+    /* ─── Entrance animations ────────────────────────────– */
+    @keyframes fadeDown { from { opacity:0; transform:translateY(-8px) } to { opacity:1; transform:translateY(0) } }
+    @keyframes fadeIn   { from { opacity:0 } to { opacity:1 } }
+    @keyframes popIn    { from { opacity:0; transform:scale(0.94) } to { opacity:1; transform:scale(1) } }
+
+    .top-bar       { animation: fadeDown 0.3s ease 0.05s both; }
+    .pills-row     { animation: fadeIn   0.35s ease 0.12s both; }
+    .section-header{ animation: fadeIn   0.35s ease 0.18s both; }
+
+    .page-card:nth-child(1) { animation: popIn 0.4s cubic-bezier(0.34,1.3,0.64,1) 0.22s both; }
+    .page-card:nth-child(2) { animation: popIn 0.4s cubic-bezier(0.34,1.3,0.64,1) 0.28s both; }
+    .page-card:nth-child(3) { animation: popIn 0.4s cubic-bezier(0.34,1.3,0.64,1) 0.34s both; }
+    .page-card:nth-child(4) { animation: popIn 0.4s cubic-bezier(0.34,1.3,0.64,1) 0.40s both; }
+  </style>
+</head>
+<body>
+
+<!-- ════════════════════════════════════════════════════════════════ -->
+<!-- iPhone 1: In-Progress Badge + Tier Divider -->
+<!-- ════════════════════════════════════════════════════════════════ -->
+<div class="device-wrap">
+  <div class="iphone">
+    <div class="screen">
+
+      <!-- Status bar -->
+      <div class="status-bar">
+        <span class="status-time">9:41</span>
+        <div class="status-icons">
+          <svg width="17" height="12" viewBox="0 0 17 12"><rect x="0" y="8" width="3" height="4" rx="0.8"/><rect x="4.5" y="5.5" width="3" height="6.5" rx="0.8"/><rect x="9" y="3" width="3" height="9" rx="0.8"/><rect x="13.5" y="0" width="3" height="12" rx="0.8"/></svg>
+          <svg width="16" height="12" viewBox="0 0 16 12" fill="none" stroke="#1B2A4A" stroke-width="1.8" stroke-linecap="round"><path d="M1 4.5C3.8 1.8 8 1.8 10.5 4" opacity="0.3"/><path d="M2.8 6.2C4.8 4.3 7.4 4 9.2 5.5"/><path d="M4.8 7.8C5.8 6.9 7.2 6.9 8.2 7.8"/><circle cx="6.5" cy="10" r="1.2" fill="#1B2A4A" stroke="none"/></svg>
+          <svg width="25" height="12" viewBox="0 0 25 12" fill="#1B2A4A"><rect x="0" y="1" width="21" height="10" rx="2.5" stroke="#1B2A4A" stroke-width="1.2" fill="none"/><rect x="1.5" y="2.5" width="16" height="7" rx="1.5"/><path d="M22.5 4v4a2 2 0 0 0 0-4z"/></svg>
+        </div>
+      </div>
+
+      <!-- ══ TOP BAR ══ -->
+      <div class="top-bar">
+        <div class="bar-back">
+          <svg viewBox="0 0 18 18"><polyline points="12,3 5,9 12,15"/></svg>
+        </div>
+        <span class="bar-title">PaperBrush</span>
+        <div class="bar-right">
+          <div class="bar-icon teal" title="My Gallery">
+            <svg width="22" height="20" viewBox="0 0 22 20">
+              <rect x="4" y="5" width="14" height="11" rx="2.5" stroke-width="1.7"/>
+              <rect x="2" y="3" width="14" height="11" rx="2.5" stroke-width="1.7" opacity="0.45"/>
+              <path d="M6 13 L9 8.5 L12 11.5 L14 9.5 L17 13Z" stroke-width="1.4" fill="none" opacity="0.7"/>
+              <circle cx="14.5" cy="8" r="1.2" fill="none" stroke-width="1.4" opacity="0.7"/>
+            </svg>
+          </div>
+          <div class="bar-icon muted" title="Settings">
+            <svg width="20" height="20" viewBox="0 0 20 20">
+              <circle cx="10" cy="10" r="3" stroke-width="1.7"/>
+              <path d="M10 1v2M10 17v2M1 10h2M17 10h2 M3.22 3.22l1.42 1.42M15.36 15.36l1.42 1.42 M3.22 16.78l1.42-1.42M15.36 4.64l1.42-1.42" stroke-width="1.7" stroke-linecap="round"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ SCROLLABLE BODY ══ -->
+      <div class="scroll-body">
+
+        <!-- Category pills -->
+        <div class="pills-row">
+          <div class="pill selected">🐾 Animals</div>
+          <div class="pill">🚗 Vehicles</div>
+          <div class="pill">🐉 Fantasy</div>
+          <div class="pill">🌿 Nature</div>
+          <div class="pill">🎄 Holidays</div>
+          <div class="pill">🔷 Patterns</div>
+        </div>
+
+        <!-- Section title -->
+        <div class="section-header">Animals</div>
+
+        <!-- 2-column grid -->
+        <div class="page-grid">
+
+          <!-- Card 1: Sleeping Lion with CONTINUE badge -->
+          <div class="page-card">
+            <div class="card-thumb">
+              <svg viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="60" cy="65" r="38" fill="none" stroke="#C8C0B0" stroke-width="3.5"/>
+                <circle cx="60" cy="65" r="30" fill="none" stroke="#C8C0B0" stroke-width="2"/>
+                <ellipse cx="60" cy="90" rx="28" ry="18" fill="none" stroke="#C8C0B0" stroke-width="3"/>
+                <ellipse cx="60" cy="60" rx="22" ry="20" fill="none" stroke="#C8C0B0" stroke-width="3"/>
+                <path d="M50 57 Q54 53 58 57" fill="none" stroke="#C8C0B0" stroke-width="2.2" stroke-linecap="round"/>
+                <path d="M62 57 Q66 53 70 57" fill="none" stroke="#C8C0B0" stroke-width="2.2" stroke-linecap="round"/>
+                <path d="M56 65 Q60 68 64 65 Q60 62 56 65Z" fill="none" stroke="#C8C0B0" stroke-width="1.8" stroke-linejoin="round"/>
+                <path d="M57 68 Q60 72 63 68" fill="none" stroke="#C8C0B0" stroke-width="1.8" stroke-linecap="round"/>
+                <path d="M42 48 L36 38 L48 42Z" fill="none" stroke="#C8C0B0" stroke-width="2.5" stroke-linejoin="round"/>
+                <path d="M78 48 L84 38 L72 42Z" fill="none" stroke="#C8C0B0" stroke-width="2.5" stroke-linejoin="round"/>
+                <ellipse cx="44" cy="100" rx="10" ry="6" fill="none" stroke="#C8C0B0" stroke-width="2.5"/>
+                <ellipse cx="76" cy="100" rx="10" ry="6" fill="none" stroke="#C8C0B0" stroke-width="2.5"/>
+                <path d="M88 82 Q102 75 100 88 Q98 96 90 94" fill="none" stroke="#C8C0B0" stroke-width="2.5" stroke-linecap="round"/>
+                <path d="M34 50 Q30 58 33 66" fill="none" stroke="#C8C0B0" stroke-width="1.5" stroke-linecap="round" opacity="0.6"/>
+                <path d="M86 50 Q90 58 87 66" fill="none" stroke="#C8C0B0" stroke-width="1.5" stroke-linecap="round" opacity="0.6"/>
+                <path d="M46 36 Q50 30 60 28 Q70 30 74 36" fill="none" stroke="#C8C0B0" stroke-width="1.5" stroke-linecap="round" opacity="0.6"/>
+              </svg>
+            </div>
+            <div class="badge-continue">CONTINUE</div>
+            <div class="card-info">
+              <div class="card-title">Sleeping Lion</div>
+              <div class="card-tier">
+                <div class="tier-dot" style="background:#6BB8E8;"></div>
+                <span class="tier-label" style="color:#6BB8E8;">Explorer</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card 2: Puppy Friends with NEW badge -->
+          <div class="page-card">
+            <div class="card-thumb">
+              <svg viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <ellipse cx="38" cy="82" rx="20" ry="15" fill="none" stroke="#C8C0B0" stroke-width="3"/>
+                <circle cx="38" cy="58" r="17" fill="none" stroke="#C8C0B0" stroke-width="3"/>
+                <path d="M24 50 Q18 52 20 64 Q22 68 28 66" fill="none" stroke="#C8C0B0" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M52 50 Q58 52 56 64 Q54 68 48 66" fill="none" stroke="#C8C0B0" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                <circle cx="33" cy="56" r="2.5" fill="none" stroke="#C8C0B0" stroke-width="1.8"/>
+                <circle cx="43" cy="56" r="2.5" fill="none" stroke="#C8C0B0" stroke-width="1.8"/>
+                <ellipse cx="38" cy="62" rx="3.5" ry="2.5" fill="none" stroke="#C8C0B0" stroke-width="1.8"/>
+                <path d="M34 66 Q38 70 42 66" fill="none" stroke="#C8C0B0" stroke-width="1.8" stroke-linecap="round"/>
+                <ellipse cx="28" cy="93" rx="7" ry="5" fill="none" stroke="#C8C0B0" stroke-width="2"/>
+                <ellipse cx="48" cy="93" rx="7" ry="5" fill="none" stroke="#C8C0B0" stroke-width="2"/>
+                <ellipse cx="84" cy="82" rx="20" ry="15" fill="none" stroke="#C8C0B0" stroke-width="3"/>
+                <circle cx="84" cy="56" r="17" fill="none" stroke="#C8C0B0" stroke-width="3"/>
+                <path d="M70 48 L66 36 L76 44" fill="none" stroke="#C8C0B0" stroke-width="2.5" stroke-linejoin="round"/>
+                <path d="M98 48 Q104 50 102 62 Q100 66 94 64" fill="none" stroke="#C8C0B0" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                <circle cx="79" cy="54" r="2.5" fill="none" stroke="#C8C0B0" stroke-width="1.8"/>
+                <circle cx="89" cy="54" r="2.5" fill="none" stroke="#C8C0B0" stroke-width="1.8"/>
+                <ellipse cx="84" cy="60" rx="3.5" ry="2.5" fill="none" stroke="#C8C0B0" stroke-width="1.8"/>
+                <path d="M80 64 Q84 68 88 64" fill="none" stroke="#C8C0B0" stroke-width="1.8" stroke-linecap="round"/>
+                <ellipse cx="74" cy="93" rx="7" ry="5" fill="none" stroke="#C8C0B0" stroke-width="2"/>
+                <ellipse cx="94" cy="93" rx="7" ry="5" fill="none" stroke="#C8C0B0" stroke-width="2"/>
+                <path d="M57 32 C57 28 52 26 52 30 C52 34 57 38 57 38 C57 38 62 34 62 30 C62 26 57 28 57 32Z" fill="none" stroke="#C8C0B0" stroke-width="1.8" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <div class="badge-new">NEW</div>
+            <div class="card-info">
+              <div class="card-title">Puppy Friends</div>
+              <div class="card-tier">
+                <div class="tier-dot" style="background:#FCBFA0;"></div>
+                <span class="tier-label" style="color:#D4811A;">Starter</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card 3: Happy Cat -->
+          <div class="page-card">
+            <div class="card-thumb">
+              <svg viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <ellipse cx="60" cy="88" rx="28" ry="22" fill="none" stroke="#C8C0B0" stroke-width="3"/>
+                <ellipse cx="60" cy="92" rx="16" ry="14" fill="none" stroke="#C8C0B0" stroke-width="2"/>
+                <ellipse cx="60" cy="54" rx="24" ry="22" fill="none" stroke="#C8C0B0" stroke-width="3"/>
+                <polygon points="40,38 32,22 50,32" fill="none" stroke="#C8C0B0" stroke-width="2.5" stroke-linejoin="round"/>
+                <polygon points="80,38 88,22 70,32" fill="none" stroke="#C8C0B0" stroke-width="2.5" stroke-linejoin="round"/>
+                <polygon points="40,36 34,24 48,32" fill="none" stroke="#C8C0B0" stroke-width="1.3" stroke-linejoin="round" opacity="0.6"/>
+                <polygon points="80,36 86,24 72,32" fill="none" stroke="#C8C0B0" stroke-width="1.3" stroke-linejoin="round" opacity="0.6"/>
+                <path d="M48 50 Q52 45 56 50" fill="none" stroke="#C8C0B0" stroke-width="2.2" stroke-linecap="round"/>
+                <path d="M64 50 Q68 45 72 50" fill="none" stroke="#C8C0B0" stroke-width="2.2" stroke-linecap="round"/>
+                <path d="M57 58 Q60 61 63 58 Q60 55 57 58Z" fill="none" stroke="#C8C0B0" stroke-width="1.8" stroke-linejoin="round"/>
+                <path d="M52 63 Q60 70 68 63" fill="none" stroke="#C8C0B0" stroke-width="2" stroke-linecap="round"/>
+                <line x1="35" y1="57" x2="52" y2="60" stroke="#C8C0B0" stroke-width="1.5" stroke-linecap="round"/>
+                <line x1="35" y1="62" x2="52" y2="63" stroke="#C8C0B0" stroke-width="1.5" stroke-linecap="round"/>
+                <line x1="68" y1="60" x2="85" y2="57" stroke="#C8C0B0" stroke-width="1.5" stroke-linecap="round"/>
+                <line x1="68" y1="63" x2="85" y2="62" stroke="#C8C0B0" stroke-width="1.5" stroke-linecap="round"/>
+                <ellipse cx="42" cy="104" rx="10" ry="6" fill="none" stroke="#C8C0B0" stroke-width="2.5"/>
+                <ellipse cx="78" cy="104" rx="10" ry="6" fill="none" stroke="#C8C0B0" stroke-width="2.5"/>
+                <path d="M88 78 Q104 68 100 84 Q96 94 88 90" fill="none" stroke="#C8C0B0" stroke-width="2.5" stroke-linecap="round"/>
+                <path d="M54 36 Q58 30 62 34" fill="none" stroke="#C8C0B0" stroke-width="1.4" stroke-linecap="round" opacity="0.5"/>
+                <path d="M52 30 Q58 24 64 28" fill="none" stroke="#C8C0B0" stroke-width="1.4" stroke-linecap="round" opacity="0.4"/>
+              </svg>
+            </div>
+            <div class="card-info">
+              <div class="card-title">Happy Cat</div>
+              <div class="card-tier">
+                <div class="tier-dot" style="background:#6BB8E8;"></div>
+                <span class="tier-label" style="color:#6BB8E8;">Explorer</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card 4: Jungle Fox (LOCKED) -->
+          <div class="page-card locked">
+            <div class="card-thumb">
+              <svg viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M0 110 Q20 80 40 90 Q20 70 30 50 Q50 60 45 80 Q60 60 70 75 Q65 55 80 45 Q90 65 80 85 Q100 70 110 90 L110 120 Z" fill="none" stroke="#C8C0B0" stroke-width="2" stroke-linejoin="round" opacity="0.6"/>
+                <ellipse cx="60" cy="85" rx="24" ry="18" fill="none" stroke="#C8C0B0" stroke-width="3"/>
+                <ellipse cx="60" cy="89" rx="12" ry="10" fill="none" stroke="#C8C0B0" stroke-width="1.8"/>
+                <path d="M38 62 Q38 36 60 34 Q82 36 82 62 Q82 78 60 78 Q38 78 38 62Z" fill="none" stroke="#C8C0B0" stroke-width="3"/>
+                <polygon points="44,44 36,22 54,38" fill="none" stroke="#C8C0B0" stroke-width="2.5" stroke-linejoin="round"/>
+                <polygon points="76,44 84,22 66,38" fill="none" stroke="#C8C0B0" stroke-width="2.5" stroke-linejoin="round"/>
+                <polygon points="44,42 38,26 52,38" fill="none" stroke="#C8C0B0" stroke-width="1.3" stroke-linejoin="round" opacity="0.5"/>
+                <polygon points="76,42 82,26 68,38" fill="none" stroke="#C8C0B0" stroke-width="1.3" stroke-linejoin="round" opacity="0.5"/>
+                <ellipse cx="50" cy="56" rx="4" ry="4.5" fill="none" stroke="#C8C0B0" stroke-width="2"/>
+                <ellipse cx="70" cy="56" rx="4" ry="4.5" fill="none" stroke="#C8C0B0" stroke-width="2"/>
+                <line x1="50" y1="52.5" x2="50" y2="59.5" stroke="#C8C0B0" stroke-width="1.5" stroke-linecap="round"/>
+                <line x1="70" y1="52.5" x2="70" y2="59.5" stroke="#C8C0B0" stroke-width="1.5" stroke-linecap="round"/>
+                <ellipse cx="60" cy="67" rx="8" ry="6" fill="none" stroke="#C8C0B0" stroke-width="2"/>
+                <ellipse cx="60" cy="63" rx="3" ry="2" fill="none" stroke="#C8C0B0" stroke-width="1.8"/>
+                <path d="M55 70 Q60 74 65 70" fill="none" stroke="#C8C0B0" stroke-width="1.8" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <div class="lock-overlay">
+              <div class="lock-icon">
+                <svg viewBox="0 0 22 26" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M5 12V8 C5 4.7 7.7 2 11 2 C14.3 2 17 4.7 17 8 V12" stroke="#666666" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                  <rect x="2" y="11" width="18" height="13" rx="3" fill="#666666"/>
+                  <circle cx="11" cy="17" r="2.5" fill="white" opacity="0.7"/>
+                  <rect x="10" y="18.5" width="2" height="3" rx="1" fill="white" opacity="0.7"/>
+                </svg>
+              </div>
+            </div>
+            <div class="card-info">
+              <div class="card-title">Jungle Fox</div>
+              <div class="card-tier">
+                <div class="tier-dot" style="background:#B8A9E8;"></div>
+                <span class="tier-label" style="color:#9C8DD0;">Creator</span>
+              </div>
+            </div>
+          </div>
+
+        </div><!-- /page-grid -->
+
+        <!-- Tier divider line -->
+        <div class="tier-divider">
+          <span class="tier-divider-text">More pages</span>
+        </div>
+
+      </div><!-- /scroll-body -->
+
+      <!-- Bottom safe area -->
+      <div class="safe-area"><div class="home-indicator"></div></div>
+
+    </div><!-- /screen -->
+  </div><!-- /iphone -->
+  <div class="device-label">In-progress badges + tier divider</div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════ -->
+<!-- iPhone 2: Empty Category State -->
+<!-- ════════════════════════════════════════════════════════════════ -->
+<div class="device-wrap">
+  <div class="iphone">
+    <div class="screen">
+
+      <!-- Status bar -->
+      <div class="status-bar">
+        <span class="status-time">9:41</span>
+        <div class="status-icons">
+          <svg width="17" height="12" viewBox="0 0 17 12"><rect x="0" y="8" width="3" height="4" rx="0.8"/><rect x="4.5" y="5.5" width="3" height="6.5" rx="0.8"/><rect x="9" y="3" width="3" height="9" rx="0.8"/><rect x="13.5" y="0" width="3" height="12" rx="0.8"/></svg>
+          <svg width="16" height="12" viewBox="0 0 16 12" fill="none" stroke="#1B2A4A" stroke-width="1.8" stroke-linecap="round"><path d="M1 4.5C3.8 1.8 8 1.8 10.5 4" opacity="0.3"/><path d="M2.8 6.2C4.8 4.3 7.4 4 9.2 5.5"/><path d="M4.8 7.8C5.8 6.9 7.2 6.9 8.2 7.8"/><circle cx="6.5" cy="10" r="1.2" fill="#1B2A4A" stroke="none"/></svg>
+          <svg width="25" height="12" viewBox="0 0 25 12" fill="#1B2A4A"><rect x="0" y="1" width="21" height="10" rx="2.5" stroke="#1B2A4A" stroke-width="1.2" fill="none"/><rect x="1.5" y="2.5" width="16" height="7" rx="1.5"/><path d="M22.5 4v4a2 2 0 0 0 0-4z"/></svg>
+        </div>
+      </div>
+
+      <!-- ══ TOP BAR ══ -->
+      <div class="top-bar">
+        <div class="bar-back">
+          <svg viewBox="0 0 18 18"><polyline points="12,3 5,9 12,15"/></svg>
+        </div>
+        <span class="bar-title">PaperBrush</span>
+        <div class="bar-right">
+          <div class="bar-icon teal" title="My Gallery">
+            <svg width="22" height="20" viewBox="0 0 22 20">
+              <rect x="4" y="5" width="14" height="11" rx="2.5" stroke-width="1.7"/>
+              <rect x="2" y="3" width="14" height="11" rx="2.5" stroke-width="1.7" opacity="0.45"/>
+              <path d="M6 13 L9 8.5 L12 11.5 L14 9.5 L17 13Z" stroke-width="1.4" fill="none" opacity="0.7"/>
+              <circle cx="14.5" cy="8" r="1.2" fill="none" stroke-width="1.4" opacity="0.7"/>
+            </svg>
+          </div>
+          <div class="bar-icon muted" title="Settings">
+            <svg width="20" height="20" viewBox="0 0 20 20">
+              <circle cx="10" cy="10" r="3" stroke-width="1.7"/>
+              <path d="M10 1v2M10 17v2M1 10h2M17 10h2 M3.22 3.22l1.42 1.42M15.36 15.36l1.42 1.42 M3.22 16.78l1.42-1.42M15.36 4.64l1.42-1.42" stroke-width="1.7" stroke-linecap="round"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ SCROLLABLE BODY ══ -->
+      <div class="scroll-body">
+
+        <!-- Category pills -->
+        <div class="pills-row">
+          <div class="pill">🐾 Animals</div>
+          <div class="pill">🚗 Vehicles</div>
+          <div class="pill selected">🔷 Patterns</div>
+          <div class="pill">🌿 Nature</div>
+          <div class="pill">🎄 Holidays</div>
+        </div>
+
+        <!-- Empty state -->
+        <div class="empty-state">
+          <div class="empty-icon">
+            <svg width="120" height="120" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <!-- Easel legs -->
+              <line x1="30" y1="110" x2="20" y2="20" stroke="#C8C0B0" stroke-width="3" stroke-linecap="round"/>
+              <line x1="90" y1="110" x2="100" y2="20" stroke="#C8C0B0" stroke-width="3" stroke-linecap="round"/>
+              <line x1="30" y1="110" x2="90" y2="110" stroke="#C8C0B0" stroke-width="3" stroke-linecap="round"/>
+              <!-- Canvas -->
+              <rect x="32" y="25" width="56" height="60" rx="3" fill="#FFFDF9" stroke="#C8C0B0" stroke-width="2.5"/>
+              <!-- Question mark inside canvas -->
+              <text x="60" y="62" font-family="Nunito" font-size="32" font-weight="600" fill="#C8C0B0" text-anchor="middle" dominant-baseline="middle">?</text>
+              <!-- Paintbrush leaning -->
+              <line x1="95" y1="90" x2="105" y2="35" stroke="#C8C0B0" stroke-width="3.5" stroke-linecap="round"/>
+              <circle cx="105" cy="33" r="4" fill="#C8C0B0"/>
+            </svg>
+          </div>
+          <div class="empty-title">Nothing here yet!</div>
+          <div class="empty-subtitle">Check back soon for new Patterns pages</div>
+          <div class="empty-link">Browse Other Categories</div>
+        </div>
+
+      </div><!-- /scroll-body -->
+
+      <!-- Bottom safe area -->
+      <div class="safe-area"><div class="home-indicator"></div></div>
+
+    </div><!-- /screen -->
+  </div><!-- /iphone -->
+  <div class="device-label">Empty category state</div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════ -->
+<!-- iPhone 3: Pack Store Icon in Nav -->
+<!-- ════════════════════════════════════════════════════════════════ -->
+<div class="device-wrap">
+  <div class="iphone">
+    <div class="screen">
+
+      <!-- Status bar -->
+      <div class="status-bar">
+        <span class="status-time">9:41</span>
+        <div class="status-icons">
+          <svg width="17" height="12" viewBox="0 0 17 12"><rect x="0" y="8" width="3" height="4" rx="0.8"/><rect x="4.5" y="5.5" width="3" height="6.5" rx="0.8"/><rect x="9" y="3" width="3" height="9" rx="0.8"/><rect x="13.5" y="0" width="3" height="12" rx="0.8"/></svg>
+          <svg width="16" height="12" viewBox="0 0 16 12" fill="none" stroke="#1B2A4A" stroke-width="1.8" stroke-linecap="round"><path d="M1 4.5C3.8 1.8 8 1.8 10.5 4" opacity="0.3"/><path d="M2.8 6.2C4.8 4.3 7.4 4 9.2 5.5"/><path d="M4.8 7.8C5.8 6.9 7.2 6.9 8.2 7.8"/><circle cx="6.5" cy="10" r="1.2" fill="#1B2A4A" stroke="none"/></svg>
+          <svg width="25" height="12" viewBox="0 0 25 12" fill="#1B2A4A"><rect x="0" y="1" width="21" height="10" rx="2.5" stroke="#1B2A4A" stroke-width="1.2" fill="none"/><rect x="1.5" y="2.5" width="16" height="7" rx="1.5"/><path d="M22.5 4v4a2 2 0 0 0 0-4z"/></svg>
+        </div>
+      </div>
+
+      <!-- ══ TOP BAR ══ -->
+      <div class="top-bar">
+        <div class="bar-back">
+          <svg viewBox="0 0 18 18"><polyline points="12,3 5,9 12,15"/></svg>
+        </div>
+        <span class="bar-title">PaperBrush</span>
+        <div class="bar-right">
+          <!-- Pack Store icon -->
+          <div class="bar-icon teal" title="Pack Store">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M4 8l6-6 6 6M4 8v8a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V8"/>
+              <path d="M10 12l-3 3h6l-3-3" opacity="0.7"/>
+              <polygon points="10,4 11,6 9,6"/>
+            </svg>
+          </div>
+          <!-- Gallery icon -->
+          <div class="bar-icon teal" title="My Gallery">
+            <svg width="22" height="20" viewBox="0 0 22 20">
+              <rect x="4" y="5" width="14" height="11" rx="2.5" stroke-width="1.7"/>
+              <rect x="2" y="3" width="14" height="11" rx="2.5" stroke-width="1.7" opacity="0.45"/>
+              <path d="M6 13 L9 8.5 L12 11.5 L14 9.5 L17 13Z" stroke-width="1.4" fill="none" opacity="0.7"/>
+              <circle cx="14.5" cy="8" r="1.2" fill="none" stroke-width="1.4" opacity="0.7"/>
+            </svg>
+          </div>
+          <!-- Settings icon -->
+          <div class="bar-icon muted" title="Settings">
+            <svg width="20" height="20" viewBox="0 0 20 20">
+              <circle cx="10" cy="10" r="3" stroke-width="1.7"/>
+              <path d="M10 1v2M10 17v2M1 10h2M17 10h2 M3.22 3.22l1.42 1.42M15.36 15.36l1.42 1.42 M3.22 16.78l1.42-1.42M15.36 4.64l1.42-1.42" stroke-width="1.7" stroke-linecap="round"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ SCROLLABLE BODY ══ -->
+      <div class="scroll-body">
+
+        <!-- Category pills -->
+        <div class="pills-row">
+          <div class="pill selected">🐾 Animals</div>
+          <div class="pill">🚗 Vehicles</div>
+          <div class="pill">🐉 Fantasy</div>
+          <div class="pill">🌿 Nature</div>
+          <div class="pill">🎄 Holidays</div>
+          <div class="pill">🔷 Patterns</div>
+        </div>
+
+        <!-- Section title -->
+        <div class="section-header">Animals</div>
+
+        <!-- 2-column grid -->
+        <div class="page-grid">
+
+          <!-- Card 1: Sleeping Lion -->
+          <div class="page-card">
+            <div class="card-thumb">
+              <svg viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="60" cy="65" r="38" fill="none" stroke="#C8C0B0" stroke-width="3.5"/>
+                <circle cx="60" cy="65" r="30" fill="none" stroke="#C8C0B0" stroke-width="2"/>
+                <ellipse cx="60" cy="90" rx="28" ry="18" fill="none" stroke="#C8C0B0" stroke-width="3"/>
+                <ellipse cx="60" cy="60" rx="22" ry="20" fill="none" stroke="#C8C0B0" stroke-width="3"/>
+                <path d="M50 57 Q54 53 58 57" fill="none" stroke="#C8C0B0" stroke-width="2.2" stroke-linecap="round"/>
+                <path d="M62 57 Q66 53 70 57" fill="none" stroke="#C8C0B0" stroke-width="2.2" stroke-linecap="round"/>
+                <path d="M56 65 Q60 68 64 65 Q60 62 56 65Z" fill="none" stroke="#C8C0B0" stroke-width="1.8" stroke-linejoin="round"/>
+                <path d="M57 68 Q60 72 63 68" fill="none" stroke="#C8C0B0" stroke-width="1.8" stroke-linecap="round"/>
+                <path d="M42 48 L36 38 L48 42Z" fill="none" stroke="#C8C0B0" stroke-width="2.5" stroke-linejoin="round"/>
+                <path d="M78 48 L84 38 L72 42Z" fill="none" stroke="#C8C0B0" stroke-width="2.5" stroke-linejoin="round"/>
+                <ellipse cx="44" cy="100" rx="10" ry="6" fill="none" stroke="#C8C0B0" stroke-width="2.5"/>
+                <ellipse cx="76" cy="100" rx="10" ry="6" fill="none" stroke="#C8C0B0" stroke-width="2.5"/>
+                <path d="M88 82 Q102 75 100 88 Q98 96 90 94" fill="none" stroke="#C8C0B0" stroke-width="2.5" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <div class="card-info">
+              <div class="card-title">Sleeping Lion</div>
+              <div class="card-tier">
+                <div class="tier-dot" style="background:#6BB8E8;"></div>
+                <span class="tier-label" style="color:#6BB8E8;">Explorer</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card 2: Puppy Friends -->
+          <div class="page-card">
+            <div class="card-thumb">
+              <svg viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <ellipse cx="38" cy="82" rx="20" ry="15" fill="none" stroke="#C8C0B0" stroke-width="3"/>
+                <circle cx="38" cy="58" r="17" fill="none" stroke="#C8C0B0" stroke-width="3"/>
+                <path d="M24 50 Q18 52 20 64 Q22 68 28 66" fill="none" stroke="#C8C0B0" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M52 50 Q58 52 56 64 Q54 68 48 66" fill="none" stroke="#C8C0B0" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                <circle cx="33" cy="56" r="2.5" fill="none" stroke="#C8C0B0" stroke-width="1.8"/>
+                <circle cx="43" cy="56" r="2.5" fill="none" stroke="#C8C0B0" stroke-width="1.8"/>
+                <ellipse cx="38" cy="62" rx="3.5" ry="2.5" fill="none" stroke="#C8C0B0" stroke-width="1.8"/>
+                <path d="M34 66 Q38 70 42 66" fill="none" stroke="#C8C0B0" stroke-width="1.8" stroke-linecap="round"/>
+                <ellipse cx="28" cy="93" rx="7" ry="5" fill="none" stroke="#C8C0B0" stroke-width="2"/>
+                <ellipse cx="48" cy="93" rx="7" ry="5" fill="none" stroke="#C8C0B0" stroke-width="2"/>
+                <ellipse cx="84" cy="82" rx="20" ry="15" fill="none" stroke="#C8C0B0" stroke-width="3"/>
+                <circle cx="84" cy="56" r="17" fill="none" stroke="#C8C0B0" stroke-width="3"/>
+                <path d="M70 48 L66 36 L76 44" fill="none" stroke="#C8C0B0" stroke-width="2.5" stroke-linejoin="round"/>
+                <path d="M98 48 Q104 50 102 62 Q100 66 94 64" fill="none" stroke="#C8C0B0" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                <circle cx="79" cy="54" r="2.5" fill="none" stroke="#C8C0B0" stroke-width="1.8"/>
+                <circle cx="89" cy="54" r="2.5" fill="none" stroke="#C8C0B0" stroke-width="1.8"/>
+                <ellipse cx="84" cy="60" rx="3.5" ry="2.5" fill="none" stroke="#C8C0B0" stroke-width="1.8"/>
+                <path d="M80 64 Q84 68 88 64" fill="none" stroke="#C8C0B0" stroke-width="1.8" stroke-linecap="round"/>
+                <ellipse cx="74" cy="93" rx="7" ry="5" fill="none" stroke="#C8C0B0" stroke-width="2"/>
+                <ellipse cx="94" cy="93" rx="7" ry="5" fill="none" stroke="#C8C0B0" stroke-width="2"/>
+              </svg>
+            </div>
+            <div class="badge-new">NEW</div>
+            <div class="card-info">
+              <div class="card-title">Puppy Friends</div>
+              <div class="card-tier">
+                <div class="tier-dot" style="background:#FCBFA0;"></div>
+                <span class="tier-label" style="color:#D4811A;">Starter</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card 3: Happy Cat -->
+          <div class="page-card">
+            <div class="card-thumb">
+              <svg viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <ellipse cx="60" cy="88" rx="28" ry="22" fill="none" stroke="#C8C0B0" stroke-width="3"/>
+                <ellipse cx="60" cy="92" rx="16" ry="14" fill="none" stroke="#C8C0B0" stroke-width="2"/>
+                <ellipse cx="60" cy="54" rx="24" ry="22" fill="none" stroke="#C8C0B0" stroke-width="3"/>
+                <polygon points="40,38 32,22 50,32" fill="none" stroke="#C8C0B0" stroke-width="2.5" stroke-linejoin="round"/>
+                <polygon points="80,38 88,22 70,32" fill="none" stroke="#C8C0B0" stroke-width="2.5" stroke-linejoin="round"/>
+                <path d="M48 50 Q52 45 56 50" fill="none" stroke="#C8C0B0" stroke-width="2.2" stroke-linecap="round"/>
+                <path d="M64 50 Q68 45 72 50" fill="none" stroke="#C8C0B0" stroke-width="2.2" stroke-linecap="round"/>
+                <path d="M52 63 Q60 70 68 63" fill="none" stroke="#C8C0B0" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <div class="card-info">
+              <div class="card-title">Happy Cat</div>
+              <div class="card-tier">
+                <div class="tier-dot" style="background:#6BB8E8;"></div>
+                <span class="tier-label" style="color:#6BB8E8;">Explorer</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card 4: Jungle Fox (LOCKED) -->
+          <div class="page-card locked">
+            <div class="card-thumb">
+              <svg viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <ellipse cx="60" cy="85" rx="24" ry="18" fill="none" stroke="#C8C0B0" stroke-width="3"/>
+                <path d="M38 62 Q38 36 60 34 Q82 36 82 62 Q82 78 60 78 Q38 78 38 62Z" fill="none" stroke="#C8C0B0" stroke-width="3"/>
+                <polygon points="44,44 36,22 54,38" fill="none" stroke="#C8C0B0" stroke-width="2.5" stroke-linejoin="round"/>
+                <polygon points="76,44 84,22 66,38" fill="none" stroke="#C8C0B0" stroke-width="2.5" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <div class="lock-overlay">
+              <div class="lock-icon">
+                <svg viewBox="0 0 22 26" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M5 12V8 C5 4.7 7.7 2 11 2 C14.3 2 17 4.7 17 8 V12" stroke="#666666" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                  <rect x="2" y="11" width="18" height="13" rx="3" fill="#666666"/>
+                  <circle cx="11" cy="17" r="2.5" fill="white" opacity="0.7"/>
+                  <rect x="10" y="18.5" width="2" height="3" rx="1" fill="white" opacity="0.7"/>
+                </svg>
+              </div>
+            </div>
+            <div class="card-info">
+              <div class="card-title">Jungle Fox</div>
+              <div class="card-tier">
+                <div class="tier-dot" style="background:#B8A9E8;"></div>
+                <span class="tier-label" style="color:#9C8DD0;">Creator</span>
+              </div>
+            </div>
+          </div>
+
+        </div><!-- /page-grid -->
+
+      </div><!-- /scroll-body -->
+
+      <!-- Bottom safe area -->
+      <div class="safe-area"><div class="home-indicator"></div></div>
+
+    </div><!-- /screen -->
+  </div><!-- /iphone -->
+  <div class="device-label">Nav bar with Pack Store icon</div>
+</div>
+
+</body>
+</html>

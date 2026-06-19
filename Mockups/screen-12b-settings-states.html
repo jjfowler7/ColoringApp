@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=390px, initial-scale=1.0" />
+  <title>PaperBrush — Settings States</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800&family=Nunito+Sans:wght@400;600&display=swap" rel="stylesheet" />
+  <style>
+    /* ─── Reset ─────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --cream:     #FFF8F0;
+      --canvas-bg: #FFFDF9;
+      --teal:      #0EA5A0;
+      --navy:      #1B2A4A;
+      --sage:      #7CB686;
+      --coral:     #F06449;
+      --secondary: #666666;
+      --divider:   #E8E0D8;
+      --card:      #FFFFFF;
+    }
+
+    html, body {
+      width: 100%;
+      min-height: 100%;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 48px;
+      padding: 48px;
+      align-items: start;
+      justify-items: center;
+      background: #C8C0AE;
+      font-family: 'Nunito Sans', sans-serif;
+    }
+
+    .device-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+    }
+    .device-label {
+      font-family: 'Nunito Sans', sans-serif;
+      font-size: 13px;
+      color: #888;
+      letter-spacing: 0.04em;
+      text-align: center;
+      max-width: 200px;
+    }
+
+    /* ─── iPhone shell ───────────────────────────────────── */
+    .iphone {
+      width: 390px;
+      height: 844px;
+      border-radius: 50px;
+      background: #1a1a1a;
+      box-shadow: 0 24px 80px rgba(0,0,0,0.45), inset 0 0 0 2px #3a3a3a;
+      position: relative;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+    .iphone::before {
+      content: '';
+      position: absolute;
+      top: 12px; left: 50%;
+      transform: translateX(-50%);
+      width: 120px; height: 34px;
+      background: #1a1a1a;
+      border-radius: 20px;
+      z-index: 30;
+    }
+
+    /* ─── Screen ─────────────────────────────────────────── */
+    .screen {
+      position: absolute;
+      inset: 0;
+      border-radius: 48px;
+      overflow: hidden;
+      background: var(--cream);
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ─── Status bar ─────────────────────────────────────── */
+    .status-bar {
+      height: 54px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      padding: 0 28px 8px;
+      background: var(--canvas-bg);
+      z-index: 10;
+    }
+    .status-time {
+      font-family: 'Nunito', sans-serif;
+      font-weight: 700; font-size: 15px;
+      color: var(--navy);
+    }
+    .status-icons { display: flex; align-items: center; gap: 5px; }
+    .status-icons svg { fill: var(--navy); }
+
+    /* ─── TOP BAR ────────────────────────────────────────── */
+    .top-bar {
+      height: 44px;
+      flex-shrink: 0;
+      background: var(--canvas-bg);
+      border-bottom: 1px solid var(--divider);
+      display: flex;
+      align-items: center;
+      position: relative;
+      z-index: 10;
+    }
+    .bar-back {
+      width: 44px; height: 44px;
+      display: flex; align-items: center; justify-content: center;
+      margin-left: 8px; flex-shrink: 0;
+      cursor: pointer; border-radius: 9999px;
+    }
+    .bar-back svg {
+      width: 18px; height: 18px;
+      stroke: var(--teal); stroke-width: 2.5;
+      stroke-linecap: round; stroke-linejoin: round; fill: none;
+    }
+    .bar-title {
+      position: absolute; left: 0; right: 0;
+      text-align: center;
+      font-family: 'Nunito', sans-serif;
+      font-weight: 700; font-size: 20px;
+      color: var(--navy); pointer-events: none;
+      letter-spacing: -0.25px;
+    }
+
+    /* ─── SCROLL BODY ────────────────────────────────────── */
+    .scroll-body {
+      flex: 1;
+      overflow-y: auto;
+      overflow-x: hidden;
+      scrollbar-width: none;
+      min-height: 0;
+      padding: 16px 0 24px;
+      background: var(--cream);
+    }
+    .scroll-body::-webkit-scrollbar { display: none; }
+
+    /* ─── SECTION ────────────────────────────────────────── */
+    .section {
+      margin: 0 16px;
+    }
+    .section + .section {
+      margin-top: 12px;
+    }
+
+    .section-header {
+      font-family: 'Nunito', sans-serif;
+      font-weight: 600;
+      font-size: 13px;
+      color: var(--secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      padding: 0 4px;
+      margin-bottom: 8px;
+    }
+
+    /* ─── CARD ───────────────────────────────────────────── */
+    .card {
+      background: var(--card);
+      border-radius: 16px;
+      box-shadow: 0 2px 8px rgba(27,42,74,0.06);
+      overflow: hidden;
+    }
+
+    /* ─── ROW ────────────────────────────────────────────── */
+    .row {
+      height: 48px;
+      display: flex;
+      align-items: center;
+      padding: 0 16px;
+      position: relative;
+      cursor: pointer;
+    }
+    .row-divider::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 16px; right: 0;
+      height: 1px;
+      background: var(--divider);
+    }
+
+    .row-label {
+      font-family: 'Nunito Sans', sans-serif;
+      font-weight: 400;
+      font-size: 16px;
+      color: var(--navy);
+      flex: 1;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .row-value {
+      font-family: 'Nunito Sans', sans-serif;
+      font-weight: 400;
+      font-size: 16px;
+      color: var(--teal);
+      flex-shrink: 0;
+      margin-left: 8px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .row-value.gray {
+      color: var(--secondary);
+    }
+
+    /* Disclosure chevron */
+    .chevron {
+      width: 8px; height: 14px;
+      flex-shrink: 0;
+      margin-left: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .chevron svg {
+      width: 8px; height: 14px;
+      stroke: var(--secondary);
+      stroke-width: 2.2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      fill: none;
+    }
+
+    /* Spinner for loading state */
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+    .spinner {
+      width: 16px; height: 16px;
+      border: 2px solid rgba(14,165,160,0.3);
+      border-top-color: var(--teal);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    /* Success feedback inline */
+    .success-feedback {
+      margin-top: 8px;
+      margin-left: 16px;
+      font-family: 'Nunito Sans', sans-serif;
+      font-weight: 400; font-size: 13px;
+      color: var(--sage);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      animation: fadeIn 0.3s ease;
+    }
+    .success-feedback::before {
+      content: '✓';
+      font-weight: 700;
+      font-size: 14px;
+    }
+
+    @keyframes fadeIn { from { opacity:0;transform:translateY(4px) } to { opacity:1;transform:translateY(0) } }
+
+    /* ─── IOS ALERT DIALOG ────────────────────────────────── */
+    .alert-scrim {
+      position: absolute;
+      inset: 0;
+      background: rgba(27,42,74,0.50);
+      z-index: 30;
+      border-radius: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .alert-dialog {
+      width: 260px;
+      background: rgba(255,255,255,0.98);
+      border-radius: 14px;
+      box-shadow: 0 12px 40px rgba(0,0,0,0.18);
+      overflow: hidden;
+      z-index: 40;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .alert-header {
+      padding: 20px 20px 6px;
+      text-align: center;
+    }
+
+    .alert-title {
+      font-family: 'Nunito', sans-serif;
+      font-weight: 700; font-size: 17px;
+      color: var(--navy);
+      letter-spacing: -0.2px;
+    }
+
+    .alert-message {
+      font-family: 'Nunito Sans', sans-serif;
+      font-weight: 400; font-size: 13px;
+      color: var(--secondary);
+      text-align: center;
+      margin-top: 6px;
+      line-height: 1.4;
+      padding: 0 20px;
+    }
+
+    .alert-divider {
+      height: 1px;
+      background: var(--divider);
+      margin-top: 16px;
+    }
+
+    .alert-buttons {
+      display: flex;
+      height: 44px;
+      border-top: 1px solid var(--divider);
+    }
+
+    .alert-button {
+      flex: 1;
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      font-family: 'Nunito', sans-serif;
+      font-weight: 600; font-size: 16px;
+      color: var(--navy);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.15s ease;
+    }
+
+    .alert-button:first-child {
+      color: var(--teal);
+      border-right: 1px solid var(--divider);
+    }
+
+    .alert-button:last-child {
+      color: var(--coral);
+    }
+
+    .alert-button:active {
+      background: rgba(0,0,0,0.04);
+    }
+
+    /* ─── Safe area ──────────────────────────────────────── */
+    .safe-area {
+      height: 34px; flex-shrink: 0;
+      background: var(--cream);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .home-indicator {
+      width: 120px; height: 5px;
+      background: var(--navy);
+      border-radius: 9999px;
+      opacity: 0.18;
+    }
+
+    /* Dimmed background for alert state */
+    .screen.dimmed {
+      filter: brightness(0.92);
+    }
+  </style>
+</head>
+<body>
+
+<!-- ════════════════════════════════════════════════════════
+     DEVICE 1 — Tier Change Confirmation
+     ════════════════════════════════════════════════════════ -->
+<div class="device-wrap">
+  <div class="iphone">
+    <div class="screen dimmed">
+      <div class="status-bar">
+        <span class="status-time">9:41</span>
+        <div class="status-icons">
+          <svg width="17" height="12" viewBox="0 0 17 12"><rect x="0" y="8" width="3" height="4" rx="0.8"/><rect x="4.5" y="5.5" width="3" height="6.5" rx="0.8"/><rect x="9" y="3" width="3" height="9" rx="0.8"/><rect x="13.5" y="0" width="3" height="12" rx="0.8"/></svg>
+          <svg width="16" height="12" viewBox="0 0 16 12" fill="none" stroke="#1B2A4A" stroke-width="1.8" stroke-linecap="round"><path d="M1 4.5C3.8 1.8 8 1.8 10.5 4" opacity="0.3"/><path d="M2.8 6.2C4.8 4.3 7.4 4 9.2 5.5"/><path d="M4.8 7.8C5.8 6.9 7.2 6.9 8.2 7.8"/><circle cx="6.5" cy="10" r="1.2" fill="#1B2A4A" stroke="none"/></svg>
+          <svg width="25" height="12" viewBox="0 0 25 12" fill="#1B2A4A"><rect x="0" y="1" width="21" height="10" rx="2.5" stroke="#1B2A4A" stroke-width="1.2" fill="none"/><rect x="1.5" y="2.5" width="16" height="7" rx="1.5"/><path d="M22.5 4v4a2 2 0 0 0 0-4z"/></svg>
+        </div>
+      </div>
+      <div class="top-bar">
+        <div class="bar-back"><svg viewBox="0 0 18 18"><polyline points="12,3 5,9 12,15"/></svg></div>
+        <span class="bar-title">Settings</span>
+      </div>
+      <div class="scroll-body">
+        <div class="section">
+          <div class="section-header">Profile</div>
+          <div class="card">
+            <div class="row row-divider" style="opacity:0.5;">
+              <span class="row-label">Age Tier</span>
+              <div class="row-value">Explorer<span style="font-size:11px;opacity:0.7;">▾</span></div>
+            </div>
+            <div class="row" style="opacity:0.5;">
+              <span class="row-label">Artist Name</span>
+              <input class="inline-input" type="text" value="Alex" style="opacity:0.5;" disabled />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Alert overlay -->
+    <div class="alert-scrim">
+      <div class="alert-dialog">
+        <div class="alert-header">
+          <div class="alert-title">Switch to Starter?</div>
+        </div>
+        <div class="alert-message">The app will adjust tools and content for ages 3–5. Your saved artworks won't be affected.</div>
+        <div class="alert-buttons">
+          <button class="alert-button">Cancel</button>
+          <button class="alert-button" style="color:var(--coral);">Switch</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="safe-area"><div class="home-indicator"></div></div>
+  </div>
+  <div class="device-label">Tier change confirmation</div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════
+     DEVICE 2 — Restore Success Feedback
+     ════════════════════════════════════════════════════════ -->
+<div class="device-wrap">
+  <div class="iphone">
+    <div class="screen">
+      <div class="status-bar">
+        <span class="status-time">9:41</span>
+        <div class="status-icons">
+          <svg width="17" height="12" viewBox="0 0 17 12"><rect x="0" y="8" width="3" height="4" rx="0.8"/><rect x="4.5" y="5.5" width="3" height="6.5" rx="0.8"/><rect x="9" y="3" width="3" height="9" rx="0.8"/><rect x="13.5" y="0" width="3" height="12" rx="0.8"/></svg>
+          <svg width="16" height="12" viewBox="0 0 16 12" fill="none" stroke="#1B2A4A" stroke-width="1.8" stroke-linecap="round"><path d="M1 4.5C3.8 1.8 8 1.8 10.5 4" opacity="0.3"/><path d="M2.8 6.2C4.8 4.3 7.4 4 9.2 5.5"/><path d="M4.8 7.8C5.8 6.9 7.2 6.9 8.2 7.8"/><circle cx="6.5" cy="10" r="1.2" fill="#1B2A4A" stroke="none"/></svg>
+          <svg width="25" height="12" viewBox="0 0 25 12" fill="#1B2A4A"><rect x="0" y="1" width="21" height="10" rx="2.5" stroke="#1B2A4A" stroke-width="1.2" fill="none"/><rect x="1.5" y="2.5" width="16" height="7" rx="1.5"/><path d="M22.5 4v4a2 2 0 0 0 0-4z"/></svg>
+        </div>
+      </div>
+      <div class="top-bar">
+        <div class="bar-back"><svg viewBox="0 0 18 18"><polyline points="12,3 5,9 12,15"/></svg></div>
+        <span class="bar-title">Settings</span>
+      </div>
+      <div class="scroll-body">
+        <div class="section">
+          <div class="section-header">Profile</div>
+          <div class="card">
+            <div class="row row-divider">
+              <span class="row-label">Age Tier</span>
+              <div class="row-value">Explorer<span style="font-size:11px;opacity:0.7;">▾</span></div>
+            </div>
+            <div class="row">
+              <span class="row-label">Artist Name</span>
+              <input class="inline-input" type="text" value="Alex" spellcheck="false" />
+            </div>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section-header">Sound</div>
+          <div class="card">
+            <div class="row row-divider">
+              <span class="row-label">Sound Effects</span>
+              <div style="width:51px;height:31px;border-radius:9999px;background:var(--teal);position:relative;">
+                <div style="position:absolute;width:27px;height:27px;border-radius:9999px;background:#fff;box-shadow:0 2px 6px rgba(0,0,0,0.18);top:2px;left:22px;"></div>
+              </div>
+            </div>
+            <div class="row row-divider">
+              <span class="row-label">Background Music</span>
+              <div style="width:51px;height:31px;border-radius:9999px;background:var(--teal);position:relative;">
+                <div style="position:absolute;width:27px;height:27px;border-radius:9999px;background:#fff;box-shadow:0 2px 6px rgba(0,0,0,0.18);top:2px;left:22px;"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section-header">Purchases</div>
+          <div class="card">
+            <div class="row row-divider">
+              <span class="row-label">Restore Purchases</span>
+              <div class="chevron">
+                <svg viewBox="0 0 8 14"><polyline points="1,1 7,7 1,13"/></svg>
+              </div>
+            </div>
+            <div class="success-feedback">Purchases restored ✓</div>
+            <div class="row">
+              <span class="row-label">Pack Store</span>
+              <div class="chevron">
+                <svg viewBox="0 0 8 14"><polyline points="1,1 7,7 1,13"/></svg>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section-header">About</div>
+          <div class="card">
+            <div class="row row-divider">
+              <span class="row-label">Privacy Policy</span>
+              <div class="chevron">
+                <svg viewBox="0 0 8 14"><polyline points="1,1 7,7 1,13"/></svg>
+              </div>
+            </div>
+            <div class="row" style="cursor:default;">
+              <span class="row-label">Version</span>
+              <span class="row-value gray">1.0.0</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="safe-area"><div class="home-indicator"></div></div>
+    </div>
+  </div>
+  <div class="device-label">Restore successful — inline feedback</div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════
+     DEVICE 3 — Restore Loading State
+     ════════════════════════════════════════════════════════ -->
+<div class="device-wrap">
+  <div class="iphone">
+    <div class="screen">
+      <div class="status-bar">
+        <span class="status-time">9:41</span>
+        <div class="status-icons">
+          <svg width="17" height="12" viewBox="0 0 17 12"><rect x="0" y="8" width="3" height="4" rx="0.8"/><rect x="4.5" y="5.5" width="3" height="6.5" rx="0.8"/><rect x="9" y="3" width="3" height="9" rx="0.8"/><rect x="13.5" y="0" width="3" height="12" rx="0.8"/></svg>
+          <svg width="16" height="12" viewBox="0 0 16 12" fill="none" stroke="#1B2A4A" stroke-width="1.8" stroke-linecap="round"><path d="M1 4.5C3.8 1.8 8 1.8 10.5 4" opacity="0.3"/><path d="M2.8 6.2C4.8 4.3 7.4 4 9.2 5.5"/><path d="M4.8 7.8C5.8 6.9 7.2 6.9 8.2 7.8"/><circle cx="6.5" cy="10" r="1.2" fill="#1B2A4A" stroke="none"/></svg>
+          <svg width="25" height="12" viewBox="0 0 25 12" fill="#1B2A4A"><rect x="0" y="1" width="21" height="10" rx="2.5" stroke="#1B2A4A" stroke-width="1.2" fill="none"/><rect x="1.5" y="2.5" width="16" height="7" rx="1.5"/><path d="M22.5 4v4a2 2 0 0 0 0-4z"/></svg>
+        </div>
+      </div>
+      <div class="top-bar">
+        <div class="bar-back"><svg viewBox="0 0 18 18"><polyline points="12,3 5,9 12,15"/></svg></div>
+        <span class="bar-title">Settings</span>
+      </div>
+      <div class="scroll-body">
+        <div class="section">
+          <div class="section-header">Profile</div>
+          <div class="card">
+            <div class="row row-divider">
+              <span class="row-label">Age Tier</span>
+              <div class="row-value">Explorer<span style="font-size:11px;opacity:0.7;">▾</span></div>
+            </div>
+            <div class="row">
+              <span class="row-label">Artist Name</span>
+              <input class="inline-input" type="text" value="Alex" spellcheck="false" />
+            </div>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section-header">Sound</div>
+          <div class="card">
+            <div class="row row-divider">
+              <span class="row-label">Sound Effects</span>
+              <div style="width:51px;height:31px;border-radius:9999px;background:var(--teal);position:relative;">
+                <div style="position:absolute;width:27px;height:27px;border-radius:9999px;background:#fff;box-shadow:0 2px 6px rgba(0,0,0,0.18);top:2px;left:22px;"></div>
+              </div>
+            </div>
+            <div class="row row-divider">
+              <span class="row-label">Background Music</span>
+              <div style="width:51px;height:31px;border-radius:9999px;background:var(--teal);position:relative;">
+                <div style="position:absolute;width:27px;height:27px;border-radius:9999px;background:#fff;box-shadow:0 2px 6px rgba(0,0,0,0.18);top:2px;left:22px;"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section-header">Purchases</div>
+          <div class="card">
+            <div class="row row-divider" style="opacity:0.7;">
+              <span class="row-label">Restore Purchases</span>
+              <div class="spinner"></div>
+            </div>
+            <div class="row">
+              <span class="row-label">Pack Store</span>
+              <div class="chevron">
+                <svg viewBox="0 0 8 14"><polyline points="1,1 7,7 1,13"/></svg>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section-header">About</div>
+          <div class="card">
+            <div class="row row-divider">
+              <span class="row-label">Privacy Policy</span>
+              <div class="chevron">
+                <svg viewBox="0 0 8 14"><polyline points="1,1 7,7 1,13"/></svg>
+              </div>
+            </div>
+            <div class="row" style="cursor:default;">
+              <span class="row-label">Version</span>
+              <span class="row-value gray">1.0.0</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="safe-area"><div class="home-indicator"></div></div>
+    </div>
+  </div>
+  <div class="device-label">Restoring... (loading state)</div>
+</div>
+
+</body>
+</html>
