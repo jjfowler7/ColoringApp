@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="24512" systemVersion="24G419" minimumToolsVersion="Automatic" sourceLanguage="Swift" usedWithSwiftData="YES" userDefinedModelVersionIdentifier="">
+    <entity name="ArtworkEntity" representedClassName="ArtworkEntity" syncable="YES" codeGenerationType="class">
+        <attribute name="animationTemplateId" optional="YES" attributeType="String"/>
+        <attribute name="canvasDataPath" optional="YES" attributeType="String"/>
+        <attribute name="category" attributeType="String"/>
+        <attribute name="createdAt" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="id" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
+        <attribute name="isCompleted" optional="YES" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
+        <attribute name="lastModified" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="pageId" attributeType="String"/>
+        <attribute name="playerNames" optional="YES" attributeType="String"/>
+        <attribute name="thumbnailPath" optional="YES" attributeType="String"/>
+        <attribute name="tier" attributeType="String"/>
+        <attribute name="title" attributeType="String"/>
+        <attribute name="undoHistoryPath" optional="YES" attributeType="String"/>
+    </entity>
+</model>
