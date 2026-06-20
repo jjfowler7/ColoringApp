@@ -35,7 +35,7 @@ Evaluate the completed work against each item below. For each item, make a findi
 - Does this change conflict with adjacent features, screens, or components?
 - Are all references to shared state (`UserPreferences`, `AppRouter`, `PersistenceManager`, etc.) consistent with the rest of the codebase?
 - Are values that should be dynamic actually dynamic (no hardcoded IDs, strings, or magic numbers)?
-- Does navigation follow the `Route` enum and `AppRouter` patterns from `docs/navigation_architecture.md`?
+- Does navigation follow the `Route` enum and `AppRouter` patterns from `navigation_architecture.md`?
 
 ### UI / UX
 - Do all interactive elements respond correctly and have `.accessibilityLabel()` set?

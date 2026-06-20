@@ -11,17 +11,17 @@ PaperBrush is an iOS children's coloring app (ages 3–12) with three age tiers 
 
 ## Reference Documentation
 
-Before implementing any feature, read the relevant docs in the `docs/` folder:
+Before implementing any feature, read the relevant docs. These files live at the repository root, except `design_specs_v1.md` which is in `Mockups/`:
 
 | Document | What It Contains | When to Read It |
 |----------|-----------------|-----------------|
-| `docs/technical_architecture.md` | Architecture pattern (MVVM), project folder structure, rendering pipeline, naming conventions, performance budgets, testing strategy | Before creating any new file |
-| `docs/component_library.md` | Swift code for all design tokens (`PBTokens`) and reusable UI components (`PBButton`, `PBCard`, etc.) | Before building any UI |
-| `docs/data_model.md` | Core Data schema, Swift model enums, `UserPreferences` wrapper, file system layout, audio asset inventory, `AudioManagerProtocol` | Before any persistence, model, or audio work |
-| `docs/navigation_architecture.md` | Complete navigation graph, `Route` enum, `AppRouter`, modal presentation rules, parental gate integration points | Before any navigation or screen-wiring work |
-| `docs/design_specs_v1.md` | Full design system (colors, type, spacing, shadows, motion) + pixel-level specs for every screen | Before implementing any specific screen |
-| `docs/prd_v1_updated.md` | Feature requirements with acceptance criteria and priority levels (P0/P1/P2) | Before implementing any feature |
-| `docs/Interaction_Tree.md` | Every screen, element, and navigation destination mapped | When wiring up navigation or verifying completeness |
+| `technical_architecture.md` | Architecture pattern (MVVM), project folder structure, rendering pipeline, naming conventions, performance budgets, testing strategy | Before creating any new file |
+| `component_library.md` | Swift code for all design tokens (`PBTokens`) and reusable UI components (`PBButton`, `PBCard`, etc.) | Before building any UI |
+| `data_model.md` | Core Data schema, Swift model enums, `UserPreferences` wrapper, file system layout, audio asset inventory, `AudioManagerProtocol` | Before any persistence, model, or audio work |
+| `navigation_architecture.md` | Complete navigation graph, `Route` enum, `AppRouter`, modal presentation rules, parental gate integration points | Before any navigation or screen-wiring work |
+| `Mockups/design_specs_v1.md` | Full design system (colors, type, spacing, shadows, motion) + pixel-level specs for every screen | Before implementing any specific screen |
+| `prd_v1_updated.md` | Feature requirements with acceptance criteria and priority levels (P0/P1/P2) | Before implementing any feature |
+| `Interaction_Tree.md` | Every screen, element, and navigation destination mapped | When wiring up navigation or verifying completeness |
 
 **Always read the relevant doc before writing code.** Do not rely on this summary alone — the docs contain detailed specs, acceptance criteria, and code examples.
 
@@ -72,7 +72,7 @@ final class CanvasViewModel: ObservableObject {
 
 ## Design System Quick Reference
 
-Full token definitions with Swift code are in `docs/component_library.md`. Here's the cheat sheet:
+Full token definitions with Swift code are in `component_library.md`. Here's the cheat sheet:
 
 **Colors (use `PBTokens.Colors.*`):**
 - Background: Warm Cream `#FFF8F0`
@@ -109,7 +109,7 @@ The selected tier (`UserPreferences.shared.selectedTier`) changes UI complexity:
 
 ## Error Handling
 
-Use the `AppError` enum (defined in `docs/technical_architecture.md` §6). Errors surface as:
+Use the `AppError` enum (defined in `technical_architecture.md` §6). Errors surface as:
 - **Toasts** (save success/failure) — auto-dismiss 2–4s
 - **Inline text** (purchase/restore failures) — coral text below the action button
 - **Alerts** (destructive actions like delete) — iOS native `.alert`
@@ -144,52 +144,19 @@ Never force-unwrap. Never use `try!`. Always handle errors gracefully with `do/c
 9. Skip the parental gate for purchases, sharing, or settings access
 10. Collect any user data or PII
 11. Use `.popover` on iPhone (it converts to sheet anyway)
-12. Create files outside the project structure defined in `docs/technical_architecture.md` §3
+12. Create files outside the project structure defined in `technical_architecture.md` §3
 
 ---
 
 ## Post-Feature QA Protocol
 
-After completing any discrete piece of functionality — a feature, a screen, a component, or a bug fix — Claude must perform a self-directed QA review and remediation loop before surfacing the work for human testing. This process is internal and recursive.
+After completing any discrete piece of functionality — a feature, a screen, a component, or a bug fix — Claude must run the **`/qa` skill**, which holds the full QA checklist and runs the recursive build → fix → re-check loop. The skill is the single source of truth for what QA covers; do not maintain a separate checklist here.
 
-### Process
-
-1. Run the QA checklist against the completed work
-2. Fix any issues found
-3. Re-run the checklist against the fixes
-4. Repeat until the checklist passes cleanly with no issues found
-5. Only then prompt Jerry to test
-
-This loop must complete fully before any handoff. Claude does not ask Jerry to test, summarize findings, or communicate progress mid-review. The QA process is invisible to Jerry — he only sees the finished result.
-
-### QA Checklist
-
-**Functional Correctness**
-- Does the feature fulfill the objective, including edge cases?
-- Are there unhandled states, null/undefined values, or boundary conditions that could cause errors or crashes?
-
-**Integration**
-- Does this change conflict with adjacent features, screens, or components?
-- Are all references to shared state, props, or data models consistent with the rest of the codebase?
-- Are any values hardcoded that should be dynamic?
-
-**UI / UX**
-- Do all interactive elements respond correctly?
-- Are loading, error, and success states accounted for?
-- Does the UI behave correctly at both iPhone and iPad sizes where relevant?
-
-**Code Quality**
-- Are there console errors, warnings, or memory issues introduced?
-- Is anything left partially implemented — TODOs, stubs, placeholder logic?
-- Were any files modified unintentionally?
-
-### Handoff
-
-Once the recursive QA loop passes cleanly, Claude communicates to Jerry in one line:
-
-> "Feature complete and QA'd — ready for you to test."
-
-If there are known limitations that cannot be resolved without a product decision, Claude flags only those — not the QA process itself.
+How the loop must behave:
+- It runs to completion **before** any handoff. Repeat the checklist after every fix until a full pass produces zero failures.
+- It is **invisible to Jerry.** Claude does not ask him to test, summarize findings, or report progress mid-review — he only sees the finished result.
+- On a clean pass, hand off in one line: *"Feature complete and QA'd — ready for you to test."*
+- Flag only known limitations that need a product decision (not a code fix) — never describe the QA process itself.
 
 ---
 
@@ -227,7 +194,7 @@ Target: September 2026 launch (24 weeks from late March 2026)
 > **Why this is first:** Every file in the project depends on the Xcode project existing, and every UI file depends on the design tokens. Nothing can be built without this.
 
 - [x] Create Xcode project: PaperBrush, iOS 16.0 target, SwiftUI lifecycle, iPhone + iPad
-- [x] Set up folder structure per `docs/technical_architecture.md` §3
+- [x] Set up folder structure per `technical_architecture.md` §3
 - [x] Add Nunito and Nunito Sans font files to Resources/Fonts/, register in Info.plist
 - [x] Create `PBTokens.swift` namespace
 - [x] Create `PBColors.swift` with all color tokens + `Color+Hex.swift` extension
@@ -315,7 +282,7 @@ What to verify:
 7. Drawing at 2x zoom and 5x zoom still feels smooth
 8. No crash after 30+ seconds of continuous drawing
 ⚠️ CRITICAL: If drawing feels laggy or lines are jagged, STOP. This must be fixed
-before any other work proceeds. See docs/technical_architecture.md §4.4 for fallback plan.
+before any other work proceeds. See technical_architecture.md §4.4 for fallback plan.
 ```
 
 ---
@@ -431,7 +398,7 @@ What to verify:
 > **Depends on:** Sprint 2.1 (canvas must be fully functional before saving state). Sets up Core Data and file-system persistence so artwork survives app restarts.
 
 - [x] Set up Core Data stack (`PersistenceManager.swift` + `PaperBrush.xcdatamodeld`)
-- [x] Create `ArtworkEntity` in Core Data schema per `docs/data_model.md` §2.1
+- [x] Create `ArtworkEntity` in Core Data schema per `data_model.md` §2.1
 - [x] Implement `PersistenceManager` conforming to protocol
 - [x] Implement canvas data serialization (PKDrawing → `.pbdata` file + stamps → JSON)
 - [x] Implement thumbnail generation (256×256 PNG from current canvas)
@@ -483,7 +450,7 @@ What to verify:
 6. Draw 50+ strokes, then zoom to 10x and draw more — still smooth
 7. On iPhone SE specifically: does it feel acceptable? Any lag compared to newer phone?
 ⚠️ Milestone 2 gate: If iPhone SE 2nd gen cannot sustain 60fps, the brush engine
-needs optimization or the Core Graphics fallback (see docs/technical_architecture.md §4.4)
+needs optimization or the Core Graphics fallback (see technical_architecture.md §4.4)
 before proceeding. Do NOT move to M3 with a laggy canvas.
 ```
 
@@ -799,7 +766,7 @@ What to verify:
 - [ ] Test all 3 tiers end-to-end (Starter, Explorer, Creator)
 - [ ] Test offline mode: airplane mode, verify all features work (`OFFLINE-001`)
 - [ ] Test edge cases: 500 gallery items, very large canvas, rapid undo/redo
-- [ ] Test parental gate at every integration point (see `docs/navigation_architecture.md` §9)
+- [ ] Test parental gate at every integration point (see `navigation_architecture.md` §9)
 - [ ] Accessibility pass: VoiceOver navigation through all screens
 - [ ] Dynamic Type: test with largest accessibility text size
 - [ ] Fix all bugs found during integration testing
