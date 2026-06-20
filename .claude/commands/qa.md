@@ -65,20 +65,26 @@ Evaluate the completed work against each item below. For each item, make a findi
 - If the feature reads/writes data: does it use the correct store (Core Data for artworks, UserDefaults via `UserPreferences` for settings, file system for canvas binary data)?
 - Are auto-save (every 30s) and background-save behaviors unaffected?
 
-## Step 3 — Fix All Failures
+## Step 3 — Convention Audit
 
-For each **Fail** finding:
+Run the `convention-auditor` agent against all Swift files touched in this sprint (use `git diff --name-only` to identify them). Pass the file list explicitly so the agent audits the right scope.
+
+Any **Violations** the agent reports are treated as Fail findings and enter the fix loop in Step 4 alongside QA failures. **Notes** (lower severity) are included in the fix loop too — resolve everything before handoff.
+
+## Step 4 — Fix All Failures
+
+For each **Fail** finding (from either the QA checklist or the convention audit):
 1. Fix the issue in the relevant file(s).
 2. Re-run `xcodebuild` after fixes to confirm the build stays clean.
 3. Re-evaluate that checklist item to confirm it now passes.
 
 Do not surface partial results. Do not ask the developer questions mid-review. Resolve everything that can be resolved with available information.
 
-## Step 4 — Repeat Until Clean
+## Step 5 — Repeat Until Clean
 
-Run the full checklist again after fixes. If new failures surface, fix those too. Repeat until a full pass produces zero failures.
+Run the full checklist and convention audit again after fixes. If new failures surface, fix those too. Repeat until a full pass produces zero failures.
 
-## Step 5 — Handoff
+## Step 6 — Handoff
 
 Once the checklist passes cleanly with no failures, output exactly this:
 
